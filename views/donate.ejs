@@ -1,7 +1,42 @@
-<section>
-    <div class="container">
-        <h1>Donate to Our Cause</h1>
-        <p>Your contribution helps us fight for justice and equality. Please consider donating.</p>
-        <!-- Donation form or link can go here -->
-    </div>
-</section>
+<div id="donate-container" class="donate-page container">
+    <header class="donate-header text-center">
+        <h1 data-key="donateTitle"></h1>
+        <p class="lead" data-key="donateIntro"></p>
+    </header>
+
+    <section class="payment-methods">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <div class="icon">UPI</div>
+                        <h4 class="card-title" data-key="upiPayment"></h4>
+                        <p class="card-description" data-key="upiDescription"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <div class="icon">BANK</div>
+                        <h4 class="card-title" data-key="bankTransfer"></h4>
+                        <p class="card-description" data-key="bankTransferDescription"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <div class="icon">CARD</div>
+                        <h4 class="card-title" data-key="cardPayment"></h4>
+                        <p class="card-description" data-key="cardPaymentDescription"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="donate-cta text-center">
+        <button class="btn btn-primary btn-lg" data-key="donateButton"></button>
+    </section>
+</div>

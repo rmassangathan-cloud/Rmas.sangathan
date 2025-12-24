@@ -1,3 +1,385 @@
-<div id="join-us-container">
-    <!-- Content will be dynamically loaded here -->
-</div>
+<section class="join-us-page">
+    <div class="container">
+        <div class="join-card">
+            <div class="join-card-left">
+                <h2>Join NHRA</h2>
+                <p class="lead">समाज के लिए कार्य करें — सदस्यता के लिए आवेदन करें। नीचे दी गई जानकारी भरें।</p>
+
+                <% if (typeof success !== 'undefined' && success) { %>
+                    <div class="alert success"><%= success %></div>
+                <% } %>
+                <% if (typeof error !== 'undefined' && error) { %>
+                    <div class="alert error"><%= error %></div>
+                <% } %>
+
+                <form id="membershipForm" class="membership-form" method="POST" action="/join" enctype="multipart/form-data" novalidate>
+                    <div class="form-row two-col">
+                        <label>पूर्ण नाम / Full Name *</label>
+                        <input name="fullName" required value="<%= typeof fullName !== 'undefined' ? fullName : '' %>">
+                    </div>
+
+                    <div class="form-row two-col">
+                        <label>पिता / पति का नाम</label>
+                        <input name="fatherName" value="<%= typeof fatherName !== 'undefined' ? fatherName : '' %>">
+                    </div>
+
+                    <div class="form-row two-col">
+                        <label>जन्म तिथि / Date of Birth</label>
+                        <input type="date" name="dob" value="<%= typeof dob !== 'undefined' ? dob : '' %>">
+                    </div>
+
+                    <div class="form-row two-col">
+                        <label>लिंग / Gender</label>
+                        <select name="gender">
+                            <option value="" <%= (typeof gender === 'undefined' || !gender) ? 'selected' : '' %>>-- चुनें / Select --</option>
+                            <option value="male" <%= (typeof gender !== 'undefined' && gender === 'male') ? 'selected' : '' %>>पुरुष / Male</option>
+                            <option value="female" <%= (typeof gender !== 'undefined' && gender === 'female') ? 'selected' : '' %>>महिला / Female</option>
+                            <option value="other" <%= (typeof gender !== 'undefined' && gender === 'other') ? 'selected' : '' %>>अन्य / Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row two-col">
+                        <label>मोबाइल नंबर / Mobile *</label>
+                        <input name="mobile" required value="<%= typeof mobile !== 'undefined' ? mobile : '' %>">
+                    </div>
+
+                    <div class="form-row two-col">
+                        <label>ईमेल / Email</label>
+                        <input type="email" name="email" value="<%= typeof email !== 'undefined' ? email : '' %>">
+                    </div>
+
+                    
+
+                    <div class="form-row two-col">
+                        <label>Blood Group</label>
+                        <select name="bloodGroup">
+                            <option value="" <%= (typeof bloodGroup === 'undefined' || !bloodGroup) ? 'selected' : '' %>>-- Select --</option>
+                            <option value="A+" <%= (typeof bloodGroup !== 'undefined' && bloodGroup === 'A+') ? 'selected' : '' %>>A+</option>
+                            <option value="A-" <%= (typeof bloodGroup !== 'undefined' && bloodGroup === 'A-') ? 'selected' : '' %>>A-</option>
+                            <option value="B+" <%= (typeof bloodGroup !== 'undefined' && bloodGroup === 'B+') ? 'selected' : '' %>>B+</option>
+                            <option value="B-" <%= (typeof bloodGroup !== 'undefined' && bloodGroup === 'B-') ? 'selected' : '' %>>B-</option>
+                            <option value="O+" <%= (typeof bloodGroup !== 'undefined' && bloodGroup === 'O+') ? 'selected' : '' %>>O+</option>
+                            <option value="O-" <%= (typeof bloodGroup !== 'undefined' && bloodGroup === 'O-') ? 'selected' : '' %>>O-</option>
+                            <option value="AB+" <%= (typeof bloodGroup !== 'undefined' && bloodGroup === 'AB+') ? 'selected' : '' %>>AB+</option>
+                            <option value="AB-" <%= (typeof bloodGroup !== 'undefined' && bloodGroup === 'AB-') ? 'selected' : '' %>>AB-</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row two-col">
+                        <label>शैक्षणिक योग्यता / Education</label>
+                        <select name="education">
+                            <option value="" <%= (typeof education === 'undefined' || !education) ? 'selected' : '' %>>-- चुनें / Select --</option>
+                            <option value="None" <%= (typeof education !== 'undefined' && education === 'None') ? 'selected' : '' %>>None</option>
+                            <option value="Primary" <%= (typeof education !== 'undefined' && education === 'Primary') ? 'selected' : '' %>>Primary</option>
+                            <option value="Secondary" <%= (typeof education !== 'undefined' && education === 'Secondary') ? 'selected' : '' %>>Secondary</option>
+                            <option value="Higher Secondary" <%= (typeof education !== 'undefined' && education === 'Higher Secondary') ? 'selected' : '' %>>Higher Secondary</option>
+                            <option value="Diploma" <%= (typeof education !== 'undefined' && education === 'Diploma') ? 'selected' : '' %>>Diploma</option>
+                            <option value="Bachelor" <%= (typeof education !== 'undefined' && education === 'Bachelor') ? 'selected' : '' %>>Bachelor</option>
+                            <option value="Master" <%= (typeof education !== 'undefined' && education === 'Master') ? 'selected' : '' %>>Master</option>
+                            <option value="PhD" <%= (typeof education !== 'undefined' && education === 'PhD') ? 'selected' : '' %>>PhD</option>
+                            <option value="Other" <%= (typeof education !== 'undefined' && education === 'Other') ? 'selected' : '' %>>Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row two-col">
+                        <label>पेशा / Occupation</label>
+                        <select name="occupation">
+                            <option value="" <%= (typeof occupation === 'undefined' || !occupation) ? 'selected' : '' %>>-- चुनें / Select --</option>
+                            <option value="Student" <%= (typeof occupation !== 'undefined' && occupation === 'Student') ? 'selected' : '' %>>Student</option>
+                            <option value="Unemployed" <%= (typeof occupation !== 'undefined' && occupation === 'Unemployed') ? 'selected' : '' %>>Unemployed</option>
+                            <option value="Farmer / Agriculture" <%= (typeof occupation !== 'undefined' && occupation === 'Farmer / Agriculture') ? 'selected' : '' %>>Farmer / Agriculture</option>
+                            <option value="Labour / Daily Wage Worker" <%= (typeof occupation !== 'undefined' && occupation === 'Labour / Daily Wage Worker') ? 'selected' : '' %>>Labour / Daily Wage Worker</option>
+                            <option value="Private Job" <%= (typeof occupation !== 'undefined' && occupation === 'Private Job') ? 'selected' : '' %>>Private Job</option>
+                            <option value="Government Job" <%= (typeof occupation !== 'undefined' && occupation === 'Government Job') ? 'selected' : '' %>>Government Job</option>
+                            <option value="Self Employed" <%= (typeof occupation !== 'undefined' && occupation === 'Self Employed') ? 'selected' : '' %>>Self Employed</option>
+                            <option value="Business / Trader" <%= (typeof occupation !== 'undefined' && occupation === 'Business / Trader') ? 'selected' : '' %>>Business / Trader</option>
+                            <option value="Teacher / Professor" <%= (typeof occupation !== 'undefined' && occupation === 'Teacher / Professor') ? 'selected' : '' %>>Teacher / Professor</option>
+                            <option value="Doctor / Medical Professional" <%= (typeof occupation !== 'undefined' && occupation === 'Doctor / Medical Professional') ? 'selected' : '' %>>Doctor / Medical Professional</option>
+                            <option value="Engineer / IT Professional" <%= (typeof occupation !== 'undefined' && occupation === 'Engineer / IT Professional') ? 'selected' : '' %>>Engineer / IT Professional</option>
+                            <option value="Lawyer" <%= (typeof occupation !== 'undefined' && occupation === 'Lawyer') ? 'selected' : '' %>>Lawyer</option>
+                            <option value="Journalist / Media" <%= (typeof occupation !== 'undefined' && occupation === 'Journalist / Media') ? 'selected' : '' %>>Journalist / Media</option>
+                            <option value="Social Worker / NGO" <%= (typeof occupation !== 'undefined' && occupation === 'Social Worker / NGO') ? 'selected' : '' %>>Social Worker / NGO</option>
+                            <option value="Artist / Writer" <%= (typeof occupation !== 'undefined' && occupation === 'Artist / Writer') ? 'selected' : '' %>>Artist / Writer</option>
+                            <option value="Driver" <%= (typeof occupation !== 'undefined' && occupation === 'Driver') ? 'selected' : '' %>>Driver</option>
+                            <option value="Housewife / Homemaker" <%= (typeof occupation !== 'undefined' && occupation === 'Housewife / Homemaker') ? 'selected' : '' %>>Housewife / Homemaker</option>
+                            <option value="Retired" <%= (typeof occupation !== 'undefined' && occupation === 'Retired') ? 'selected' : '' %>>Retired</option>
+                            <option value="Other" <%= (typeof occupation !== 'undefined' && occupation === 'Other') ? 'selected' : '' %>>Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row two-col">
+                        <label>पहचान प्रमाण (Aadhaar / ID No.)</label>
+                        <input name="idNumber" value="<%= typeof idNumber !== 'undefined' ? idNumber : '' %>">
+                    </div>
+
+                    <div class="form-row two-col">
+                        <label>राज्य / State *</label>
+                        <select name="state" id="stateSelect" required>
+                            <option value="" <%= (typeof state === 'undefined' || !state) ? 'selected' : '' %>>-- चुनें / Select --</option>
+                            <option value="Bihar" <%= (typeof state !== 'undefined' && state === 'Bihar') ? 'selected' : '' %>>Bihar</option>
+                            <option value="Andhra Pradesh" <%= (typeof state !== 'undefined' && state === 'Andhra Pradesh') ? 'selected' : '' %>>Andhra Pradesh</option>
+                            <option value="Arunachal Pradesh" <%= (typeof state !== 'undefined' && state === 'Arunachal Pradesh') ? 'selected' : '' %>>Arunachal Pradesh</option>
+                            <option value="Assam" <%= (typeof state !== 'undefined' && state === 'Assam') ? 'selected' : '' %>>Assam</option>
+                            <option value="Chhattisgarh" <%= (typeof state !== 'undefined' && state === 'Chhattisgarh') ? 'selected' : '' %>>Chhattisgarh</option>
+                            <option value="Goa" <%= (typeof state !== 'undefined' && state === 'Goa') ? 'selected' : '' %>>Goa</option>
+                            <option value="Gujarat" <%= (typeof state !== 'undefined' && state === 'Gujarat') ? 'selected' : '' %>>Gujarat</option>
+                            <option value="Haryana" <%= (typeof state !== 'undefined' && state === 'Haryana') ? 'selected' : '' %>>Haryana</option>
+                            <option value="Himachal Pradesh" <%= (typeof state !== 'undefined' && state === 'Himachal Pradesh') ? 'selected' : '' %>>Himachal Pradesh</option>
+                            <option value="Jharkhand" <%= (typeof state !== 'undefined' && state === 'Jharkhand') ? 'selected' : '' %>>Jharkhand</option>
+                            <option value="Karnataka" <%= (typeof state !== 'undefined' && state === 'Karnataka') ? 'selected' : '' %>>Karnataka</option>
+                            <option value="Kerala" <%= (typeof state !== 'undefined' && state === 'Kerala') ? 'selected' : '' %>>Kerala</option>
+                            <option value="Madhya Pradesh" <%= (typeof state !== 'undefined' && state === 'Madhya Pradesh') ? 'selected' : '' %>>Madhya Pradesh</option>
+                            <option value="Maharashtra" <%= (typeof state !== 'undefined' && state === 'Maharashtra') ? 'selected' : '' %>>Maharashtra</option>
+                            <option value="Manipur" <%= (typeof state !== 'undefined' && state === 'Manipur') ? 'selected' : '' %>>Manipur</option>
+                            <option value="Meghalaya" <%= (typeof state !== 'undefined' && state === 'Meghalaya') ? 'selected' : '' %>>Meghalaya</option>
+                            <option value="Mizoram" <%= (typeof state !== 'undefined' && state === 'Mizoram') ? 'selected' : '' %>>Mizoram</option>
+                            <option value="Nagaland" <%= (typeof state !== 'undefined' && state === 'Nagaland') ? 'selected' : '' %>>Nagaland</option>
+                            <option value="Odisha" <%= (typeof state !== 'undefined' && state === 'Odisha') ? 'selected' : '' %>>Odisha</option>
+                            <option value="Punjab" <%= (typeof state !== 'undefined' && state === 'Punjab') ? 'selected' : '' %>>Punjab</option>
+                            <option value="Rajasthan" <%= (typeof state !== 'undefined' && state === 'Rajasthan') ? 'selected' : '' %>>Rajasthan</option>
+                            <option value="Sikkim" <%= (typeof state !== 'undefined' && state === 'Sikkim') ? 'selected' : '' %>>Sikkim</option>
+                            <option value="Tamil Nadu" <%= (typeof state !== 'undefined' && state === 'Tamil Nadu') ? 'selected' : '' %>>Tamil Nadu</option>
+                            <option value="Telangana" <%= (typeof state !== 'undefined' && state === 'Telangana') ? 'selected' : '' %>>Telangana</option>
+                            <option value="Tripura" <%= (typeof state !== 'undefined' && state === 'Tripura') ? 'selected' : '' %>>Tripura</option>
+                            <option value="Uttar Pradesh" <%= (typeof state !== 'undefined' && state === 'Uttar Pradesh') ? 'selected' : '' %>>Uttar Pradesh</option>
+                            <option value="Uttarakhand" <%= (typeof state !== 'undefined' && state === 'Uttarakhand') ? 'selected' : '' %>>Uttarakhand</option>
+                            <option value="West Bengal" <%= (typeof state !== 'undefined' && state === 'West Bengal') ? 'selected' : '' %>>West Bengal</option>
+                            <option value="Andaman and Nicobar Islands" <%= (typeof state !== 'undefined' && state === 'Andaman and Nicobar Islands') ? 'selected' : '' %>>Andaman and Nicobar Islands</option>
+                            <option value="Chandigarh" <%= (typeof state !== 'undefined' && state === 'Chandigarh') ? 'selected' : '' %>>Chandigarh</option>
+                            <option value="Dadra and Nagar Haveli and Daman and Diu" <%= (typeof state !== 'undefined' && state === 'Dadra and Nagar Haveli and Daman and Diu') ? 'selected' : '' %>>Dadra and Nagar Haveli and Daman and Diu</option>
+                            <option value="Delhi" <%= (typeof state !== 'undefined' && state === 'Delhi') ? 'selected' : '' %>>Delhi</option>
+                            <option value="Jammu and Kashmir" <%= (typeof state !== 'undefined' && state === 'Jammu and Kashmir') ? 'selected' : '' %>>Jammu and Kashmir</option>
+                            <option value="Ladakh" <%= (typeof state !== 'undefined' && state === 'Ladakh') ? 'selected' : '' %>>Ladakh</option>
+                            <option value="Lakshadweep" <%= (typeof state !== 'undefined' && state === 'Lakshadweep') ? 'selected' : '' %>>Lakshadweep</option>
+                        </select>
+                    </div>
+
+                    
+
+                    <div class="form-row two-col" id="districtRow" style="display:none;">
+                        <label>ज़िला / District *</label>
+                        <select name="district" id="districtSelect">
+                            <option value="">-- चुनें --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row two-col" id="blockRow" style="display:none;">
+                        <label>ब्लॉक / Block *</label>
+                        <select name="block" id="blockSelect">
+                            <option value="">-- चुनें --</option>
+                        </select>
+                    </div>
+
+                    <!-- House/Street/Panchayat/Village/Pincode -> shown after Block selection -->
+                    <div class="form-row two-col" id="houseRow" style="display:none;">
+                        <label>House/House No</label>
+                        <input name="houseNo" value="<%= typeof houseNo !== 'undefined' ? houseNo : '' %>">
+                    </div>
+
+                    <div class="form-row two-col" id="streetRow" style="display:none;">
+                        <label>Street</label>
+                        <input name="street" value="<%= typeof street !== 'undefined' ? street : '' %>">
+                    </div>
+
+                    <div class="form-row two-col" id="panchayatRow" style="display:none;">
+                        <label>Panchayat</label>
+                        <input name="panchayat" id="panchayatInput" value="<%= typeof panchayat !== 'undefined' ? panchayat : '' %>">
+                    </div>
+
+                    <div class="form-row two-col" id="villageRow" style="display:none;">
+                        <label>Village</label>
+                        <input name="village" id="villageInput" value="<%= typeof village !== 'undefined' ? village : '' %>">
+                    </div>
+
+                    <div class="form-row two-col" id="pincodeRow" style="display:none;">
+                        <label>Pincode</label>
+                        <input name="pincode" value="<%= typeof pincode !== 'undefined' ? pincode : '' %>">
+                    </div>
+
+                    <div class="form-row two-col">
+                        <label>पासपोर्ट साइज फोटो *</label>
+                        <input type="file" name="photo" accept="image/*" id="photoInput" <%= (typeof photoUrl === 'undefined' || !photoUrl) ? 'required' : '' %>>
+                        <small class="hint">फाइल साइज 1MB से कम होनी चाहिए</small>
+                    </div>
+
+                    <div class="form-row two-col">
+                        <label>Documents (Aadhaar + Character Certificate) *</label>
+                        <input type="file" name="documents" accept="application/pdf" id="documentsInput" <%= (typeof documentsUrl === 'undefined' || !documentsUrl) ? 'required' : '' %>>
+                        <small class="hint">एक PDF फाइल जिसमें Aadhaar और Character Certificate दोनों हों — फाइल साइज 1MB से कम</small>
+                    </div> 
+
+                    <div class="form-row full">
+                        <label>संस्था से जुड़ने का उद्देश्य *</label>
+                        <textarea name="reason" rows="5" required><%= typeof reason !== 'undefined' ? reason : '' %></textarea>
+                    </div>
+
+                    <div class="form-row full declaration">
+                        <label><input type="checkbox" name="agreedToTerms" id="agreedToTerms" <%= typeof agreedToTerms !== 'undefined' && agreedToTerms ? 'checked' : '' %> required> मैं संस्था के नियमों का पालन करूंगा/करूंगी *</label>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" id="submitBtn">आवेदन जमा करें</button>
+                </form>
+            </div>
+                <div class="photo-preview" id="photoPreview">
+                    <img alt="Preview" id="photoPreviewImg">
+                </div>
+                <div class="help">
+                    <h4>Tips</h4>
+                    <ul>
+                        <li>सबमिट करने से पहले सभी * वाले फ़ील्ड भरें।</li>
+                        <li>मोबाइल नंबर सही और चालू होना चाहिए।</li>
+                        <li><strong>Aadhaar और Character Certificate दोनों एक ही PDF में अपलोड करें (1MB के नीचे)।</strong></li>
+                    </ul>
+                </div>
+            </aside>
+        </div>
+    </div>
+</section>
+
+<script>
+    (function(){
+        const form = document.getElementById('membershipForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const agreed = document.getElementById('agreedToTerms');
+        const photoInput = document.getElementById('photoInput');
+        const photoPreviewImg = document.getElementById('photoPreviewImg');
+
+        form.addEventListener('submit', function(e){
+            if (!agreed.checked) { e.preventDefault(); alert('कृपया घोषणा स्वीकार करें'); return; }
+            submitBtn.disabled = true; submitBtn.textContent = 'सबमिट किया जा रहा है...';
+        });
+
+        if (photoInput) {
+            photoInput.addEventListener('change', function(){
+                const file = this.files && this.files[0];
+                if (!file) return;
+                if (!file.type.startsWith('image/')) { alert('Please select an image file'); this.value = ''; return; }
+                // client-side size limit 1MB
+                if (file.size > 1 * 1024 * 1024) { alert('Image too large. Maximum 1MB allowed.'); this.value = ''; return; }
+                const reader = new FileReader();
+                reader.onload = function(ev){ photoPreviewImg.src = ev.target.result; };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Combined documents (Aadhaar + Character Certificate) client-side validation
+        const documentsInput = document.getElementById('documentsInput');
+        if (documentsInput) {
+            documentsInput.addEventListener('change', function(){
+                const f = this.files && this.files[0];
+                if (!f) return;
+                if (f.type !== 'application/pdf') { alert('Please upload a PDF containing Aadhaar and Character Certificate.'); this.value = ''; return; }
+                if (f.size > 1 * 1024 * 1024) { alert('File too large. Maximum 1MB allowed.'); this.value = ''; return; }
+            });
+        }
+
+        // Bihar districts/blocks dynamic population
+        const stateSelect = document.getElementById('stateSelect');
+        const districtRow = document.getElementById('districtRow');
+        const blockRow = document.getElementById('blockRow');
+        const districtSelect = document.getElementById('districtSelect');
+        const blockSelect = document.getElementById('blockSelect');
+        let biharData = null;
+
+        function resetDistricts() {
+            districtSelect.innerHTML = '<option value="">-- चुनें --</option>';
+            blockSelect.innerHTML = '<option value="">-- चुनें --</option>';
+        }
+
+        async function loadBiharData(){
+            if (biharData) return biharData;
+            try {
+                const res = await fetch('/locations/bihar_blocks.json');
+                if (!res.ok) throw new Error('Failed to load locations');
+                const json = await res.json();
+                // normalize shape: file may be { "Bihar": { ... } } or directly { district: [blocks] }
+                biharData = json && json.Bihar ? json.Bihar : json;
+                return biharData;
+            } catch (err) {
+                console.error('Could not load Bihar data', err);
+                return null;
+            }
+        }
+
+        async function onStateChange(){
+            const st = stateSelect.value;
+            if (st === 'Bihar'){
+                const data = await loadBiharData();
+                if (!data) return;
+                resetDistricts();
+                Object.keys(data).forEach(d => {
+                    const opt = document.createElement('option'); opt.value = d; opt.textContent = d;
+                    districtSelect.appendChild(opt);
+                });
+                districtRow.style.display = '';
+                blockRow.style.display = '';
+            } else {
+                districtRow.style.display = 'none';
+                blockRow.style.display = 'none';
+                resetDistricts();
+            }
+        }
+
+        districtSelect.addEventListener('change', function(){
+            const chosen = this.value;
+            blockSelect.innerHTML = '<option value="">-- चुनें --</option>';
+            if (!chosen || !biharData || !biharData[chosen]) return;
+            biharData[chosen].forEach(b => {
+                const opt = document.createElement('option'); opt.value = b; opt.textContent = b;
+                if (typeof block !== 'undefined' && block === b) opt.selected = true;
+                blockSelect.appendChild(opt);
+            });
+        });
+
+        // Show house/street/panchayat/village/pincode rows after block selection
+        blockSelect.addEventListener('change', function(){
+            const show = this.value && this.value.trim() !== '';
+            const display = show ? '' : 'none';
+            ['houseRow','streetRow','panchayatRow','villageRow','pincodeRow'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = display;
+            });
+        });
+
+        // initialize on load
+        (function(){
+            if (stateSelect) {
+                stateSelect.addEventListener('change', onStateChange);
+                // trigger once to populate if server rendered Bihar selected
+                if (stateSelect.value === 'Bihar') onStateChange();
+            }
+        })();
+
+        // mobile input sanitization
+        const mobileInput = form.querySelector('input[name="mobile"]');
+        if (mobileInput) {
+            mobileInput.addEventListener('input', function(){ this.value = this.value.replace(/[^0-9+\s-]/g, ''); });
+        }
+    })();
+</script>
+
+<style>
+    /* Join card layout */
+    .join-card { display: grid; grid-template-columns: 1fr; gap: 30px; align-items: start; max-width: 1100px; margin: 0 auto; }
+    .join-card-left { background: #fff; padding: 28px; border-radius: 12px; box-shadow: 0 6px 30px rgba(0,0,0,0.06); }
+    .join-card-right { background: transparent; }
+    .join-card h2 { margin-top: 0; color: #2b235f; }
+    .lead { color: #555; margin-bottom: 18px; }
+    .form-row { margin-bottom: 14px; }
+    .form-row.two-col { display: inline-block; width: calc(50% - 10px); margin-right: 20px; }
+    .form-row.full { display:block; width:100%; }
+    .form-row label { display:block; font-weight:600; margin-bottom:6px; color:#2b235f; }
+    .form-row input, .form-row textarea, .form-row select { width:100%; padding:10px 12px; border-radius:8px; border:1px solid #ddd; }
+    .declaration { margin-top:10px; }
+    .form-actions { display:flex; gap:12px; margin-top:18px; justify-content:center; }
+    .photo-preview { background:#fff; padding:12px; border-radius:8px; box-shadow:0 4px 16px rgba(0,0,0,0.05); text-align:center; }
+    .photo-preview img { width:200px; height:auto; border-radius:6px; }
+    .help { margin-top:18px; font-size:0.95rem; color:#444; }
+
+    @media (max-width: 900px) {
+        .join-card { grid-template-columns: 1fr; }
+        .form-row.two-col { width:100%; margin-right:0; }
+        .photo-preview img { width:150px; }
+    }
+</style>

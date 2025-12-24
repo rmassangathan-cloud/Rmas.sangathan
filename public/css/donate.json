@@ -1,0 +1,35 @@
+{
+  "en": {
+    "donateTitle": "Support Our Cause",
+    "donateIntro": "Your contribution is vital for us to continue our work in advocating for human rights.",
+    "upiPayment": "UPI",
+    "upiDescription": "Scan the QR code or use our UPI ID to donate instantly.",
+    "bankTransfer": "Bank Transfer",
+    "bankTransferDescription": "Transfer your donation directly to our bank account.",
+    "cardPayment": "Card / Other",
+    "cardPaymentDescription": "Use your debit/credit card or other payment gateways.",
+    "donateButton": "Donate Now"
+  },
+  "hi": {
+    "donateTitle": "हमारे कारण का समर्थन करें",
+    "donateIntro": "मानवाधिकारों की वकालत में हमारे काम को जारी रखने के लिए आपका योगदान महत्वपूर्ण है।",
+    "upiPayment": "यूपीआई",
+    "upiDescription": "तुरंत दान करने के लिए क्यूआर कोड स्कैन करें या हमारी यूपीआई आईडी का उपयोग करें।",
+    "bankTransfer": "बैंक ट्रांसफर",
+    "bankTransferDescription": "अपना दान सीधे हमारे बैंक खाते में ट्रांसफर करें।",
+    "cardPayment": "कार्ड / अन्य",
+    "cardPaymentDescription": "अपने डेबिट/क्रेडिट कार्ड या अन्य पेमेंट गेटवे का उपयोग करें।",
+    "donateButton": "अभी दान करें"
+  },
+  "ur": {
+    "donateTitle": "ہمارے مقصد کی حمایت کریں",
+    "donateIntro": "انسانی حقوق کی وکالت میں ہمارے کام کو جاری رکھنے کے لیے آپ کا تعاون بہت ضروری ہے۔",
+    "upiPayment": "یو پی آئی",
+    "upiDescription": "فوری طور پر عطیہ کرنے کے لیے کیو آر کوڈ اسکین کریں یا ہماری یو پی آئی آئی ڈی استعمال کریں۔",
+    "bankTransfer": "بینک ٹرانسفر",
+    "bankTransferDescription": "اپنا عطیہ براہ راست ہمارے بینک اکاؤنٹ میں منتقل کریں۔",
+    "cardPayment": "کارڈ / دیگر",
+    "cardPaymentDescription": "اپنے ڈیبٹ/کریڈٹ کارڈ یا دیگر ادائیگی کے گیٹ وے استعمال کریں۔",
+    "donateButton": "ابھی عطیہ کریں"
+  }
+}

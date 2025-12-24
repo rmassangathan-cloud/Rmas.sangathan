@@ -60,6 +60,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const languageSelector = document.getElementById('language-selector');
     let translations = {};
     let joinUsData = {};
+    let donateData = {};
 
     // Function to fetch translations and update the page
     async function setLanguage(lang) {
@@ -101,6 +102,11 @@ document.addEventListener('DOMContentLoaded', function () {
         // Re-render Join Us content
         if (Object.keys(joinUsData).length > 0) {
             renderJoinUsContent(joinUsData, lang);
+        }
+
+        // Re-render Donate content
+        if (Object.keys(donateData).length > 0) {
+            updateDonateContent(donateData, lang);
         }
 
         // Set the HTML lang attribute for accessibility
@@ -227,7 +233,37 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
     }
 
+    // --- Donate Page ---
+    async function initializeDonatePage() {
+        const donateContainer = document.getElementById('donate-container');
+        if (!donateContainer) return;
+
+        try {
+            const response = await fetch('/css/donate.json');
+            if (!response.ok) throw new Error('Failed to load donate data');
+            donateData = await response.json();
+            
+            const currentLang = localStorage.getItem('language') || 'en';
+            updateDonateContent(donateData, currentLang);
+        } catch (error) {
+            console.error('Error initializing Donate page:', error);
+        }
+    }
+
+    function updateDonateContent(data, lang) {
+        const content = data[lang];
+        if (!content) return;
+
+        for (const key in content) {
+            const element = document.querySelector(`#donate-container [data-key="${key}"]`);
+            if (element) {
+                element.textContent = content[key];
+            }
+        }
+    }
+
     // Initialize dynamic components
     initializeOfficialsSlider();
     initializeJoinUsPage();
+    initializeDonatePage();
 });

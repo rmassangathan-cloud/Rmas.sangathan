@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NHRA Joining Letter</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans Devanagari', Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333;
+            background: white;
+        }
+
+        .page {
+            width: 210mm;
+            height: 297mm;
+            padding: 20mm;
+            position: relative;
+            page-break-after: always;
+        }
+
+        /* Header - Same as website */
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #d92523;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .logo {
+            width: 80px;
+            height: auto;
+        }
+
+        .org-name {
+            flex: 1;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #2b235f;
+        }
+
+        .membership-id {
+            font-size: 16px;
+            font-weight: bold;
+            color: #d92523;
+            text-align: right;
+        }
+
+        .slogan {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .slogan-left {
+            font-weight: bold;
+            color: #2b235f;
+        }
+
+        .slogan-center {
+            font-weight: bold;
+            color: #d92523;
+        }
+
+        .slogan-right {
+            font-weight: bold;
+            color: #2b235f;
+        }
+
+        /* Content */
+        .content {
+            margin: 20px 0;
+        }
+
+        .letter-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #2b235f;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #d92523;
+            padding-bottom: 10px;
+        }
+
+        .member-section {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .member-photo {
+            flex-shrink: 0;
+        }
+
+        .member-photo img {
+            width: 100px;
+            height: 120px;
+            object-fit: cover;
+            border: 2px solid #2b235f;
+            border-radius: 5px;
+        }
+
+        .member-details {
+            flex: 1;
+        }
+
+        .detail-row {
+            display: flex;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        .detail-label {
+            font-weight: bold;
+            width: 150px;
+            color: #2b235f;
+        }
+
+        .detail-value {
+            flex: 1;
+            color: #333;
+        }
+
+        .address-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .address-title {
+            font-weight: bold;
+            color: #2b235f;
+            margin-bottom: 10px;
+        }
+
+        .congratulations {
+            text-align: center;
+            font-size: 16px;
+            color: #d92523;
+            margin: 20px 0;
+            padding: 15px;
+            background: #fff5f5;
+            border-radius: 5px;
+            border-left: 4px solid #d92523;
+        }
+
+        /* Footer with signatures */
+        .footer {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .qr-section {
+            flex: 1;
+        }
+
+        .qr-code {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 5px;
+        }
+
+        .qr-text {
+            font-size: 10px;
+            color: #666;
+        }
+
+        .signatures {
+            flex: 2;
+            text-align: center;
+        }
+
+        .digital-signature {
+            width: 120px;
+            height: auto;
+            margin-bottom: 10px;
+        }
+
+        .signature-line {
+            border-top: 1px solid #333;
+            width: 150px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .signature-title {
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .stamp-section {
+            flex: 1;
+            text-align: right;
+        }
+
+        .official-stamp {
+            width: 80px;
+            height: auto;
+            opacity: 0.8;
+        }
+
+        /* Issue date */
+        .issue-date {
+            text-align: right;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* Page border */
+        .page::before {
+            content: '';
+            position: absolute;
+            top: 10mm;
+            left: 10mm;
+            right: 10mm;
+            bottom: 10mm;
+            border: 1px solid #ddd;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-top">
+                <img src="data:image/jpeg;base64,<%= nhraLogo %>" alt="NHRA Logo" class="logo">
+                <div class="org-name">राष्ट्रीय मानवाधिकार संघ</div>
+                <div class="membership-id">सदस्यता आईडी: <%= membership.membershipId %></div>
+            </div>
+            <div class="slogan">
+                <span class="slogan-left">मानव हित सर्वोपरि</span> |
+                <span class="slogan-center">सत्यमेव जयते</span> |
+                <span class="slogan-right">न्याय ही धर्म है</span>
+            </div>
+        </div>
+
+        <!-- Letter Title -->
+        <div class="letter-title">
+            सदस्यता स्वीकार पत्र
+        </div>
+
+        <!-- Member Details -->
+        <div class="member-section">
+            <div class="member-photo">
+                <img src="data:image/jpeg;base64,<%= memberPhoto %>" alt="Member Photo">
+            </div>
+            <div class="member-details">
+                <div class="detail-row">
+                    <span class="detail-label">पूरा नाम:</span>
+                    <span class="detail-value"><%= membership.fullName %></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">पिता/पति का नाम:</span>
+                    <span class="detail-value"><%= membership.fatherName || 'N/A' %></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">रक्त समूह:</span>
+                    <span class="detail-value"><%= membership.bloodGroup || 'N/A' %></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">मोबाइल नंबर:</span>
+                    <span class="detail-value"><%= membership.mobile %></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">ईमेल:</span>
+                    <span class="detail-value"><%= membership.email || 'N/A' %></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Address Section -->
+        <div class="address-section">
+            <div class="address-title">पता:</div>
+            <div class="detail-row">
+                <span class="detail-label">घर संख्या:</span>
+                <span class="detail-value"><%= membership.houseNo || 'N/A' %></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">सड़क:</span>
+                <span class="detail-value"><%= membership.street || 'N/A' %></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">पंचायत:</span>
+                <span class="detail-value"><%= membership.panchayat || 'N/A' %></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">गाँव:</span>
+                <span class="detail-value"><%= membership.village || 'N/A' %></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">जिला:</span>
+                <span class="detail-value"><%= membership.district %></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">पिन कोड:</span>
+                <span class="detail-value"><%= membership.pincode || 'N/A' %></span>
+            </div>
+        </div>
+
+        <!-- Congratulations Message -->
+        <div class="congratulations">
+            बधाई हो! आप राष्ट्रीय मानवाधिकार संघ (NHRA), बिहार इकाई के सदस्य के रूप में स्वीकार किए गए हैं।
+            <br><br>
+            हम आपसे अपेक्षा करते हैं कि आप मानवाधिकारों की रक्षा और समाज के विकास के लिए हमारे साथ सक्रिय रूप से कार्य करेंगे।
+        </div>
+
+        <!-- Issue Date -->
+        <div class="issue-date">
+            जारी करने की तिथि: <%= issueDateHindi %>
+        </div>
+
+        <!-- Footer with QR, Signatures, and Stamp -->
+        <div class="footer">
+            <div class="qr-section">
+                <img src="<%= qrCodeDataURL %>" alt="QR Code" class="qr-code">
+                <div class="qr-text">सदस्यता सत्यापन के लिए QR कोड स्कैन करें</div>
+            </div>
+
+            <div class="signatures">
+                <% if(digitalSignature) { %>
+                    <img src="data:image/png;base64,<%= digitalSignature %>" alt="Digital Signature" class="digital-signature">
+                <% } else { %>
+                    <div class="digital-signature" style="width: 120px; height: 40px; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #666;">Signature</div>
+                <% } %>
+                <div class="signature-line"></div>
+                <div class="signature-title">अधिकारी हस्ताक्षर</div>
+            </div>
+
+            <div class="stamp-section">
+                <% if(officialStamp) { %>
+                    <img src="data:image/png;base64,<%= officialStamp %>" alt="Official Stamp" class="official-stamp">
+                <% } else { %>
+                    <div class="official-stamp" style="width: 80px; height: 80px; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #666;">Stamp</div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

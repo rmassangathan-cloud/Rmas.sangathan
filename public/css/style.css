@@ -817,3 +817,73 @@ body.rtl .about-content ul {
     left: 0;
     font-weight: bold;
 }
+
+/* Donate Page Styles */
+.donate-page {
+    background-color: #fff;
+    padding: 60px 20px;
+}
+
+.donate-header {
+    margin-bottom: 50px;
+}
+
+.donate-header h1 {
+    font-size: 2.8rem;
+    color: #2b235f;
+}
+
+.donate-header .lead {
+    font-size: 1.2rem;
+    max-width: 700px;
+    margin: 0 auto;
+    color: #555;
+}
+
+.payment-methods .card {
+    padding: 20px;
+}
+
+.payment-methods .icon {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #d92523;
+}
+
+.payment-methods .card-title {
+    font-size: 1.5rem;
+    color: #2b235f;
+    margin-bottom: 10px;
+}
+
+.payment-methods .card-description {
+    font-size: 1rem;
+    color: #555;
+}
+
+.donate-cta {
+    margin-top: 50px;
+}
+
+.donate-cta .btn-lg {
+    padding: 15px 40px;
+    font-size: 1.3rem;
+    border-radius: 30px;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -15px;
+}
+
+.col-md-4 {
+    flex: 0 0 33.333333%;
+    max-width: 33.333333%;
+    padding: 0 15px;
+}
+
+.text-center {
+    text-align: center;
+}

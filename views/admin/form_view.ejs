@@ -1,0 +1,215 @@
+<section class="admin-form-view">
+  <div class="container" style="max-width:1100px;margin:30px auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h2>Application: <%= form.fullName %></h2>
+      <a href="/admin/forms" class="btn" style="padding:8px 15px;background:#6c757d;color:white;text-decoration:none;border-radius:4px;">&larr; Back to List</a>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:30px;">
+      
+      <!-- Left Column: Application Details -->
+      <div style="flex:2;min-width:300px;background:#fff;padding:20px;border:1px solid #ddd;border-radius:8px;box-shadow:0 2px 5px rgba(0,0,0,0.05);">
+        <div style="display:flex;gap:20px;margin-bottom:20px;">
+          <% if(form.photo) { %>
+            <img src="<%= form.photo %>" alt="Applicant Photo" style="width:120px;height:150px;object-fit:cover;border:1px solid #ccc;border-radius:4px;">
+          <% } else { %>
+            <div style="width:120px;height:150px;background:#eee;display:flex;align-items:center;justify-content:center;color:#888;">No Photo</div>
+          <% } %>
+          
+          <div>
+            <h3 style="margin-top:0;"><%= form.fullName %></h3>
+            <p style="margin:5px 0;"><strong>Status:</strong> 
+              <span style="padding:3px 8px;border-radius:12px;font-size:0.9em;background:<%= form.status==='accepted'?'#28a745':(form.status==='rejected'?'#dc3545':'#ffc107') %>;color:<%= form.status==='pending'?'#333':'#fff' %>">
+                <%= form.status.toUpperCase() %>
+              </span>
+            </p>
+            <p style="margin:5px 0;"><strong>Mobile:</strong> <%= form.mobile %></p>
+            <p style="margin:5px 0;"><strong>Email:</strong> <%= form.email || 'N/A' %></p>
+            <p style="margin:5px 0;"><strong>Applied:</strong> <%= new Date(form.createdAt).toLocaleString() %></p>
+          </div>
+        </div>
+
+        <hr style="border:0;border-top:1px solid #eee;margin:20px 0;">
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+          <div><strong>Father's Name:</strong><br><%= form.fatherName || '-' %></div>
+          <div><strong>Occupation:</strong><br><%= form.occupation || '-' %></div>
+          <div><strong>State:</strong><br><%= form.state || '-' %></div>
+          <div><strong>District:</strong><br><%= form.district || '-' %></div>
+          <div><strong>Block:</strong><br><%= form.block || '-' %></div>
+          <div><strong>Village/Panchayat:</strong><br><%= form.village || '-' %> / <%= form.panchayat || '-' %></div>
+          <div style="grid-column:1/-1;"><strong>Full Address:</strong><br><%= form.address || '-' %></div>
+          <div><strong>Pincode:</strong><br><%= form.pincode || '-' %></div>
+          <div><strong>ID Number:</strong><br><%= form.idNumber || '-' %></div>
+        </div>
+
+        <hr style="border:0;border-top:1px solid #eee;margin:20px 0;">
+
+        <div style="margin-bottom:20px;">
+          <strong>Reason for Joining:</strong>
+          <p style="background:#f9f9f9;padding:10px;border-radius:4px;"><%= form.reason %></p>
+        </div>
+
+        <div>
+          <strong>Character Certificate:</strong><br>
+          <% const certUrl = form.documentsUrl || form.characterCertUrl; %>
+          <% if(certUrl) { %>
+            <a href="<%= certUrl %>" download="Character_Certificate_<%= form.fullName.replace(/\s+/g, '_') %>.pdf" class="btn" style="display:inline-block;margin-top:5px;padding:10px 20px;background:#28a745;color:white;text-decoration:none;border-radius:6px;font-weight:bold;border:2px solid #218838;">
+              📥 Download Character Certificate PDF
+            </a>
+            <br>
+            <small style="color:#666;margin-top:5px;display:block;">Combined Aadhaar + Character Certificate (PDF format)</small>
+            <br>
+            <embed src="<%= certUrl %>" width="100%" height="600" type="application/pdf" style="border:1px solid #ddd;border-radius:4px;margin-top:10px;">
+          <% } else { %>
+            <span style="color:#dc3545;font-weight:bold;">❌ No Character Certificate attached</span>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Right Column: Actions & History -->
+      <div style="flex:1;min-width:300px;">
+        
+        <!-- Assignment Box -->
+        <div style="background:#fff;padding:20px;border:1px solid #ddd;border-radius:8px;margin-bottom:20px;box-shadow:0 2px 5px rgba(0,0,0,0.05);">
+          <h3 style="margin-top:0;font-size:1.2em;">Assignment</h3>
+          <p><strong>Current Owner:</strong> <%= form.assignedTo ? (form.assignedTo.name || form.assignedTo.email) : 'Unassigned' %></p>
+          
+          <form method="POST" action="/admin/forms/<%= form._id %>/assign">
+            <label style="display:block;margin-bottom:5px;font-size:0.9em;">Assign to:</label>
+            <select name="userId" style="width:100%;padding:8px;margin-bottom:10px;border:1px solid #ccc;border-radius:4px;">
+              <option value="">-- Unassigned --</option>
+              <% users.forEach(u => { %>
+                <option value="<%= u._id %>" <%= (form.assignedTo && form.assignedTo._id.toString() === u._id.toString()) ? 'selected' : '' %>>
+                  <%= u.name %> (<%= u.role %>)
+                </option>
+              <% }) %>
+            </select>
+            <button class="btn" style="width:100%;padding:8px;background:#007bff;color:white;border:none;border-radius:4px;cursor:pointer;">Update Assignment</button>
+          </form>
+        </div>
+
+        <!-- Action Box -->
+        <div style="background:#fff;padding:20px;border:1px solid #ddd;border-radius:8px;margin-bottom:20px;box-shadow:0 2px 5px rgba(0,0,0,0.05);">
+          <h3 style="margin-top:0;font-size:1.2em;">Take Action</h3>
+          <% if(form.status === 'pending') { %>
+            <form method="POST" action="/admin/forms/<%= form._id %>/accept" style="margin-bottom:15px;">
+              <input type="text" name="note" placeholder="Acceptance Note (Optional)" style="width:100%;padding:8px;margin-bottom:5px;border:1px solid #ccc;border-radius:4px;">
+              <div style="margin-bottom:10px;">
+                <label style="display:block;margin-bottom:5px;font-size:0.9em;font-weight:bold;">Assign Role (Optional):</label>
+                <select name="jobRole" style="width:100%;padding:8px;margin-bottom:5px;border:1px solid #ccc;border-radius:4px;">
+                  <option value="">-- No Role --</option>
+                  <option value="अध्यक्ष">अध्यक्ष</option>
+                  <option value="वरिष्ठ उपाध्यक्ष">वरिष्ठ उपाध्यक्ष</option>
+                  <option value="उपाध्यक्ष">उपाध्यक्ष</option>
+                  <option value="महासचिव">महासचिव</option>
+                  <option value="सचिव">सचिव</option>
+                  <option value="संगठन सचिव">संगठन सचिव</option>
+                  <option value="संयुक्त सचिव">संयुक्त सचिव</option>
+                  <option value="विधि सचिव">विधि सचिव</option>
+                  <option value="कोषाध्यक्ष">कोषाध्यक्ष</option>
+                  <option value="मीडिया प्रभारी">मीडिया प्रभारी</option>
+                  <option value="मीडिया सचिव">मीडिया सचिव</option>
+                  <option value="प्रचार सचिव">प्रचार सचिव</option>
+                  <option value="प्रेस सचिव">प्रेस सचिव</option>
+                  <option value="प्रवक्ता">प्रवक्ता</option>
+                  <option value="कार्यक्रम सचिव">कार्यक्रम सचिव</option>
+                  <option value="कार्यकारिणी सदस्य">कार्यकारिणी सदस्य</option>
+                </select>
+                <select name="teamType" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
+                  <option value="core">Core Team (कोर टीम)</option>
+                  <option value="mahila">Mahila Team (महिला टीम)</option>
+                  <option value="yuva">Yuva Team (युवा टीम)</option>
+                  <option value="alpsankhyak">Alpsankhyak Team (अल्पसंख्यक टीम)</option>
+                  <option value="scst">SC/ST Team (SC/ST टीम)</option>
+                </select>
+              </div>
+              <button class="btn" style="width:100%;padding:10px;background:#28a745;color:white;border:none;border-radius:4px;cursor:pointer;">Accept Application</button>
+            </form>
+
+            <form method="POST" action="/admin/forms/<%= form._id %>/reject">
+              <input type="text" name="note" placeholder="Rejection Reason (Required)" required style="width:100%;padding:8px;margin-bottom:5px;border:1px solid #ccc;border-radius:4px;">
+              <button class="btn" style="width:100%;padding:10px;background:#dc3545;color:white;border:none;border-radius:4px;cursor:pointer;">Reject Application</button>
+            </form>
+          <% } else { %>
+            <div style="text-align:center;padding:15px;background:#f8f9fa;border-radius:4px;">
+              Application is <strong><%= form.status %></strong>.
+            </div>
+          <% } %>
+        </div>
+
+        <!-- Role Assignment Box (for accepted members) -->
+        <% if(form.status === 'accepted') { %>
+        <div style="background:#fff;padding:20px;border:1px solid #ddd;border-radius:8px;margin-bottom:20px;box-shadow:0 2px 5px rgba(0,0,0,0.05);">
+          <h3 style="margin-top:0;font-size:1.2em;">Role Assignment</h3>
+          <% if(form.jobRole) { %>
+            <p><strong>Current Role:</strong> <%= form.jobRole %></p>
+            <p><strong>Team:</strong> <%= form.teamType === 'core' ? 'Core Team (कोर टीम)' :
+                                      form.teamType === 'mahila' ? 'Mahila Team (महिला टीम)' :
+                                      form.teamType === 'yuva' ? 'Yuva Team (युवा टीम)' :
+                                      form.teamType === 'alpsankhyak' ? 'Alpsankhyak Team (अल्पसंख्यक टीम)' :
+                                      'SC/ST Team (SC/ST टीम)' %></p>
+          <% } else { %>
+            <p style="color:#dc3545;">No role assigned yet.</p>
+          <% } %>
+
+          <form method="POST" action="/admin/forms/<%= form._id %>/assign-role">
+            <label style="display:block;margin-bottom:5px;font-size:0.9em;font-weight:bold;">Assign/Update Role:</label>
+            <select name="jobRole" required style="width:100%;padding:8px;margin-bottom:5px;border:1px solid #ccc;border-radius:4px;">
+              <option value="">-- Select Role --</option>
+              <option value="अध्यक्ष" <%= form.jobRole === 'अध्यक्ष' ? 'selected' : '' %>>अध्यक्ष</option>
+              <option value="वरिष्ठ उपाध्यक्ष" <%= form.jobRole === 'वरिष्ठ उपाध्यक्ष' ? 'selected' : '' %>>वरिष्ठ उपाध्यक्ष</option>
+              <option value="उपाध्यक्ष" <%= form.jobRole === 'उपाध्यक्ष' ? 'selected' : '' %>>उपाध्यक्ष</option>
+              <option value="महासचिव" <%= form.jobRole === 'महासचिव' ? 'selected' : '' %>>महासचिव</option>
+              <option value="सचिव" <%= form.jobRole === 'सचिव' ? 'selected' : '' %>>सचिव</option>
+              <option value="संगठन सचिव" <%= form.jobRole === 'संगठन सचिव' ? 'selected' : '' %>>संगठन सचिव</option>
+              <option value="संयुक्त सचिव" <%= form.jobRole === 'संयुक्त सचिव' ? 'selected' : '' %>>संयुक्त सचिव</option>
+              <option value="विधि सचिव" <%= form.jobRole === 'विधि सचिव' ? 'selected' : '' %>>विधि सचिव</option>
+              <option value="कोषाध्यक्ष" <%= form.jobRole === 'कोषाध्यक्ष' ? 'selected' : '' %>>कोषाध्यक्ष</option>
+              <option value="मीडिया प्रभारी" <%= form.jobRole === 'मीडिया प्रभारी' ? 'selected' : '' %>>मीडिया प्रभारी</option>
+              <option value="मीडिया सचिव" <%= form.jobRole === 'मीडिया सचिव' ? 'selected' : '' %>>मीडिया सचिव</option>
+              <option value="प्रचार सचिव" <%= form.jobRole === 'प्रचार सचिव' ? 'selected' : '' %>>प्रचार सचिव</option>
+              <option value="प्रेस सचिव" <%= form.jobRole === 'प्रेस सचिव' ? 'selected' : '' %>>प्रेस सचिव</option>
+              <option value="प्रवक्ता" <%= form.jobRole === 'प्रवक्ता' ? 'selected' : '' %>>प्रवक्ता</option>
+              <option value="कार्यक्रम सचिव" <%= form.jobRole === 'कार्यक्रम सचिव' ? 'selected' : '' %>>कार्यक्रम सचिव</option>
+              <option value="कार्यकारिणी सदस्य" <%= form.jobRole === 'कार्यकारिणी सदस्य' ? 'selected' : '' %>>कार्यकारिणी सदस्य</option>
+            </select>
+            <select name="teamType" required style="width:100%;padding:8px;margin-bottom:10px;border:1px solid #ccc;border-radius:4px;">
+              <option value="core" <%= form.teamType === 'core' ? 'selected' : '' %>>Core Team (कोर टीम)</option>
+              <option value="mahila" <%= form.teamType === 'mahila' ? 'selected' : '' %>>Mahila Team (महिला टीम)</option>
+              <option value="yuva" <%= form.teamType === 'yuva' ? 'selected' : '' %>>Yuva Team (युवा टीम)</option>
+              <option value="alpsankhyak" <%= form.teamType === 'alpsankhyak' ? 'selected' : '' %>>Alpsankhyak Team (अल्पसंख्यक टीम)</option>
+              <option value="scst" <%= form.teamType === 'scst' ? 'selected' : '' %>>SC/ST Team (SC/ST टीम)</option>
+            </select>
+            <button class="btn" style="width:100%;padding:8px;background:#007bff;color:white;border:none;border-radius:4px;cursor:pointer;">Assign/Update Role</button>
+          </form>
+        </div>
+        <% } %>
+
+        <!-- History Box -->
+        <div style="background:#fff;padding:20px;border:1px solid #ddd;border-radius:8px;box-shadow:0 2px 5px rgba(0,0,0,0.05);">
+          <h3 style="margin-top:0;font-size:1.2em;">Audit Trail</h3>
+          <ul style="list-style:none;padding:0;margin:0;font-size:0.9em;">
+            <% if(form.history && form.history.length) { %>
+              <% form.history.slice().reverse().forEach(h => { %>
+                <li style="border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:10px;">
+                  <div style="font-weight:bold;color:#333;"><%= h.action.toUpperCase() %></div>
+                  <div style="color:#666;font-size:0.85em;">
+                    By: <%= h.role || 'System' %> <br>
+                    <%= new Date(h.date).toLocaleString() %>
+                  </div>
+                  <% if(h.note) { %>
+                    <div style="margin-top:3px;font-style:italic;color:#555;">"<%= h.note %>"</div>
+                  <% } %>
+                </li>
+              <% }) %>
+            <% } else { %>
+              <li style="color:#888;">No history recorded.</li>
+            <% } %>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>

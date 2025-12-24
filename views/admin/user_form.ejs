@@ -1,0 +1,173 @@
+<section class="admin-user-form">
+  <div class="container" style="max-width:600px;margin:30px auto;padding:20px;border:1px solid #eee;border-radius:8px;">
+    <h2><%= user && user._id ? 'Edit User' : 'Create New User' %></h2>
+    
+    <% if (error) { %>
+      <div style="color:red;margin-bottom:15px;padding:10px;background:#ffebee;border-radius:4px;"><%= error %></div>
+    <% } %>
+
+    <form method="POST" action="<%= user && user._id ? '/admin/users/' + user._id : '/admin/users' %>">
+      <div style="margin-bottom:15px;">
+        <label style="display:block;font-weight:bold;margin-bottom:5px;">Name</label>
+        <input type="text" name="name" value="<%= user ? user.name : '' %>" required style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
+      </div>
+
+      <div style="margin-bottom:15px;">
+        <label style="display:block;font-weight:bold;margin-bottom:5px;">Email</label>
+        <input type="email" name="email" value="<%= user ? user.email : '' %>" required style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
+      </div>
+
+      <div style="margin-bottom:15px;">
+        <label style="display:block;font-weight:bold;margin-bottom:5px;">Password <%= user && user._id ? '(Leave blank to keep current)' : '' %></label>
+        <input type="password" name="password" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
+      </div>
+
+      <div style="margin-bottom:15px;">
+        <label style="display:block;font-weight:bold;margin-bottom:5px;">Role</label>
+        <select name="role" id="roleSelect" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
+          <% [
+            'superadmin',
+            'state_president', 'state_secretary', 'state_media_incharge',
+            'division_president', 'division_secretary', 'division_media_incharge',
+            'district_president', 'district_secretary', 'district_media_incharge'
+          ].forEach(r => { %>
+            <option value="<%= r %>" <%= (user && user.role === r) ? 'selected' : '' %>><%= r.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) %></option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div id="levelSection" style="margin-bottom:15px;<%= (user && user.role === 'superadmin') ? 'display:none;' : '' %>">
+        <label style="display:block;font-weight:bold;margin-bottom:5px;">Assignment Level</label>
+        <select name="assignedLevel" id="levelSelect" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;" <%= (user && user.role === 'superadmin') ? 'disabled' : 'required' %>>
+          <option value="">-- Select Level --</option>
+          <option value="state" <%= (user && user.assignedLevel === 'state') ? 'selected' : '' %>>State Level</option>
+          <option value="division" <%= (user && user.assignedLevel === 'division') ? 'selected' : '' %>>Division Level</option>
+          <option value="district" <%= (user && user.assignedLevel === 'district') ? 'selected' : '' %>>District Level</option>
+          <option value="block" <%= (user && user.assignedLevel === 'block') ? 'selected' : '' %>>Block Level</option>
+        </select>
+      </div>
+
+      <div id="assignmentSection" style="margin-bottom:15px;<%= (!user || user.role === 'superadmin' || !user.assignedLevel) ? 'display:none;' : '' %>">
+        <label id="assignmentLabel" style="display:block;font-weight:bold;margin-bottom:5px;">Select <%= (user && user.assignedLevel) ? user.assignedLevel.charAt(0).toUpperCase() + user.assignedLevel.slice(1) : 'Entity' %></label>
+        <select name="assignedId" id="assignedIdSelect" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;" <%= (!user || user.role === 'superadmin' || !user.assignedLevel) ? 'disabled' : 'required' %>>
+          <option value="">-- Select <%= (user && user.assignedLevel) ? user.assignedLevel.charAt(0).toUpperCase() + user.assignedLevel.slice(1) : 'Entity' %> --</option>
+          <!-- Options will be populated by JavaScript -->
+        </select>
+      </div>
+
+      <div style="margin-bottom:20px;">
+        <label style="cursor:pointer;">
+          <input type="checkbox" name="active" <%= (!user || user.active) ? 'checked' : '' %>> 
+          <strong>Active Account</strong>
+        </label>
+      </div>
+
+      <div style="display:flex;gap:10px;">
+        <button type="submit" class="btn btn-primary" style="padding:10px 20px;background:#007bff;color:white;border:none;border-radius:4px;cursor:pointer;">Save User</button>
+        <a href="/admin/users" class="btn" style="padding:10px 20px;background:#eee;color:#333;text-decoration:none;border-radius:4px;">Cancel</a>
+      </div>
+    </form>
+  </div>
+</section>
+
+<script>
+// Data for dropdowns
+const divisions = ['Patna', 'Tirhut', 'Saran', 'Darbhanga', 'Kosi', 'Purnia', 'Bhagalpur', 'Munger', 'Magadh'];
+const states = ['Bihar']; // Can be expanded later
+
+// Load districts data
+let districtsData = {};
+fetch('/locations/bihar_divisions.json')
+  .then(response => response.json())
+  .then(data => {
+    districtsData = data;
+  })
+  .catch(err => console.error('Error loading districts:', err));
+
+// Load blocks data
+let blocksData = {};
+fetch('/locations/bihar_blocks.json')
+  .then(response => response.json())
+  .then(data => {
+    blocksData = data;
+  })
+  .catch(err => console.error('Error loading blocks:', err));
+
+function updateFormVisibility() {
+  const role = document.getElementById('roleSelect').value;
+  const levelSection = document.getElementById('levelSection');
+  const assignmentSection = document.getElementById('assignmentSection');
+  const levelSelect = document.getElementById('levelSelect');
+  const assignedIdSelect = document.getElementById('assignedIdSelect');
+
+  if (role === 'superadmin') {
+    levelSection.style.display = 'none';
+    assignmentSection.style.display = 'none';
+    levelSelect.disabled = true;
+    assignedIdSelect.disabled = true;
+    levelSelect.required = false;
+    assignedIdSelect.required = false;
+  } else {
+    levelSection.style.display = 'block';
+    levelSelect.disabled = false;
+    levelSelect.required = true;
+    updateAssignmentSection();
+  }
+}
+
+function updateAssignmentSection() {
+  const level = document.getElementById('levelSelect').value;
+  const assignmentSection = document.getElementById('assignmentSection');
+  const assignedIdSelect = document.getElementById('assignedIdSelect');
+  const assignmentLabel = document.getElementById('assignmentLabel');
+
+  if (!level) {
+    assignmentSection.style.display = 'none';
+    assignedIdSelect.disabled = true;
+    assignedIdSelect.required = false;
+    return;
+  }
+
+  assignmentSection.style.display = 'block';
+  assignedIdSelect.disabled = false;
+  assignedIdSelect.required = true;
+  assignmentLabel.textContent = `Select ${level.charAt(0).toUpperCase() + level.slice(1)}`;
+
+  // Clear existing options
+  assignedIdSelect.innerHTML = `<option value="">-- Select ${level.charAt(0).toUpperCase() + level.slice(1)} --</option>`;
+
+  // Populate options based on level
+  let options = [];
+  if (level === 'state') {
+    options = states;
+  } else if (level === 'division') {
+    options = divisions;
+  } else if (level === 'district') {
+    // Get all districts from divisions data
+    options = Object.values(districtsData).flat();
+  } else if (level === 'block') {
+    // Get all blocks from blocks data
+    options = Object.values(blocksData).flat();
+  }
+
+  options.forEach(option => {
+    const optionElement = document.createElement('option');
+    optionElement.value = option;
+    optionElement.textContent = option;
+    assignedIdSelect.appendChild(optionElement);
+  });
+}
+
+// Set initial state
+document.addEventListener('DOMContentLoaded', function() {
+  updateFormVisibility();
+  const currentLevel = document.getElementById('levelSelect').value;
+  if (currentLevel) {
+    updateAssignmentSection();
+  }
+});
+
+// Event listeners
+document.getElementById('roleSelect').addEventListener('change', updateFormVisibility);
+document.getElementById('levelSelect').addEventListener('change', updateAssignmentSection);
+</script>

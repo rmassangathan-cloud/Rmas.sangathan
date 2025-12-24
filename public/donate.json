@@ -1,0 +1,47 @@
+{
+  "en": {
+    "donateTitle": "Support Our Cause",
+    "donateIntro": "Your contribution is vital for us to continue our work in advocating for human rights. Every donation, no matter how small, makes a difference.",
+    "oneTimeDonation": "One-time Donation",
+    "monthlyDonation": "Monthly Donation",
+    "annualDonation": "Annual Donation",
+    "upiPayment": "UPI",
+    "bankTransfer": "Bank Transfer",
+    "cardPayment": "PayU/Stripe/PayPal",
+    "impactTitle": "How Your Donation Helps",
+    "legalAid": "Legal Aid: Providing legal assistance to those in need.",
+    "awarenessDrives": "Awareness Drives: Educating communities about their rights.",
+    "communityEmpowerment": "Community Empowerment: Supporting local initiatives for a better future.",
+    "donateButton": "Donate Now"
+  },
+  "hi": {
+    "donateTitle": "हमारे कारण का समर्थन करें",
+    "donateIntro": "मानवाधिकारों की वकालत में हमारे काम को जारी रखने के लिए आपका योगदान महत्वपूर्ण है। हर दान, चाहे कितना भी छोटा क्यों न हो, एक अंतर डालता है।",
+    "oneTimeDonation": "एकमुश्त दान",
+    "monthlyDonation": "मासिक दान",
+    "annualDonation": "वार्षिक दान",
+    "upiPayment": "यूपीआई",
+    "bankTransfer": "बैंक ट्रांसफर",
+    "cardPayment": "पेयू/स्ट्राइप/पेपैल",
+    "impactTitle": "आपका दान कैसे मदद करता है",
+    "legalAid": "कानूनी सहायता: जरूरतमंद लोगों को कानूनी सहायता प्रदान करना।",
+    "awarenessDrives": "जागरूकता अभियान: समुदायों को उनके अधिकारों के बारे में शिक्षित करना।",
+    "communityEmpowerment": "सामुदायिक सशक्तिकरण: बेहतर भविष्य के लिए स्थानीय पहलों का समर्थन करना।",
+    "donateButton": "अभी दान करें"
+  },
+  "ur": {
+    "donateTitle": "ہمارے مقصد کی حمایت کریں",
+    "donateIntro": "انسانی حقوق کی وکالت میں ہمارے کام کو جاری رکھنے کے لیے آپ کا تعاون بہت ضروری ہے۔ ہر عطیہ، چاہے کتنا ہی چھوٹا کیوں نہ ہو، ایک فرق ڈالتا ہے۔",
+    "oneTimeDonation": "یک وقتی عطیہ",
+    "monthlyDonation": "ماہانہ عطیہ",
+    "annualDonation": "سالانہ عطیہ",
+    "upiPayment": "یو پی آئی",
+    "bankTransfer": "بینک ٹرانسفر",
+    "cardPayment": "پے یو/اسٹرائپ/پے پال",
+    "impactTitle": "آپ کا عطیہ کس طرح مدد کرتا ہے",
+    "legalAid": "قانونی امداد: ضرورت مندوں کو قانونی مدد فراہم کرنا۔",
+    "awarenessDrives": "آگاہی مہم: برادریوں کو ان کے حقوق کے بارے میں تعلیم دینا۔",
+    "communityEmpowerment": "کمیونٹی کو بااختیار بنانا: بہتر مستقبل کے لیے مقامی اقدامات کی حمایت کرنا۔",
+    "donateButton": "ابھی عطیہ کریں"
+  }
+}

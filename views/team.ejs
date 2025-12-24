@@ -1,2 +1,215 @@
-<h1>Our Team</h1>
-<p>This is the Our Team page.</p>
+// teamData and teamNames are passed from the route
+
+<section class="team-section">
+  <div class="container">
+    <h1 style="text-align:center;margin-bottom:40px;">हमारी टीम</h1>
+
+    <!-- State Level -->
+    <div class="level-section">
+      <h2 style="border-bottom:2px solid #007bff;padding-bottom:10px;margin-bottom:30px;">राज्य स्तर (State Level)</h2>
+      <div class="team-grid">
+        <% ['core', 'mahila', 'yuva', 'alpsankhyak', 'scst'].forEach(teamType => { %>
+          <div class="team-card">
+            <h3><%= teamNames[teamType] %></h3>
+            <% if(teamData.state[teamType] && teamData.state[teamType].length > 0) { %>
+              <div class="members-list">
+                <% teamData.state[teamType].forEach(member => { %>
+                  <div class="member-item">
+                    <img src="<%= member.photo %>" alt="<%= member.name %>" class="member-photo">
+                    <div class="member-info">
+                      <div class="member-name"><%= member.name %></div>
+                      <div class="member-role"><%= member.role %></div>
+                    </div>
+                  </div>
+                <% }); %>
+              </div>
+            <% } else { %>
+              <p style="color:#888;font-style:italic;">कोई सदस्य नहीं</p>
+            <% } %>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+
+    <!-- Division Level -->
+    <div class="level-section">
+      <h2 style="border-bottom:2px solid #28a745;padding-bottom:10px;margin-bottom:30px;">प्रभाग स्तर (Division Level)</h2>
+      <div class="team-grid">
+        <% ['core', 'mahila', 'yuva', 'alpsankhyak', 'scst'].forEach(teamType => { %>
+          <div class="team-card">
+            <h3><%= teamNames[teamType] %></h3>
+            <% if(teamData.division[teamType] && teamData.division[teamType].length > 0) { %>
+              <div class="members-list">
+                <% teamData.division[teamType].forEach(member => { %>
+                  <div class="member-item">
+                    <img src="<%= member.photo %>" alt="<%= member.name %>" class="member-photo">
+                    <div class="member-info">
+                      <div class="member-name"><%= member.name %></div>
+                      <div class="member-role"><%= member.role %></div>
+                    </div>
+                  </div>
+                <% }); %>
+              </div>
+            <% } else { %>
+              <p style="color:#888;font-style:italic;">कोई सदस्य नहीं</p>
+            <% } %>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+
+    <!-- District Level -->
+    <div class="level-section">
+      <h2 style="border-bottom:2px solid #ffc107;padding-bottom:10px;margin-bottom:30px;">जिला स्तर (District Level)</h2>
+      <div class="team-grid">
+        <% ['core', 'mahila', 'yuva', 'alpsankhyak', 'scst'].forEach(teamType => { %>
+          <div class="team-card">
+            <h3><%= teamNames[teamType] %></h3>
+            <% if(teamData.district[teamType] && teamData.district[teamType].length > 0) { %>
+              <div class="members-list">
+                <% teamData.district[teamType].forEach(member => { %>
+                  <div class="member-item">
+                    <img src="<%= member.photo %>" alt="<%= member.name %>" class="member-photo">
+                    <div class="member-info">
+                      <div class="member-name"><%= member.name %></div>
+                      <div class="member-role"><%= member.role %></div>
+                    </div>
+                  </div>
+                <% }); %>
+              </div>
+            <% } else { %>
+              <p style="color:#888;font-style:italic;">कोई सदस्य नहीं</p>
+            <% } %>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+
+    <!-- Block Level -->
+    <div class="level-section">
+      <h2 style="border-bottom:2px solid #dc3545;padding-bottom:10px;margin-bottom:30px;">ब्लॉक स्तर (Block Level)</h2>
+      <div class="team-grid">
+        <% ['core', 'mahila', 'yuva', 'alpsankhyak', 'scst'].forEach(teamType => { %>
+          <div class="team-card">
+            <h3><%= teamNames[teamType] %></h3>
+            <% if(teamData.block[teamType] && teamData.block[teamType].length > 0) { %>
+              <div class="members-list">
+                <% teamData.block[teamType].forEach(member => { %>
+                  <div class="member-item">
+                    <img src="<%= member.photo %>" alt="<%= member.name %>" class="member-photo">
+                    <div class="member-info">
+                      <div class="member-name"><%= member.name %></div>
+                      <div class="member-role"><%= member.role %></div>
+                    </div>
+                  </div>
+                <% }); %>
+              </div>
+            <% } else { %>
+              <p style="color:#888;font-style:italic;">कोई सदस्य नहीं</p>
+            <% } %>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+.team-section {
+  padding: 40px 0;
+  background: #f8f9fa;
+}
+
+.team-section .container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.level-section {
+  margin-bottom: 50px;
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.team-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.team-card h3 {
+  margin-top: 0;
+  color: #007bff;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+  font-size: 1.1em;
+}
+
+.members-list {
+  margin-top: 15px;
+}
+
+.member-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 6px;
+}
+
+.member-photo {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 15px;
+  border: 2px solid #ddd;
+}
+
+.member-info {
+  flex: 1;
+}
+
+.member-name {
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 3px;
+}
+
+.member-role {
+  font-size: 0.9em;
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .team-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .level-section {
+    padding: 20px;
+  }
+
+  .member-item {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .member-photo {
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
+}
+</style>
