@@ -352,15 +352,18 @@ async function handleJoin(req, res) {
     }
     // Include any file-specific size errors
     if (data.__fileErrors && data.__fileErrors.length) errors.push(data.__fileErrors.join('. '));
-    // State validation
+    // Location validation - all fields are now required
     if (!data.state || data.state.trim().length === 0) {
         errors.push('State is required');
     }
-    // If state is Bihar, enforce district/block selection
-    if (data.state === 'Bihar') {
-        if (!data.district || data.district.trim().length === 0) errors.push('District is required for Bihar');
-        if (!data.block || data.block.trim().length === 0) errors.push('Block is required for Bihar');
-        // show panchayat/village optional but accept if provided
+    if (!data.division || data.division.trim().length === 0) {
+        errors.push('Division is required');
+    }
+    if (!data.district || data.district.trim().length === 0) {
+        errors.push('District is required');
+    }
+    if (!data.block || data.block.trim().length === 0) {
+        errors.push('Block is required');
     }
 
     console.log('📋 Validation errors found:', errors.length, errors);

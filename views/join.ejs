@@ -156,51 +156,197 @@
 
                     
 
-                    <div id="locationStatus" style="font-size:12px;color:#666;margin-top:6px;display:none;"></div>
-
-                    <div class="form-row two-col" id="divisionRow" style="display:none;">
+                    <div class="form-row two-col">
                         <label>परमंडल / Division *</label>
-                        <select name="division" id="divisionSelect">
-                            <option value="">-- चुनें --</option>
+                        <select name="division" required>
+                            <option value="" <%= (typeof division === 'undefined' || !division) ? 'selected' : '' %>>-- चुनें / Select --</option>
+                            <option value="Patna" <%= (typeof division !== 'undefined' && division === 'Patna') ? 'selected' : '' %>>Patna</option>
+                            <option value="Tirhut" <%= (typeof division !== 'undefined' && division === 'Tirhut') ? 'selected' : '' %>>Tirhut</option>
+                            <option value="Saran" <%= (typeof division !== 'undefined' && division === 'Saran') ? 'selected' : '' %>>Saran</option>
+                            <option value="Darbhanga" <%= (typeof division !== 'undefined' && division === 'Darbhanga') ? 'selected' : '' %>>Darbhanga</option>
+                            <option value="Kosi" <%= (typeof division !== 'undefined' && division === 'Kosi') ? 'selected' : '' %>>Kosi</option>
+                            <option value="Purnia" <%= (typeof division !== 'undefined' && division === 'Purnia') ? 'selected' : '' %>>Purnia</option>
+                            <option value="Bhagalpur" <%= (typeof division !== 'undefined' && division === 'Bhagalpur') ? 'selected' : '' %>>Bhagalpur</option>
+                            <option value="Munger" <%= (typeof division !== 'undefined' && division === 'Munger') ? 'selected' : '' %>>Munger</option>
+                            <option value="Magadh" <%= (typeof division !== 'undefined' && division === 'Magadh') ? 'selected' : '' %>>Magadh</option>
+                            <option value="Delhi" <%= (typeof division !== 'undefined' && division === 'Delhi') ? 'selected' : '' %>>Delhi</option>
+                            <option value="Mumbai" <%= (typeof division !== 'undefined' && division === 'Mumbai') ? 'selected' : '' %>>Mumbai</option>
+                            <option value="Kolkata" <%= (typeof division !== 'undefined' && division === 'Kolkata') ? 'selected' : '' %>>Kolkata</option>
+                            <option value="Chennai" <%= (typeof division !== 'undefined' && division === 'Chennai') ? 'selected' : '' %>>Chennai</option>
+                            <option value="Hyderabad" <%= (typeof division !== 'undefined' && division === 'Hyderabad') ? 'selected' : '' %>>Hyderabad</option>
+                            <option value="Bangalore" <%= (typeof division !== 'undefined' && division === 'Bangalore') ? 'selected' : '' %>>Bangalore</option>
+                            <option value="Ahmedabad" <%= (typeof division !== 'undefined' && division === 'Ahmedabad') ? 'selected' : '' %>>Ahmedabad</option>
+                            <option value="Pune" <%= (typeof division !== 'undefined' && division === 'Pune') ? 'selected' : '' %>>Pune</option>
+                            <option value="Jaipur" <%= (typeof division !== 'undefined' && division === 'Jaipur') ? 'selected' : '' %>>Jaipur</option>
+                            <option value="Lucknow" <%= (typeof division !== 'undefined' && division === 'Lucknow') ? 'selected' : '' %>>Lucknow</option>
+                            <option value="Kanpur" <%= (typeof division !== 'undefined' && division === 'Kanpur') ? 'selected' : '' %>>Kanpur</option>
+                            <option value="Nagpur" <%= (typeof division !== 'undefined' && division === 'Nagpur') ? 'selected' : '' %>>Nagpur</option>
+                            <option value="Indore" <%= (typeof division !== 'undefined' && division === 'Indore') ? 'selected' : '' %>>Indore</option>
+                            <option value="Bhopal" <%= (typeof division !== 'undefined' && division === 'Bhopal') ? 'selected' : '' %>>Bhopal</option>
+                            <option value="Patiala" <%= (typeof division !== 'undefined' && division === 'Patiala') ? 'selected' : '' %>>Patiala</option>
+                            <option value="Amritsar" <%= (typeof division !== 'undefined' && division === 'Amritsar') ? 'selected' : '' %>>Amritsar</option>
+                            <option value="Jalandhar" <%= (typeof division !== 'undefined' && division === 'Jalandhar') ? 'selected' : '' %>>Jalandhar</option>
+                            <option value="Chandigarh" <%= (typeof division !== 'undefined' && division === 'Chandigarh') ? 'selected' : '' %>>Chandigarh</option>
+                            <option value="Shimla" <%= (typeof division !== 'undefined' && division === 'Shimla') ? 'selected' : '' %>>Shimla</option>
+                            <option value="Dehradun" <%= (typeof division !== 'undefined' && division === 'Dehradun') ? 'selected' : '' %>>Dehradun</option>
+                            <option value="Gangtok" <%= (typeof division !== 'undefined' && division === 'Gangtok') ? 'selected' : '' %>>Gangtok</option>
+                            <option value="Itanagar" <%= (typeof division !== 'undefined' && division === 'Itanagar') ? 'selected' : '' %>>Itanagar</option>
+                            <option value="Dispur" <%= (typeof division !== 'undefined' && division === 'Dispur') ? 'selected' : '' %>>Dispur</option>
+                            <option value="Panaji" <%= (typeof division !== 'undefined' && division === 'Panaji') ? 'selected' : '' %>>Panaji</option>
+                            <option value="Raipur" <%= (typeof division !== 'undefined' && division === 'Raipur') ? 'selected' : '' %>>Raipur</option>
+                            <option value="Ranchi" <%= (typeof division !== 'undefined' && division === 'Ranchi') ? 'selected' : '' %>>Ranchi</option>
+                            <option value="Bhubaneswar" <%= (typeof division !== 'undefined' && division === 'Bhubaneswar') ? 'selected' : '' %>>Bhubaneswar</option>
+                            <option value="Thiruvananthapuram" <%= (typeof division !== 'undefined' && division === 'Thiruvananthapuram') ? 'selected' : '' %>>Thiruvananthapuram</option>
+                            <option value="Other" <%= (typeof division !== 'undefined' && division === 'Other') ? 'selected' : '' %>>Other</option>
                         </select>
                     </div>
 
-                    <div class="form-row two-col" id="districtRow" style="display:none;">
+                    <div class="form-row two-col">
                         <label>ज़िला / District *</label>
-                        <select name="district" id="districtSelect">
-                            <option value="">-- चुनें --</option>
+                        <select name="district" required>
+                            <option value="" <%= (typeof district === 'undefined' || !district) ? 'selected' : '' %>>-- चुनें / Select --</option>
+                            <option value="Patna" <%= (typeof district !== 'undefined' && district === 'Patna') ? 'selected' : '' %>>Patna</option>
+                            <option value="Nalanda" <%= (typeof district !== 'undefined' && district === 'Nalanda') ? 'selected' : '' %>>Nalanda</option>
+                            <option value="Bhojpur" <%= (typeof district !== 'undefined' && district === 'Bhojpur') ? 'selected' : '' %>>Bhojpur</option>
+                            <option value="Rohtas" <%= (typeof district !== 'undefined' && district === 'Rohtas') ? 'selected' : '' %>>Rohtas</option>
+                            <option value="Buxar" <%= (typeof district !== 'undefined' && district === 'Buxar') ? 'selected' : '' %>>Buxar</option>
+                            <option value="Kaimur" <%= (typeof district !== 'undefined' && district === 'Kaimur') ? 'selected' : '' %>>Kaimur</option>
+                            <option value="Gaya" <%= (typeof district !== 'undefined' && district === 'Gaya') ? 'selected' : '' %>>Gaya</option>
+                            <option value="Jehanabad" <%= (typeof district !== 'undefined' && district === 'Jehanabad') ? 'selected' : '' %>>Jehanabad</option>
+                            <option value="Arwal" <%= (typeof district !== 'undefined' && district === 'Arwal') ? 'selected' : '' %>>Arwal</option>
+                            <option value="Aurangabad" <%= (typeof district !== 'undefined' && district === 'Aurangabad') ? 'selected' : '' %>>Aurangabad</option>
+                            <option value="Saran" <%= (typeof district !== 'undefined' && district === 'Saran') ? 'selected' : '' %>>Saran</option>
+                            <option value="Siwan" <%= (typeof district !== 'undefined' && district === 'Siwan') ? 'selected' : '' %>>Siwan</option>
+                            <option value="Gopalganj" <%= (typeof district !== 'undefined' && district === 'Gopalganj') ? 'selected' : '' %>>Gopalganj</option>
+                            <option value="Muzaffarpur" <%= (typeof district !== 'undefined' && district === 'Muzaffarpur') ? 'selected' : '' %>>Muzaffarpur</option>
+                            <option value="East Champaran" <%= (typeof district !== 'undefined' && district === 'East Champaran') ? 'selected' : '' %>>East Champaran</option>
+                            <option value="West Champaran" <%= (typeof district !== 'undefined' && district === 'West Champaran') ? 'selected' : '' %>>West Champaran</option>
+                            <option value="Sitamarhi" <%= (typeof district !== 'undefined' && district === 'Sitamarhi') ? 'selected' : '' %>>Sitamarhi</option>
+                            <option value="Sheohar" <%= (typeof district !== 'undefined' && district === 'Sheohar') ? 'selected' : '' %>>Sheohar</option>
+                            <option value="Vaishali" <%= (typeof district !== 'undefined' && district === 'Vaishali') ? 'selected' : '' %>>Vaishali</option>
+                            <option value="Darbhanga" <%= (typeof district !== 'undefined' && district === 'Darbhanga') ? 'selected' : '' %>>Darbhanga</option>
+                            <option value="Madhubani" <%= (typeof district !== 'undefined' && district === 'Madhubani') ? 'selected' : '' %>>Madhubani</option>
+                            <option value="Samastipur" <%= (typeof district !== 'undefined' && district === 'Samastipur') ? 'selected' : '' %>>Samastipur</option>
+                            <option value="Begusarai" <%= (typeof district !== 'undefined' && district === 'Begusarai') ? 'selected' : '' %>>Begusarai</option>
+                            <option value="Khagaria" <%= (typeof district !== 'undefined' && district === 'Khagaria') ? 'selected' : '' %>>Khagaria</option>
+                            <option value="Saharsa" <%= (typeof district !== 'undefined' && district === 'Saharsa') ? 'selected' : '' %>>Saharsa</option>
+                            <option value="Madhepura" <%= (typeof district !== 'undefined' && district === 'Madhepura') ? 'selected' : '' %>>Madhepura</option>
+                            <option value="Supaul" <%= (typeof district !== 'undefined' && district === 'Supaul') ? 'selected' : '' %>>Supaul</option>
+                            <option value="Araria" <%= (typeof district !== 'undefined' && district === 'Araria') ? 'selected' : '' %>>Araria</option>
+                            <option value="Kishanganj" <%= (typeof district !== 'undefined' && district === 'Kishanganj') ? 'selected' : '' %>>Kishanganj</option>
+                            <option value="Purnia" <%= (typeof district !== 'undefined' && district === 'Purnia') ? 'selected' : '' %>>Purnia</option>
+                            <option value="Katihar" <%= (typeof district !== 'undefined' && district === 'Katihar') ? 'selected' : '' %>>Katihar</option>
+                            <option value="Bhagalpur" <%= (typeof district !== 'undefined' && district === 'Bhagalpur') ? 'selected' : '' %>>Bhagalpur</option>
+                            <option value="Banka" <%= (typeof district !== 'undefined' && district === 'Banka') ? 'selected' : '' %>>Banka</option>
+                            <option value="Munger" <%= (typeof district !== 'undefined' && district === 'Munger') ? 'selected' : '' %>>Munger</option>
+                            <option value="Lakhisarai" <%= (typeof district !== 'undefined' && district === 'Lakhisarai') ? 'selected' : '' %>>Lakhisarai</option>
+                            <option value="Sheikhpura" <%= (typeof district !== 'undefined' && district === 'Sheikhpura') ? 'selected' : '' %>>Sheikhpura</option>
+                            <option value="Jamui" <%= (typeof district !== 'undefined' && district === 'Jamui') ? 'selected' : '' %>>Jamui</option>
+                            <option value="Delhi" <%= (typeof district !== 'undefined' && district === 'Delhi') ? 'selected' : '' %>>Delhi</option>
+                            <option value="Mumbai" <%= (typeof district !== 'undefined' && district === 'Mumbai') ? 'selected' : '' %>>Mumbai</option>
+                            <option value="Kolkata" <%= (typeof district !== 'undefined' && district === 'Kolkata') ? 'selected' : '' %>>Kolkata</option>
+                            <option value="Chennai" <%= (typeof district !== 'undefined' && district === 'Chennai') ? 'selected' : '' %>>Chennai</option>
+                            <option value="Bangalore" <%= (typeof district !== 'undefined' && district === 'Bangalore') ? 'selected' : '' %>>Bangalore</option>
+                            <option value="Hyderabad" <%= (typeof district !== 'undefined' && district === 'Hyderabad') ? 'selected' : '' %>>Hyderabad</option>
+                            <option value="Ahmedabad" <%= (typeof district !== 'undefined' && district === 'Ahmedabad') ? 'selected' : '' %>>Ahmedabad</option>
+                            <option value="Pune" <%= (typeof district !== 'undefined' && district === 'Pune') ? 'selected' : '' %>>Pune</option>
+                            <option value="Jaipur" <%= (typeof district !== 'undefined' && district === 'Jaipur') ? 'selected' : '' %>>Jaipur</option>
+                            <option value="Lucknow" <%= (typeof district !== 'undefined' && district === 'Lucknow') ? 'selected' : '' %>>Lucknow</option>
+                            <option value="Kanpur" <%= (typeof district !== 'undefined' && district === 'Kanpur') ? 'selected' : '' %>>Kanpur</option>
+                            <option value="Nagpur" <%= (typeof district !== 'undefined' && district === 'Nagpur') ? 'selected' : '' %>>Nagpur</option>
+                            <option value="Indore" <%= (typeof district !== 'undefined' && district === 'Indore') ? 'selected' : '' %>>Indore</option>
+                            <option value="Bhopal" <%= (typeof district !== 'undefined' && district === 'Bhopal') ? 'selected' : '' %>>Bhopal</option>
+                            <option value="Other" <%= (typeof district !== 'undefined' && district === 'Other') ? 'selected' : '' %>>Other</option>
                         </select>
                     </div>
 
-                    <div class="form-row two-col" id="blockRow" style="display:none;">
+                    <div class="form-row two-col">
                         <label>ब्लॉक / Block *</label>
-                        <select name="block" id="blockSelect">
-                            <option value="">-- चुनें --</option>
+                        <select name="block" required>
+                            <option value="" <%= (typeof block === 'undefined' || !block) ? 'selected' : '' %>>-- चुनें / Select --</option>
+                            <option value="Athmalgola" <%= (typeof block !== 'undefined' && block === 'Athmalgola') ? 'selected' : '' %>>Athmalgola</option>
+                            <option value="Bakhtiarpur" <%= (typeof block !== 'undefined' && block === 'Bakhtiarpur') ? 'selected' : '' %>>Bakhtiarpur</option>
+                            <option value="Barh" <%= (typeof block !== 'undefined' && block === 'Barh') ? 'selected' : '' %>>Barh</option>
+                            <option value="Belchhi" <%= (typeof block !== 'undefined' && block === 'Belchhi') ? 'selected' : '' %>>Belchhi</option>
+                            <option value="Bihta" <%= (typeof block !== 'undefined' && block === 'Bihta') ? 'selected' : '' %>>Bihta</option>
+                            <option value="Bikram" <%= (typeof block !== 'undefined' && block === 'Bikram') ? 'selected' : '' %>>Bikram</option>
+                            <option value="Danapur" <%= (typeof block !== 'undefined' && block === 'Danapur') ? 'selected' : '' %>>Danapur</option>
+                            <option value="Daniawan" <%= (typeof block !== 'undefined' && block === 'Daniawan') ? 'selected' : '' %>>Daniawan</option>
+                            <option value="Dhanarua" <%= (typeof block !== 'undefined' && block === 'Dhanarua') ? 'selected' : '' %>>Dhanarua</option>
+                            <option value="Dulhin Bazar" <%= (typeof block !== 'undefined' && block === 'Dulhin Bazar') ? 'selected' : '' %>>Dulhin Bazar</option>
+                            <option value="Fatuha" <%= (typeof block !== 'undefined' && block === 'Fatuha') ? 'selected' : '' %>>Fatuha</option>
+                            <option value="Ghoswari" <%= (typeof block !== 'undefined' && block === 'Ghoswari') ? 'selected' : '' %>>Ghoswari</option>
+                            <option value="Khusrupur" <%= (typeof block !== 'undefined' && block === 'Khusrupur') ? 'selected' : '' %>>Khusrupur</option>
+                            <option value="Maner" <%= (typeof block !== 'undefined' && block === 'Maner') ? 'selected' : '' %>>Maner</option>
+                            <option value="Masaurhi" <%= (typeof block !== 'undefined' && block === 'Masaurhi') ? 'selected' : '' %>>Masaurhi</option>
+                            <option value="Mokama" <%= (typeof block !== 'undefined' && block === 'Mokama') ? 'selected' : '' %>>Mokama</option>
+                            <option value="Naubatpur" <%= (typeof block !== 'undefined' && block === 'Naubatpur') ? 'selected' : '' %>>Naubatpur</option>
+                            <option value="Paliganj" <%= (typeof block !== 'undefined' && block === 'Paliganj') ? 'selected' : '' %>>Paliganj</option>
+                            <option value="Pandarak" <%= (typeof block !== 'undefined' && block === 'Pandarak') ? 'selected' : '' %>>Pandarak</option>
+                            <option value="Patna Rural" <%= (typeof block !== 'undefined' && block === 'Patna Rural') ? 'selected' : '' %>>Patna Rural</option>
+                            <option value="Phulwari Sharif" <%= (typeof block !== 'undefined' && block === 'Phulwari Sharif') ? 'selected' : '' %>>Phulwari Sharif</option>
+                            <option value="Punpun" <%= (typeof block !== 'undefined' && block === 'Punpun') ? 'selected' : '' %>>Punpun</option>
+                            <option value="Sampatchak" <%= (typeof block !== 'undefined' && block === 'Sampatchak') ? 'selected' : '' %>>Sampatchak</option>
+                            <option value="Agiaon" <%= (typeof block !== 'undefined' && block === 'Agiaon') ? 'selected' : '' %>>Agiaon</option>
+                            <option value="Arrah" <%= (typeof block !== 'undefined' && block === 'Arrah') ? 'selected' : '' %>>Arrah</option>
+                            <option value="Barhara" <%= (typeof block !== 'undefined' && block === 'Barhara') ? 'selected' : '' %>>Barhara</option>
+                            <option value="Behea" <%= (typeof block !== 'undefined' && block === 'Behea') ? 'selected' : '' %>>Behea</option>
+                            <option value="Charpokhari" <%= (typeof block !== 'undefined' && block === 'Charpokhari') ? 'selected' : '' %>>Charpokhari</option>
+                            <option value="Garhani" <%= (typeof block !== 'undefined' && block === 'Garhani') ? 'selected' : '' %>>Garhani</option>
+                            <option value="Jagdishpur" <%= (typeof block !== 'undefined' && block === 'Jagdishpur') ? 'selected' : '' %>>Jagdishpur</option>
+                            <option value="Koilwar" <%= (typeof block !== 'undefined' && block === 'Koilwar') ? 'selected' : '' %>>Koilwar</option>
+                            <option value="Piro" <%= (typeof block !== 'undefined' && block === 'Piro') ? 'selected' : '' %>>Piro</option>
+                            <option value="Sahar" <%= (typeof block !== 'undefined' && block === 'Sahar') ? 'selected' : '' %>>Sahar</option>
+                            <option value="Sandesh" <%= (typeof block !== 'undefined' && block === 'Sandesh') ? 'selected' : '' %>>Sandesh</option>
+                            <option value="Shahpur" <%= (typeof block !== 'undefined' && block === 'Shahpur') ? 'selected' : '' %>>Shahpur</option>
+                            <option value="Tarari" <%= (typeof block !== 'undefined' && block === 'Tarari') ? 'selected' : '' %>>Tarari</option>
+                            <option value="Udwant Nagar" <%= (typeof block !== 'undefined' && block === 'Udwant Nagar') ? 'selected' : '' %>>Udwant Nagar</option>
+                            <option value="Barhampur" <%= (typeof block !== 'undefined' && block === 'Barhampur') ? 'selected' : '' %>>Barhampur</option>
+                            <option value="Buxar" <%= (typeof block !== 'undefined' && block === 'Buxar') ? 'selected' : '' %>>Buxar</option>
+                            <option value="Chakki" <%= (typeof block !== 'undefined' && block === 'Chakki') ? 'selected' : '' %>>Chakki</option>
+                            <option value="Chausa" <%= (typeof block !== 'undefined' && block === 'Chausa') ? 'selected' : '' %>>Chausa</option>
+                            <option value="Dumraon" <%= (typeof block !== 'undefined' && block === 'Dumraon') ? 'selected' : '' %>>Dumraon</option>
+                            <option value="Itarhi" <%= (typeof block !== 'undefined' && block === 'Itarhi') ? 'selected' : '' %>>Itarhi</option>
+                            <option value="Kesath" <%= (typeof block !== 'undefined' && block === 'Kesath') ? 'selected' : '' %>>Kesath</option>
+                            <option value="Nawanagar" <%= (typeof block !== 'undefined' && block === 'Nawanagar') ? 'selected' : '' %>>Nawanagar</option>
+                            <option value="Rajpur" <%= (typeof block !== 'undefined' && block === 'Rajpur') ? 'selected' : '' %>>Rajpur</option>
+                            <option value="Simri" <%= (typeof block !== 'undefined' && block === 'Simri') ? 'selected' : '' %>>Simri</option>
+                            <option value="Adhaura" <%= (typeof block !== 'undefined' && block === 'Adhaura') ? 'selected' : '' %>>Adhaura</option>
+                            <option value="Bhabua" <%= (typeof block !== 'undefined' && block === 'Bhabua') ? 'selected' : '' %>>Bhabua</option>
+                            <option value="Bhagwanpur" <%= (typeof block !== 'undefined' && block === 'Bhagwanpur') ? 'selected' : '' %>>Bhagwanpur</option>
+                            <option value="Chainpur" <%= (typeof block !== 'undefined' && block === 'Chainpur') ? 'selected' : '' %>>Chainpur</option>
+                            <option value="Chand" <%= (typeof block !== 'undefined' && block === 'Chand') ? 'selected' : '' %>>Chand</option>
+                            <option value="Durgawati" <%= (typeof block !== 'undefined' && block === 'Durgawati') ? 'selected' : '' %>>Durgawati</option>
+                            <option value="Kudra" <%= (typeof block !== 'undefined' && block === 'Kudra') ? 'selected' : '' %>>Kudra</option>
+                            <option value="Mohania" <%= (typeof block !== 'undefined' && block === 'Mohania') ? 'selected' : '' %>>Mohania</option>
+                            <option value="Rampur" <%= (typeof block !== 'undefined' && block === 'Rampur') ? 'selected' : '' %>>Rampur</option>
+                            <option value="Ramgarh" <%= (typeof block !== 'undefined' && block === 'Ramgarh') ? 'selected' : '' %>>Ramgarh</option>
+                            <option value="Other" <%= (typeof block !== 'undefined' && block === 'Other') ? 'selected' : '' %>>Other</option>
                         </select>
                     </div>
 
-                    <!-- House/Street/Panchayat/Village/Pincode -> shown after Block selection -->
-                    <div class="form-row two-col" id="houseRow" style="display:none;">
+                    <!-- Address fields always visible -->
+                    <div class="form-row two-col">
                         <label>House/House No</label>
                         <input name="houseNo" value="<%= typeof houseNo !== 'undefined' ? houseNo : '' %>">
                     </div>
 
-                    <div class="form-row two-col" id="streetRow" style="display:none;">
+                    <div class="form-row two-col">
                         <label>Street</label>
                         <input name="street" value="<%= typeof street !== 'undefined' ? street : '' %>">
                     </div>
 
-                    <div class="form-row two-col" id="panchayatRow" style="display:none;">
+                    <div class="form-row two-col">
                         <label>Panchayat</label>
-                        <input name="panchayat" id="panchayatInput" value="<%= typeof panchayat !== 'undefined' ? panchayat : '' %>">
+                        <input name="panchayat" value="<%= typeof panchayat !== 'undefined' ? panchayat : '' %>">
                     </div>
 
-                    <div class="form-row two-col" id="villageRow" style="display:none;">
+                    <div class="form-row two-col">
                         <label>Village</label>
-                        <input name="village" id="villageInput" value="<%= typeof village !== 'undefined' ? village : '' %>">
+                        <input name="village" value="<%= typeof village !== 'undefined' ? village : '' %>">
                     </div>
 
-                    <div class="form-row two-col" id="pincodeRow" style="display:none;">
+                    <div class="form-row two-col">
                         <label>Pincode</label>
                         <input name="pincode" value="<%= typeof pincode !== 'undefined' ? pincode : '' %>">
                     </div>
@@ -282,217 +428,6 @@
                 if (f.size > 1 * 1024 * 1024) { alert('File too large. Maximum 1MB allowed.'); this.value = ''; return; }
             });
         }
-
-        // Bihar districts/blocks dynamic population
-        const stateSelect = document.getElementById('stateSelect');
-        const divisionRow = document.getElementById('divisionRow');
-        const divisionSelect = document.getElementById('divisionSelect');
-        const districtRow = document.getElementById('districtRow');
-        const blockRow = document.getElementById('blockRow');
-        const districtSelect = document.getElementById('districtSelect');
-        const blockSelect = document.getElementById('blockSelect');
-        const locationStatus = document.getElementById('locationStatus');
-        let biharData = null;
-        let divisionsData = null;
-
-        function resetDistricts() {
-            districtSelect.innerHTML = '<option value="">-- चुनें --</option>';
-            blockSelect.innerHTML = '<option value="">-- चुनें --</option>';
-        }
-
-        async function loadBiharData(){
-            if (biharData) return biharData;
-            try {
-                console.log('🔁 Fetching /api/locations/blocks');
-                const res = await fetch('/api/locations/blocks');
-                if (!res.ok) throw new Error('Failed to load locations (blocks)');
-                const json = await res.json();
-                biharData = json && json.Bihar ? json.Bihar : json;
-                console.log('✅ Bihar blocks loaded, districts:', Object.keys(biharData).length);
-                return biharData;
-            } catch (err) {
-                console.error('Could not load Bihar blocks data', err);
-                if (locationStatus) { locationStatus.textContent = 'Error loading blocks data'; locationStatus.style.display = ''; }
-                return null;
-            }
-        }
-
-        async function loadDivisionsData(){
-            if (divisionsData) return divisionsData;
-            try {
-                console.log('🔁 Fetching /api/locations/divisions');
-                const res = await fetch('/api/locations/divisions');
-                if (!res.ok) throw new Error('Failed to load divisions');
-                const json = await res.json();
-                divisionsData = json;
-                console.log('✅ Divisions loaded, count:', Object.keys(divisionsData).length);
-                return divisionsData;
-            } catch (err) {
-                console.error('Could not load Bihar divisions data', err);
-                if (locationStatus) { locationStatus.textContent = 'Error loading divisions data'; locationStatus.style.display = ''; }
-                return null;
-            }
-        }
-
-        // New functions for cascading dropdowns
-        async function loadParmandals(state) {
-            try {
-                console.log('🔁 Fetching /api/parmandal?state=' + state);
-                const res = await fetch('/api/parmandal?state=' + encodeURIComponent(state));
-                if (!res.ok) throw new Error('Failed to load parmandals');
-                const divisions = await res.json();
-                console.log('✅ Parmandals loaded:', divisions);
-                return divisions;
-            } catch (err) {
-                console.error('Could not load parmandals data', err);
-                return [];
-            }
-        }
-
-        async function loadJilas(parmandal) {
-            try {
-                console.log('🔁 Fetching /api/jila?parmandal=' + parmandal);
-                const res = await fetch('/api/jila?parmandal=' + encodeURIComponent(parmandal));
-                if (!res.ok) throw new Error('Failed to load jilas');
-                const districts = await res.json();
-                console.log('✅ Jilas loaded:', districts);
-                return districts;
-            } catch (err) {
-                console.error('Could not load jilas data', err);
-                return [];
-            }
-        }
-
-        async function loadBlocks(jila) {
-            try {
-                console.log('🔁 Fetching /api/block?jila=' + jila);
-                const res = await fetch('/api/block?jila=' + encodeURIComponent(jila));
-                if (!res.ok) throw new Error('Failed to load blocks');
-                const blocks = await res.json();
-                console.log('✅ Blocks loaded:', blocks);
-                return blocks;
-            } catch (err) {
-                console.error('Could not load blocks data', err);
-                return [];
-            }
-        }
-
-        function updateLocationStatus(divs, blocks){
-            if (!locationStatus) return;
-            const divCount = divs ? Object.keys(divs).length : 0;
-            const distCount = blocks ? Object.keys(blocks).length : 0;
-            const blocksTotal = blocks ? Object.values(blocks).flat().length : 0;
-            locationStatus.textContent = `Parmandals: ${divCount} • Districts: ${distCount} • Blocks total: ${blocksTotal}`;
-            locationStatus.style.display = '';
-        }
-
-        async function onStateChange(){
-            const st = stateSelect.value;
-            if (st === 'Bihar'){
-                const divisions = await loadParmandals(st);
-                resetDistricts();
-
-                // populate division select
-                divisionSelect.innerHTML = '<option value="">-- चुनें --</option>';
-                divisions.forEach(div => {
-                    const opt = document.createElement('option'); opt.value = div; opt.textContent = div;
-                    divisionSelect.appendChild(opt);
-                });
-
-                divisionRow.style.display = '';
-                districtRow.style.display = 'none';
-                blockRow.style.display = 'none';
-
-                // Load blocks data for later use
-                await loadBiharData();
-                updateLocationStatus({ [divisions[0]]: [] }, {}); // Placeholder status
-            } else {
-                divisionRow.style.display = 'none';
-                districtRow.style.display = 'none';
-                blockRow.style.display = 'none';
-                resetDistricts();
-            }
-        }
-
-        divisionSelect.addEventListener('change', async function(){
-            const chosenDiv = this.value;
-            districtSelect.innerHTML = '<option value="">-- चुनें --</option>';
-            if (!chosenDiv) {
-                districtRow.style.display = 'none';
-                blockRow.style.display = 'none';
-                return;
-            }
-            const districts = await loadJilas(chosenDiv);
-            districts.forEach(d => {
-                const opt = document.createElement('option'); opt.value = d; opt.textContent = d;
-                if (typeof district !== 'undefined' && district === d) opt.selected = true;
-                districtSelect.appendChild(opt);
-            });
-            districtRow.style.display = '';
-            blockRow.style.display = 'none';
-        });
-
-        districtSelect.addEventListener('change', async function(){
-            const chosen = this.value;
-            blockSelect.innerHTML = '<option value="">-- चुनें --</option>';
-            if (!chosen) {
-                blockRow.style.display = 'none';
-                return;
-            }
-            const blocks = await loadBlocks(chosen);
-            if (blocks.length === 0) {
-                // Show message if no blocks available so user sees feedback
-                blockSelect.innerHTML += '<option value="" disabled>No blocks available / उपलब्ध नहीं</option>';
-                blockRow.style.display = '';
-                return;
-            }
-            blocks.forEach(b => {
-                const opt = document.createElement('option'); opt.value = b; opt.textContent = b;
-                if (typeof block !== 'undefined' && block === b) opt.selected = true;
-                blockSelect.appendChild(opt);
-            });
-            // show block row
-            blockRow.style.display = '';
-        });
-
-        // Show house/street/panchayat/village/pincode rows after block selection
-        blockSelect.addEventListener('change', function(){
-            const show = this.value && this.value.trim() !== '';
-            const display = show ? '' : 'none';
-            ['houseRow','streetRow','panchayatRow','villageRow','pincodeRow'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.style.display = display;
-            });
-        });
-
-        // initialize on load
-        (function(){
-            if (stateSelect) {
-                stateSelect.addEventListener('change', onStateChange);
-                // trigger once to populate if server rendered Bihar selected
-                if (stateSelect.value === 'Bihar') {
-                    onStateChange().then(() => {
-                        // If server rendered division/district/block values exist, preselect them
-                        const serverDivision = (typeof division !== 'undefined') ? "<%= (typeof division !== 'undefined' ? division : '') %>" : undefined;
-                        const serverDistrict = (typeof district !== 'undefined') ? "<%= (typeof district !== 'undefined' ? district : '') %>" : undefined;
-                        const serverBlock = (typeof block !== 'undefined') ? "<%= (typeof block !== 'undefined' ? block : '') %>" : undefined;
-
-                        if (serverDivision) {
-                            divisionSelect.value = serverDivision;
-                            divisionSelect.dispatchEvent(new Event('change'));
-                        }
-                        if (serverDistrict) {
-                            districtSelect.value = serverDistrict;
-                            districtSelect.dispatchEvent(new Event('change'));
-                        }
-                        if (serverBlock) {
-                            blockSelect.value = serverBlock;
-                            blockSelect.dispatchEvent(new Event('change'));
-                        }
-                    });
-                }
-            }
-        })();
 
         // mobile input sanitization
         const mobileInput = form.querySelector('input[name="mobile"]');
