@@ -317,6 +317,12 @@
                 divisionsData = await divisionsRes.json();
                 blocksData = await blocksRes.json();
 
+                // Normalize bihar blocks structure: some files nest under a 'Bihar' key
+                if (blocksData && blocksData.Bihar && typeof blocksData.Bihar === 'object') {
+                    blocksData = blocksData.Bihar;
+                    console.log('ℹ️ Normalized blocksData to blocksData.Bihar');
+                }
+
                 console.log('✅ Location data loaded successfully');
 
                 // Preselect values if provided by server
