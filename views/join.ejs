@@ -334,6 +334,49 @@
             }
         }
 
+        // New functions for cascading dropdowns
+        async function loadParmandals(state) {
+            try {
+                console.log('🔁 Fetching /api/parmandal?state=' + state);
+                const res = await fetch('/api/parmandal?state=' + encodeURIComponent(state));
+                if (!res.ok) throw new Error('Failed to load parmandals');
+                const divisions = await res.json();
+                console.log('✅ Parmandals loaded:', divisions);
+                return divisions;
+            } catch (err) {
+                console.error('Could not load parmandals data', err);
+                return [];
+            }
+        }
+
+        async function loadJilas(parmandal) {
+            try {
+                console.log('🔁 Fetching /api/jila?parmandal=' + parmandal);
+                const res = await fetch('/api/jila?parmandal=' + encodeURIComponent(parmandal));
+                if (!res.ok) throw new Error('Failed to load jilas');
+                const districts = await res.json();
+                console.log('✅ Jilas loaded:', districts);
+                return districts;
+            } catch (err) {
+                console.error('Could not load jilas data', err);
+                return [];
+            }
+        }
+
+        async function loadBlocks(jila) {
+            try {
+                console.log('🔁 Fetching /api/block?jila=' + jila);
+                const res = await fetch('/api/block?jila=' + encodeURIComponent(jila));
+                if (!res.ok) throw new Error('Failed to load blocks');
+                const blocks = await res.json();
+                console.log('✅ Blocks loaded:', blocks);
+                return blocks;
+            } catch (err) {
+                console.error('Could not load blocks data', err);
+                return [];
+            }
+        }
+
         function updateLocationStatus(divs, blocks){
             if (!locationStatus) return;
             const divCount = divs ? Object.keys(divs).length : 0;
@@ -346,14 +389,12 @@
         async function onStateChange(){
             const st = stateSelect.value;
             if (st === 'Bihar'){
-                const bdata = await loadBiharData();
-                const ddata = await loadDivisionsData();
-                if (!bdata || !ddata) return;
+                const divisions = await loadParmandals(st);
                 resetDistricts();
 
                 // populate division select
                 divisionSelect.innerHTML = '<option value="">-- चुनें --</option>';
-                Object.keys(ddata).forEach(div => {
+                divisions.forEach(div => {
                     const opt = document.createElement('option'); opt.value = div; opt.textContent = div;
                     divisionSelect.appendChild(opt);
                 });
@@ -362,7 +403,9 @@
                 districtRow.style.display = 'none';
                 blockRow.style.display = 'none';
 
-                updateLocationStatus(ddata, bdata);
+                // Load blocks data for later use
+                await loadBiharData();
+                updateLocationStatus({ [divisions[0]]: [] }, {}); // Placeholder status
             } else {
                 divisionRow.style.display = 'none';
                 districtRow.style.display = 'none';
@@ -371,15 +414,16 @@
             }
         }
 
-        divisionSelect.addEventListener('change', function(){
+        divisionSelect.addEventListener('change', async function(){
             const chosenDiv = this.value;
             districtSelect.innerHTML = '<option value="">-- चुनें --</option>';
-            if (!chosenDiv || !divisionsData || !divisionsData[chosenDiv]) {
+            if (!chosenDiv) {
                 districtRow.style.display = 'none';
                 blockRow.style.display = 'none';
                 return;
             }
-            divisionsData[chosenDiv].forEach(d => {
+            const districts = await loadJilas(chosenDiv);
+            districts.forEach(d => {
                 const opt = document.createElement('option'); opt.value = d; opt.textContent = d;
                 if (typeof district !== 'undefined' && district === d) opt.selected = true;
                 districtSelect.appendChild(opt);
@@ -388,16 +432,21 @@
             blockRow.style.display = 'none';
         });
 
-        districtSelect.addEventListener('change', function(){
+        districtSelect.addEventListener('change', async function(){
             const chosen = this.value;
             blockSelect.innerHTML = '<option value="">-- चुनें --</option>';
-            if (!chosen || !biharData || !biharData[chosen] || biharData[chosen].length === 0) {
+            if (!chosen) {
+                blockRow.style.display = 'none';
+                return;
+            }
+            const blocks = await loadBlocks(chosen);
+            if (blocks.length === 0) {
                 // Show message if no blocks available so user sees feedback
                 blockSelect.innerHTML += '<option value="" disabled>No blocks available / उपलब्ध नहीं</option>';
                 blockRow.style.display = '';
                 return;
             }
-            biharData[chosen].forEach(b => {
+            blocks.forEach(b => {
                 const opt = document.createElement('option'); opt.value = b; opt.textContent = b;
                 if (typeof block !== 'undefined' && block === b) opt.selected = true;
                 blockSelect.appendChild(opt);

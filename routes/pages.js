@@ -200,6 +200,58 @@ router.get('/api/locations/districts', (req, res) => {
     }
 });
 
+// New cascading dropdown API routes
+router.get('/api/parmandal', (req, res) => {
+    const state = req.query.state;
+    if (state !== 'Bihar') return res.json([]); // Only Bihar has divisions
+    try {
+        const p = require('path');
+        const fp = p.join(__dirname, '..', 'public', 'locations', 'bihar_divisions.json');
+        const data = JSON.parse(require('fs').readFileSync(fp, 'utf8'));
+        const divisions = Object.keys(data);
+        console.log('📍 /api/parmandal requested for state:', state, 'returning:', divisions);
+        return res.json(divisions);
+    } catch (err) {
+        console.error('❌ Error reading divisions file for parmandal:', err.message);
+        return res.status(500).json({ error: 'Failed to load divisions' });
+    }
+});
+
+router.get('/api/jila', (req, res) => {
+    const parmandal = req.query.parmandal;
+    if (!parmandal) return res.status(400).json({ error: 'parmandal query param required' });
+    try {
+        const p = require('path');
+        const fp = p.join(__dirname, '..', 'public', 'locations', 'bihar_divisions.json');
+        const data = JSON.parse(require('fs').readFileSync(fp, 'utf8'));
+        if (!data[parmandal]) return res.status(404).json({ error: 'Division not found' });
+        const districts = data[parmandal];
+        console.log('📍 /api/jila requested for parmandal:', parmandal, 'returning:', districts);
+        return res.json(districts);
+    } catch (err) {
+        console.error('❌ Error reading divisions file for jila:', err.message);
+        return res.status(500).json({ error: 'Failed to load districts' });
+    }
+});
+
+router.get('/api/block', (req, res) => {
+    const jila = req.query.jila;
+    if (!jila) return res.status(400).json({ error: 'jila query param required' });
+    try {
+        const p = require('path');
+        const fp = p.join(__dirname, '..', 'public', 'locations', 'bihar_blocks.json');
+        const data = JSON.parse(require('fs').readFileSync(fp, 'utf8'));
+        const biharData = data.Bihar || data;
+        if (!biharData[jila]) return res.json([]); // No blocks available
+        const blocks = biharData[jila];
+        console.log('📍 /api/block requested for jila:', jila, 'returning:', blocks);
+        return res.json(blocks);
+    } catch (err) {
+        console.error('❌ Error reading blocks file for block:', err.message);
+        return res.status(500).json({ error: 'Failed to load blocks' });
+    }
+});
+
 
 
 // --------------------- membership form submit (email wala) ---------------------
