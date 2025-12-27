@@ -1,11 +1,58 @@
 {
-  "Patna": ["Patna", "Nalanda", "Bhojpur", "Rohtas", "Buxar", "Kaimur"],
-  "Tirhut": ["Muzaffarpur", "Vaishali", "Sitamarhi", "Sheohar", "East Champaran", "West Champaran"],
-  "Saran": ["Saran", "Siwan", "Gopalganj"],
-  "Darbhanga": ["Darbhanga", "Madhubani", "Samastipur"],
-  "Kosi": ["Saharsa", "Madhepura", "Supaul"],
-  "Purnia": ["Purnia", "Katihar", "Araria", "Kishanganj"],
-  "Bhagalpur": ["Bhagalpur", "Banka"],
-  "Munger": ["Munger", "Jamui", "Lakhisarai", "Sheikhpura", "Begusarai", "Khagaria"],
-  "Magadh": ["Gaya", "Jehanabad", "Arwal", "Nawada", "Aurangabad"]
+  "Patna": [
+    "Patna",
+    "Nalanda",
+    "Bhojpur",
+    "Rohtas",
+    "Buxar",
+    "Kaimur"
+  ],
+  "Tirhut": [
+    "Muzaffarpur",
+    "Vaishali",
+    "Sitamarhi",
+    "Sheohar",
+    "East Champaran",
+    "West Champaran"
+  ],
+  "Saran": [
+    "Saran",
+    "Siwan",
+    "Gopalganj"
+  ],
+  "Darbhanga": [
+    "Darbhanga",
+    "Madhubani",
+    "Samastipur"
+  ],
+  "Kosi": [
+    "Saharsa",
+    "Madhepura",
+    "Supaul"
+  ],
+  "Purnia": [
+    "Purnia",
+    "Katihar",
+    "Araria",
+    "Kishanganj"
+  ],
+  "Bhagalpur": [
+    "Bhagalpur",
+    "Banka"
+  ],
+  "Munger": [
+    "Munger",
+    "Jamui",
+    "Lakhisarai",
+    "Sheikhpura",
+    "Begusarai",
+    "Khagaria"
+  ],
+  "Magadh": [
+    "Gaya",
+    "Jehanabad",
+    "Arwal",
+    "Nawada",
+    "Aurangabad"
+  ]
 }

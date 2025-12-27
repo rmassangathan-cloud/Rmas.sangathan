@@ -298,141 +298,14 @@
             mobileInput.addEventListener('input', function(){ this.value = this.value.replace(/[^0-9+\s-]/g, ''); });
         }
 
-        // Cascading dropdowns for Bihar locations
-        let divisionsData = null;
-        let blocksData = null;
-
-        // Load JSON data
-        async function loadLocationData() {
-            try {
-                const [divisionsRes, blocksRes] = await Promise.all([
-                    fetch('/locations/bihar_divisions.json'),
-                    fetch('/locations/bihar_blocks.json')
-                ]);
-
-                if (!divisionsRes.ok || !blocksRes.ok) {
-                    throw new Error('Failed to load location data');
-                }
-
-                divisionsData = await divisionsRes.json();
-                blocksData = await blocksRes.json();
-
-                // Normalize bihar blocks structure: some files nest under a 'Bihar' key
-                if (blocksData && blocksData.Bihar && typeof blocksData.Bihar === 'object') {
-                    blocksData = blocksData.Bihar;
-                    console.log('ℹ️ Normalized blocksData to blocksData.Bihar');
-                }
-
-                console.log('✅ Location data loaded successfully');
-
-                // Preselect values if provided by server
-                try {
-                    if (window.__NHRA_LOCATION) {
-                        const p = window.__NHRA_LOCATION.parmandal || '';
-                        const j = window.__NHRA_LOCATION.jila || '';
-                        const b = window.__NHRA_LOCATION.block || '';
-                        if (p && stateSelect && stateSelect.value === 'Bihar') {
-                            populateSelect(parmandalSelect, Object.keys(divisionsData));
-                            parmandalSelect.value = p;
-                            parmandalSelect.dispatchEvent(new Event('change'));
-                        }
-                        if (j && stateSelect && stateSelect.value === 'Bihar') {
-                            jilaSelect.value = j;
-                            jilaSelect.dispatchEvent(new Event('change'));
-                        }
-                        if (b && stateSelect && stateSelect.value === 'Bihar') {
-                            blockSelect.value = b;
-                        }
-                    }
-                } catch (preErr) {
-                    console.warn('⚠️ Preselect failed:', preErr);
-                }
-
-            } catch (err) {
-                console.error('❌ Error loading location data:', err);
-            }
-        }
-
-        // Populate select with options
-        function populateSelect(selectElement, options) {
-            selectElement.innerHTML = '<option value="">-- चुनें / Select --</option>';
-            options.forEach(option => {
-                const opt = document.createElement('option');
-                opt.value = option;
-                opt.textContent = option;
-                selectElement.appendChild(opt);
-            });
-        }
-
-        // Clear dependent dropdowns
-        function clearDependentDropdowns(startFrom) {
-            const dropdowns = ['parmandalSelect', 'jilaSelect', 'blockSelect'];
-            const startIndex = dropdowns.indexOf(startFrom);
-
-            for (let i = startIndex + 1; i < dropdowns.length; i++) {
-                const select = document.getElementById(dropdowns[i]);
-                if (select) {
-                    select.innerHTML = '<option value="">-- चुनें / Select --</option>';
-                }
-            }
-        }
-
-        // State change handler
-        const stateSelect = document.getElementById('stateSelect');
-        const parmandalSelect = document.getElementById('parmandalSelect');
-        const jilaSelect = document.getElementById('jilaSelect');
-        const blockSelect = document.getElementById('blockSelect');
-
-        stateSelect.addEventListener('change', function() {
-            const selectedState = this.value;
-
-            if (selectedState === 'Bihar' && divisionsData) {
-                // Populate parmandals
-                const parmandalOptions = Object.keys(divisionsData);
-                populateSelect(parmandalSelect, parmandalOptions);
-            } else {
-                // Clear all dependent dropdowns
-                clearDependentDropdowns('stateSelect');
-            }
-        });
-
-        // Parmandal change handler
-        parmandalSelect.addEventListener('change', function() {
-            const selectedParmandal = this.value;
-
-            if (selectedParmandal && divisionsData && divisionsData[selectedParmandal]) {
-                // Populate jilas for this parmandal
-                const jilaOptions = divisionsData[selectedParmandal];
-                populateSelect(jilaSelect, jilaOptions);
-            } else {
-                clearDependentDropdowns('parmandalSelect');
-            }
-        });
-
-        // Jila change handler
-        jilaSelect.addEventListener('change', function() {
-            const selectedJila = this.value;
-
-            if (selectedJila && blocksData && blocksData[selectedJila] && blocksData[selectedJila].length > 0) {
-                // Populate blocks for this jila (use blocksData to avoid using the wrong source)
-                const blockOptions = blocksData[selectedJila];
-                populateSelect(blockSelect, blockOptions);
-                locationStatus.textContent = `Found ${blockOptions.length} blocks for ${selectedJila}`;
-            } else {
-                clearDependentDropdowns('jilaSelect');
-                locationStatus.textContent = 'No blocks available for the selected district.';
-            }
-        });
-
-        // Initialize location data on page load
-        loadLocationData().then(() => {
-            if (stateSelect.value === 'Bihar' && divisionsData) {
-                const parmandalOptions = Object.keys(divisionsData);
-                populateSelect(parmandalSelect, parmandalOptions);
-            }
-        }).catch(err => console.warn('⚠️ Loading location data failed:', err));
+        // Bihar locations now handled by external script: /js/bihar-locations.js
+        // See /public/js/bihar-locations.js for implementation and debugging logs
+        
+        
     })();
 </script>
+
+<script src="/js/bihar-locations.js"></script>
 
 <style>
     /* Join card layout */
