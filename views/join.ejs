@@ -19,18 +19,18 @@
                     </div>
 
                     <div class="form-row two-col">
-                        <label>पिता / पति का नाम</label>
-                        <input name="fatherName" value="<%= typeof fatherName !== 'undefined' ? fatherName : '' %>">
+                        <label>पिता / पति का नाम *</label>
+                        <input name="fatherName" required value="<%= typeof fatherName !== 'undefined' ? fatherName : '' %>">
                     </div>
 
                     <div class="form-row two-col">
-                        <label>जन्म तिथि / Date of Birth</label>
-                        <input type="date" name="dob" value="<%= typeof dob !== 'undefined' ? dob : '' %>">
+                        <label>जन्म तिथि / Date of Birth *</label>
+                        <input type="date" name="dob" required value="<%= typeof dob !== 'undefined' ? dob : '' %>">
                     </div>
 
                     <div class="form-row two-col">
-                        <label>लिंग / Gender</label>
-                        <select name="gender">
+                        <label>लिंग / Gender *</label>
+                        <select name="gender" required>
                             <option value="" <%= (typeof gender === 'undefined' || !gender) ? 'selected' : '' %>>-- चुनें / Select --</option>
                             <option value="male" <%= (typeof gender !== 'undefined' && gender === 'male') ? 'selected' : '' %>>पुरुष / Male</option>
                             <option value="female" <%= (typeof gender !== 'undefined' && gender === 'female') ? 'selected' : '' %>>महिला / Female</option>
@@ -44,8 +44,8 @@
                     </div>
 
                     <div class="form-row two-col">
-                        <label>ईमेल / Email</label>
-                        <input type="email" name="email" value="<%= typeof email !== 'undefined' ? email : '' %>">
+                        <label>ईमेल / Email *</label>
+                        <input type="email" name="email" required value="<%= typeof email !== 'undefined' ? email : '' %>">
                     </div>
 
                     
@@ -180,9 +180,9 @@
                     <script>
                         // Server-provided defaults for preselection (if any)
                         window.__NHRA_LOCATION = {
-                            parmandal: <%- JSON.stringify(typeof division !== 'undefined' ? division : '') %>,
-                            jila: <%- JSON.stringify(typeof district !== 'undefined' ? district : '') %>,
-                            block: <%- JSON.stringify(typeof block !== 'undefined' ? block : '') %>
+                            parmandal: <%- JSON.stringify(oldData && oldData.division ? oldData.division : '') %>,
+                            jila: <%- JSON.stringify(oldData && oldData.district ? oldData.district : '') %>,
+                            block: <%- JSON.stringify(oldData && oldData.block ? oldData.block : '') %>
                         };
                     </script>
 
