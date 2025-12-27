@@ -303,14 +303,16 @@
         async function loadBiharData(){
             if (biharData) return biharData;
             try {
-                const res = await fetch('/locations/bihar_blocks.json');
-                if (!res.ok) throw new Error('Failed to load locations');
+                console.log('🔁 Fetching /api/locations/blocks');
+                const res = await fetch('/api/locations/blocks');
+                if (!res.ok) throw new Error('Failed to load locations (blocks)');
                 const json = await res.json();
-                // normalize shape: file may be { "Bihar": { ... } } or directly { district: [blocks] }
                 biharData = json && json.Bihar ? json.Bihar : json;
+                console.log('✅ Bihar blocks loaded, districts:', Object.keys(biharData).length);
                 return biharData;
             } catch (err) {
-                console.error('Could not load Bihar data', err);
+                console.error('Could not load Bihar blocks data', err);
+                if (locationStatus) { locationStatus.textContent = 'Error loading blocks data'; locationStatus.style.display = ''; }
                 return null;
             }
         }
@@ -318,13 +320,16 @@
         async function loadDivisionsData(){
             if (divisionsData) return divisionsData;
             try {
-                const res = await fetch('/locations/bihar_divisions.json');
+                console.log('🔁 Fetching /api/locations/divisions');
+                const res = await fetch('/api/locations/divisions');
                 if (!res.ok) throw new Error('Failed to load divisions');
                 const json = await res.json();
                 divisionsData = json;
+                console.log('✅ Divisions loaded, count:', Object.keys(divisionsData).length);
                 return divisionsData;
             } catch (err) {
                 console.error('Could not load Bihar divisions data', err);
+                if (locationStatus) { locationStatus.textContent = 'Error loading divisions data'; locationStatus.style.display = ''; }
                 return null;
             }
         }

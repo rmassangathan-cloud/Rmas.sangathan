@@ -155,6 +155,51 @@ router.get('/donate', (req, res) => {
     res.render('donate');
 });
 
+// API endpoints for locations (Divisions / Districts / Blocks)
+router.get('/api/locations/divisions', (req, res) => {
+    try {
+        const p = require('path');
+        const fp = p.join(__dirname, '..', 'public', 'locations', 'bihar_divisions.json');
+        const data = JSON.parse(require('fs').readFileSync(fp, 'utf8'));
+        console.log('📍 /api/locations/divisions requested');
+        return res.json(data);
+    } catch (err) {
+        console.error('❌ Error reading divisions file:', err.message);
+        return res.status(500).json({ error: 'Failed to load divisions' });
+    }
+});
+
+router.get('/api/locations/blocks', (req, res) => {
+    try {
+        const p = require('path');
+        const fp = p.join(__dirname, '..', 'public', 'locations', 'bihar_blocks.json');
+        const data = JSON.parse(require('fs').readFileSync(fp, 'utf8'));
+        console.log('📍 /api/locations/blocks requested');
+        return res.json(data);
+    } catch (err) {
+        console.error('❌ Error reading blocks file:', err.message);
+        return res.status(500).json({ error: 'Failed to load blocks' });
+    }
+});
+
+router.get('/api/locations/districts', (req, res) => {
+    const division = req.query.division;
+    try {
+        const p = require('path');
+        const fp = p.join(__dirname, '..', 'public', 'locations', 'bihar_divisions.json');
+        const data = JSON.parse(require('fs').readFileSync(fp, 'utf8'));
+        if (division) {
+            if (!data[division]) return res.status(404).json({ error: 'Division not found' });
+            return res.json({ division, districts: data[division] });
+        }
+        // return full mapping when no division specified
+        return res.json(data);
+    } catch (err) {
+        console.error('❌ Error reading divisions file for districts:', err.message);
+        return res.status(500).json({ error: 'Failed to load districts' });
+    }
+});
+
 
 
 // --------------------- membership form submit (email wala) ---------------------
