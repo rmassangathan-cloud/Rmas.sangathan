@@ -132,12 +132,3 @@ if (process.env.MONGO_URI) {
 }
 
 module.exports = app;
-
-// Handle unexpected errors
-process.on('uncaughtException', (err) => {
-    logger.error('Uncaught Exception: %o', err);
-    process.exit(1);
-});
-process.on('unhandledRejection', (reason) => {
-    logger.error('Unhandled Rejection: %o', reason);
-});
