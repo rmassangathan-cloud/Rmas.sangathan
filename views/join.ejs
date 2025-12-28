@@ -177,12 +177,13 @@
                         </select>
                     </div>
 
+                    <% const safeOldData = oldData || {}; %>
                     <script>
                         // Server-provided defaults for preselection (if any)
                         window.__NHRA_LOCATION = <%- JSON.stringify({
-                            parmandal: oldData && oldData.division ? oldData.division : '',
-                            jila: oldData && oldData.district ? oldData.district : '',
-                            block: oldData && oldData.block ? oldData.block : ''
+                            parmandal: safeOldData.division || '',
+                            jila: safeOldData.district || '',
+                            block: safeOldData.block || ''
                         }) %>;
                     </script>
 

@@ -426,7 +426,7 @@ async function handleJoin(req, res) {
 
     if (errors.length > 0) {
         console.log('❌ Validation failed, returning error response');
-        return res.render('join', Object.assign({ error: errors.join('. '), success: null }, data));
+        return res.render('join', { error: errors.join('. '), success: null, oldData: data });
     }
 
     console.log('✅ Validation passed, proceeding to save');
@@ -441,7 +441,7 @@ async function handleJoin(req, res) {
     ];
     if (data.occupation && !allowedOccupations.includes(data.occupation)) {
         // invalid occupation selection
-        return res.render('join', Object.assign({ error: 'Invalid occupation selection.', success: null }, data));
+        return res.render('join', { error: 'Invalid occupation selection.', success: null, oldData: data });
     }
 
     // Prepare email
@@ -515,7 +515,7 @@ async function handleJoin(req, res) {
         res.render('join', { success: 'आपका सदस्यता आवेदन जमा हो गया है! हम शीघ्र ही आपसे संपर्क करेंगे।', error: null, oldData: {} });
     } catch (error) {
         console.error('Email send error:', error);
-        res.render('join', Object.assign({ error: 'कुछ त्रुटि हुई। कृपया बाद में पुनः प्रयास करें।', success: null }, data));
+        res.render('join', { error: 'कुछ त्रुटि हुई। कृपया बाद में पुनः प्रयास करें।', success: null, oldData: data });
     }
 
 }
