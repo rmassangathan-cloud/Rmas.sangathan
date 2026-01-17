@@ -67,61 +67,56 @@ router.get('/about', (req, res) => {
 
 router.get('/team', async (req, res) => {
     try {
-        // Fetch team members grouped by level and teamType
+        // Fetch members that have assignedRoles (any status)
         const teamMembers = await Membership.find({
-            status: 'accepted',
-            jobRole: { $exists: true, $ne: null }
-        }).select('fullName jobRole teamType state division district block photo').lean();
+            assignedRoles: { $ne: [] }
+        }).select('fullName assignedRoles photo').lean();
 
-        // Group by level and teamType
+        // Group by level and category
         const teamData = {
-            state: { core: [], mahila: [], yuva: [], alpsankhyak: [], scst: [] },
-            division: { core: [], mahila: [], yuva: [], alpsankhyak: [], scst: [] },
-            district: { core: [], mahila: [], yuva: [], alpsankhyak: [], scst: [] },
-            block: { core: [], mahila: [], yuva: [], alpsankhyak: [], scst: [] }
+            state: { karyakarini: [], sahayataSamiti: [], janchDal: [] },
+            division: { karyakarini: [], sahayataSamiti: [], janchDal: [] },
+            district: { karyakarini: [], sahayataSamiti: [], janchDal: [] },
+            block: { karyakarini: [], sahayataSamiti: [], janchDal: [] }
         };
 
         teamMembers.forEach(member => {
-            // Determine level based on available fields
-            let level = 'block'; // default
-            if (member.district && !member.block) level = 'district';
-            else if (member.division && !member.district) level = 'division';
-            else if (member.state && !member.division) level = 'state';
+            (member.assignedRoles || []).forEach(assignedRole => {
+                const level = assignedRole.level || 'state';
+                const category = assignedRole.category || 'karyakarini';
 
-            if (teamData[level] && teamData[level][member.teamType]) {
-                teamData[level][member.teamType].push({
-                    name: member.fullName,
-                    role: member.jobRole,
-                    photo: member.photo || '/images/default-avatar.jpg'
-                });
-            }
+                if (teamData[level] && teamData[level][category]) {
+                    teamData[level][category].push({
+                        name: member.fullName,
+                        roleName: assignedRole.roleName || assignedRole.role || '',
+                        teamType: assignedRole.teamType || '',
+                        photo: member.photo || '/images/default-avatar.jpg'
+                    });
+                }
+            });
         });
 
-        // Team type names in Hindi
+        // Category names in Hindi
         const teamNames = {
-            'core': 'कोर टीम',
-            'mahila': 'महिला टीम',
-            'yuva': 'युवा टीम',
-            'alpsankhyak': 'अल्पसंख्यक टीम',
-            'scst': 'SC/ST टीम'
+            'karyakarini': 'कार्यकारिणी',
+            'sahayataSamiti': 'सहायता समिति',
+            'janchDal': 'जाँच दल'
         };
 
         res.render('team', { teamData, teamNames });
     } catch (err) {
         console.error('Team page error:', err);
-        // Fallback to static data if DB query fails
+        // Fallback to empty data if DB query fails
         const teamData = {
-            state: { core: [], mahila: [], yuva: [], alpsankhyak: [], scst: [] },
-            division: { core: [], mahila: [], yuva: [], alpsankhyak: [], scst: [] },
-            district: { core: [], mahila: [], yuva: [], alpsankhyak: [], scst: [] },
-            block: { core: [], mahila: [], yuva: [], alpsankhyak: [], scst: [] }
+            state: { karyakarini: [], sahayataSamiti: [], janchDal: [] },
+            division: { karyakarini: [], sahayataSamiti: [], janchDal: [] },
+            district: { karyakarini: [], sahayataSamiti: [], janchDal: [] },
+            block: { karyakarini: [], sahayataSamiti: [], janchDal: [] }
         };
         const teamNames = {
-            'core': 'कोर टीम',
-            'mahila': 'महिला टीम',
-            'yuva': 'युवा टीम',
-            'alpsankhyak': 'अल्पसंख्यक टीम',
-            'scst': 'SC/ST टीम'
+            'karyakarini': 'कार्यकारिणी',
+            'sahayataSamiti': 'सहायता समिति',
+            'janchDal': 'जाँच दल'
         };
         res.render('team', { teamData, teamNames });
     }
@@ -302,11 +297,22 @@ if (upload) {
 
 // centralized handler to support both upload and non-upload flows
 async function handleJoin(req, res) {
+    console.log('Join form received:', req.body);
     console.log('🔄 Form submission received');
     console.log('📄 Raw body:', JSON.stringify(req.body, null, 2));
     console.log('📎 Files received:', req.files ? Object.keys(req.files) : 'No files');
 
     const data = req.body || {};
+
+    // Accept frontend field names 'parmandal' and 'jila' as aliases for division/district
+    if (data.parmandal && !data.division) {
+        data.division = data.parmandal;
+        console.log('Mapped parmandal -> division:', data.parmandal);
+    }
+    if (data.jila && !data.district) {
+        data.district = data.jila;
+        console.log('Mapped jila -> district:', data.jila);
+    }
 
     // if files were uploaded, attach their paths and sizes
     if (req.files) {
@@ -426,6 +432,10 @@ async function handleJoin(req, res) {
 
     if (errors.length > 0) {
         console.log('❌ Validation failed, returning error response');
+        // If AJAX request (Accept: application/json) return JSON with errors
+        if (req.xhr || (req.headers && req.headers.accept && req.headers.accept.indexOf('application/json') !== -1)) {
+            return res.status(400).json({ ok: false, errors, fields: data });
+        }
         return res.render('join', { error: errors.join('. '), success: null, oldData: data });
     }
 
@@ -487,19 +497,48 @@ async function handleJoin(req, res) {
                 agreedToTerms: data.agreedToTerms === 'on' || data.agreedToTerms === 'true' || data.agreedToTerms === true,
                 // workflow fields
                 assignedDistrict: data.district,
+                status: 'pending',
                 history: [{
                     by: null,
                     role: 'applicant',
                     action: 'submitted',
                     note: 'Form submitted by applicant',
-                    timestamp: new Date()
+                    date: new Date()
                 }]
             });
 
             console.log('✅ Membership saved successfully:', savedMembership._id);
+            // Log important fields for debugging why it might not appear in admin lists
+            console.log('🔎 Saved membership details:', JSON.stringify({
+                _id: savedMembership._id,
+                district: savedMembership.district,
+                division: savedMembership.division,
+                block: savedMembership.block,
+                assignedDistrict: savedMembership.assignedDistrict,
+                status: savedMembership.status
+            }, null, 2));
+
+            const successMsg = 'Thank you! Your application is submitted and pending approval.';
+            // respond to client (JSON for AJAX, plain text otherwise)
+            if (req.xhr || (req.headers && req.headers.accept && req.headers.accept.indexOf('application/json') !== -1)) {
+                res.json({ ok: true, msg: successMsg });
+            } else {
+                res.send(successMsg);
+            }
+
+            // send email in background, but don't block response
+            if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+                transporter.sendMail(mailOptions).catch(e => console.error('Email send error (after response):', e));
+            } else {
+                console.log('Email not sent: EMAIL_USER/PASS not configured');
+            }
+
+            return;
         } catch (dbErr) {
             console.error('❌ Membership save error:', dbErr);
             console.error('Error details:', dbErr.message);
+            console.error('Error saving membership:', dbErr);
+            return res.status(500).send('Error');
         }
     } else {
         console.log('⚠️ Membership model not available');
@@ -512,10 +551,10 @@ async function handleJoin(req, res) {
             console.log('Email not sent: EMAIL_USER/PASS not configured');
         }
 
-        res.render('join', { success: 'आपका सदस्यता आवेदन जमा हो गया है! हम शीघ्र ही आपसे संपर्क करेंगे।', error: null, oldData: {} });
+        res.send('Thank you! Your application is submitted and pending approval.');
     } catch (error) {
         console.error('Email send error:', error);
-        res.render('join', { error: 'कुछ त्रुटि हुई। कृपया बाद में पुनः प्रयास करें।', success: null, oldData: data });
+        return res.status(500).send('Error');
     }
 
 }

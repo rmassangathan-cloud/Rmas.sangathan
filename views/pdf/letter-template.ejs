@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Official Letter</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+        }
+
+        .page-container {
+            width: 210mm;
+            height: 297mm;
+            background: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        @media print {
+            .page-container {
+                width: 100%;
+                height: 100%;
+                box-shadow: none;
+            }
+        }
+
+        /* Header/Letterhead Section */
+        .header {
+            padding: 20mm 25mm;
+            border-bottom: 2px solid rgb(1, 0, 102);
+            margin-bottom: 10mm;
+        }
+
+        .header-content {
+            text-align: center;
+        }
+
+        .organization-name {
+            font-size: 24pt;
+            font-weight: bold;
+            color: rgb(1, 0, 102);
+            margin-bottom: 4px;
+        }
+
+        .organization-subtitle {
+            font-size: 11pt;
+            color: #333;
+            margin-bottom: 2px;
+        }
+
+        .registration-number {
+            font-size: 9pt;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .header-contact {
+            font-size: 8.5pt;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .header-contact-item {
+            display: inline-block;
+            margin-right: 15mm;
+        }
+
+        /* Main Content Area */
+        .content-wrapper {
+            flex: 1;
+            padding: 0 25mm;
+            overflow-y: auto;
+        }
+
+        .letter-date {
+            font-size: 11pt;
+            color: #333;
+            margin-bottom: 15mm;
+            text-align: right;
+        }
+
+        .letter-recipient {
+            font-size: 10pt;
+            color: #333;
+            margin-bottom: 10mm;
+            line-height: 1.5;
+        }
+
+        .letter-greeting {
+            font-size: 11pt;
+            color: #333;
+            margin-bottom: 8mm;
+        }
+
+        .letter-body {
+            font-size: 11pt;
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 10mm;
+            text-align: justify;
+        }
+
+        .letter-body p {
+            margin-bottom: 8mm;
+        }
+
+        .letter-closing {
+            font-size: 11pt;
+            color: #333;
+            margin-top: 15mm;
+        }
+
+        .signature-block {
+            margin-top: 20mm;
+            font-size: 10pt;
+            color: #333;
+            line-height: 1.8;
+        }
+
+        .signature-line {
+            display: block;
+            width: 60mm;
+            border-top: 1px solid #333;
+            margin-bottom: 2px;
+        }
+
+        /* Footer Section - Fixed at bottom */
+        .footer {
+            background: rgb(1, 0, 102);
+            color: white;
+            padding: 6mm 10mm;
+            text-align: center;
+            font-size: 8.5pt;
+            line-height: 1.5;
+            margin-top: auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .footer-content {
+            max-width: 100%;
+        }
+
+        .footer-address {
+            margin-bottom: 2px;
+        }
+
+        .footer-divider {
+            display: inline-block;
+            margin: 0 6px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .footer-website {
+            margin-bottom: 2px;
+        }
+
+        .footer-contact {
+            margin-bottom: 0;
+        }
+
+        /* Page 1 - No Footer */
+        .page-1 {
+            display: flex;
+            flex-direction: column;
+            min-height: 297mm;
+        }
+
+        .page-1 .footer {
+            display: none !important;
+        }
+
+        /* Page 2+ - With Footer */
+        .page-2 {
+            page-break-before: always;
+            display: flex;
+            flex-direction: column;
+            min-height: 297mm;
+        }
+
+        .page-2 .header {
+            display: none;
+        }
+
+        .page-2 .footer {
+            display: block !important;
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+            }
+
+            .page-container {
+                width: 100%;
+                height: 100%;
+                box-shadow: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            .page-1, .page-2 {
+                box-shadow: none;
+                page-break-after: auto;
+            }
+
+            .footer {
+                margin-top: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- PAGE 1: Full Header, No Footer -->
+    <div class="page-container page-1">
+        <!-- Header/Letterhead -->
+        <div class="header">
+            <div class="header-content">
+                <div class="organization-name">NHRA</div>
+                <div class="organization-subtitle">Rashtriya Manav Adhikar Sangathan</div>
+                <div class="organization-subtitle">राष्ट्रीय मानवाधिकार संगठन</div>
+                <div class="registration-number">Registration No. 4120/2020</div>
+                <div class="header-contact">
+                    <div class="header-contact-item">📍 D-2, S/F, Gali No. 9, Best Jyoti Nagar, Shahdara Delhi-110032</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content-wrapper">
+            <div class="letter-date">
+                <%
+                    const today = new Date();
+                    const day = String(today.getDate()).padStart(2, '0');
+                    const month = String(today.getMonth() + 1).padStart(2, '0');
+                    const year = today.getFullYear();
+                %>
+                <strong>Date:</strong> <%= day %>/<%= month %>/<%= year %>
+            </div>
+
+            <div class="letter-recipient">
+                <strong>To,</strong><br>
+                <% if (recipientName) { %>
+                    <%= recipientName %><br>
+                <% } %>
+                <% if (recipientAddress) { %>
+                    <%= recipientAddress %>
+                <% } %>
+            </div>
+
+            <div class="letter-greeting">
+                <strong>Dear <%= recipientTitle || 'Sir/Madam' %>,</strong>
+            </div>
+
+            <div class="letter-body">
+                <%- letterContent || '<p>This is a professional letter template. Replace this content with your actual letter body.</p>' %>
+            </div>
+
+            <div class="letter-closing">
+                <strong>Yours faithfully,</strong>
+            </div>
+
+            <div class="signature-block">
+                <span class="signature-line"></span>
+                <strong><%= signerName || 'State President' %></strong><br>
+                <%= signerDesignation || 'Rashtriya Manav Adhikar Sangathan' %>
+            </div>
+        </div>
+
+        <!-- No Footer on Page 1 -->
+        <div class="footer" style="display: none;"></div>
+    </div>
+
+    <!-- PAGE 2+: Minimal Header, Footer Only -->
+    <div class="page-container page-2">
+        <!-- Minimal Header for continuation pages -->
+        <div class="header" style="padding: 15mm 25mm; border: none; margin-bottom: 5mm;">
+            <div class="header-content">
+                <div class="organization-name" style="font-size: 14pt; margin-bottom: 2px;">NHRA</div>
+                <div class="registration-number">Registration No. 4120/2020</div>
+            </div>
+        </div>
+
+        <!-- Continuation content area -->
+        <div class="content-wrapper">
+            <%- continuationContent || '' %>
+        </div>
+
+        <!-- Footer - Page 2 and onwards -->
+        <div class="footer">
+            <div class="footer-content">
+                <div class="footer-address">
+                    <strong>D-2, S/F, Gali No. 9, Best Jyoti Nagar, Shahdara, Delhi-110032</strong>
+                </div>
+                <div class="footer-website">
+                    <span>🌐 Website: www.nhra.org.in</span>
+                    <span class="footer-divider">|</span>
+                    <span>📧 Email: info@nhra.org.in</span>
+                </div>
+                <div class="footer-contact">
+                    <span>📱 Phone: +91-11-XXXX-XXXX</span>
+                    <span class="footer-divider">|</span>
+                    <span>WhatsApp: +91-98xxx-xxxxx</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,21 @@
+<div class="container">
+  <h2>Your Membership</h2>
+  <table class="table">
+    <tr><th>Name</th><td><%= member.fullName %></td></tr>
+    <tr><th>Email</th><td><%= member.email %></td></tr>
+    <tr><th>Membership ID</th><td><%= member.membershipId %></td></tr>
+    <tr><th>Assigned Role</th><td><%= (member.assignedRoles && member.assignedRoles[0]) ? (member.assignedRoles[0].roleName || member.assignedRoles[0].role) : (member.jobRole || '—') %></td></tr>
+  </table>
+
+  <form method="POST" action="/documents/generate" style="display:inline-block; margin-right: 8px;">
+    <input type="hidden" name="token" value="<%= token %>" />
+    <input type="hidden" name="type" value="idcard" />
+    <button class="btn btn-success">Download ID Card</button>
+  </form>
+
+  <form method="POST" action="/documents/generate" style="display:inline-block;">
+    <input type="hidden" name="token" value="<%= token %>" />
+    <input type="hidden" name="type" value="joining" />
+    <button class="btn btn-primary">Download Joining Letter</button>
+  </form>
+</div>

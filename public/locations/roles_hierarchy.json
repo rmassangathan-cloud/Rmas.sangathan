@@ -1,0 +1,39 @@
+{
+  "categories": {
+    "karyakarini": {
+      "name": "कार्यकारिणी",
+      "roles": [
+        { "code": "adhyaksh", "name": "अध्यक्ष", "unique": true },
+        { "code": "upadhyaksh", "name": "उपाध्यक्ष", "unique": false },
+        { "code": "varishth_upadhyaksh", "name": "वरिष्ठ उपाध्यक्ष", "unique": true },
+        { "code": "mahasevak", "name": "महासचिव", "unique": true },
+        { "code": "sevak", "name": "सचिव", "unique": false },
+        { "code": "sangathan_sevak", "name": "संगठन सचिव", "unique": false },
+        { "code": "san_yukt_sevak", "name": "संयुक्त सचिव", "unique": false },
+        { "code": "vidhi_sevak", "name": "विधि सचिव", "unique": false },
+        { "code": "kosadhyaksh", "name": "कोषाध्यक्ष", "unique": true },
+        { "code": "it_cell_incharge", "name": "आईटी सेल प्रभारी", "unique": true }
+      ]
+    },
+    "sahayataSamiti": {
+      "name": "सहायता समिति",
+      "roles": [
+        { "code": "media_prabhari", "name": "मीडिया प्रभारी", "unique": false },
+        { "code": "media_sevak", "name": "मीडिया सचिव", "unique": false },
+        { "code": "prachar_sevak", "name": "प्रचार सचिव", "unique": false },
+        { "code": "press_sevak", "name": "प्रेस सचिव", "unique": false },
+        { "code": "pravakta", "name": "प्रवक्ता", "unique": false },
+        { "code": "youth_coordinator", "name": "युवा समन्वयक", "unique": false },
+        { "code": "women_coordinator", "name": "महिला समन्वयक", "unique": false },
+        { "code": "minority_coordinator", "name": "अल्पसंख्यक समन्वयक", "unique": false },
+        { "code": "scst_coordinator", "name": "SC/ST समन्वयक", "unique": false }
+      ]
+    },
+    "janchDal": {
+      "name": "जाँच दल",
+      "roles": [
+        { "code": "janch_dal_member", "name": "जाँच दल सदस्य", "unique": false }
+      ]
+    }
+  }
+}

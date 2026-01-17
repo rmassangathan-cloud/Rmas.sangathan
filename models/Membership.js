@@ -28,15 +28,28 @@ const membershipSchema = new mongoose.Schema({
   status: { type: String, enum: ['pending', 'accepted', 'rejected'], default: 'pending' },
   membershipId: { type: String },
   pdfUrl: { type: String },
+  idCardUrl: { type: String },
   assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   assignedDistrict: { type: String },
   teamType: { type: String, enum: ['core', 'mahila', 'yuva', 'alpsankhyak', 'scst'], default: 'core' },
   jobRole: { type: String },
+  assignedRoles: [{
+    category: { type: String },
+    role: { type: String },
+    roleName: { type: String },
+    teamType: { type: String },
+    level: { type: String },
+    location: { type: String },
+    assignedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    assignedAt: { type: Date },
+    reason: { type: String }
+  }],
   history: [{
     by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     role: String,
-    action: { type: String, enum: ['submitted', 'accepted', 'rejected', 'role_assigned'] },
+    action: { type: String, enum: ['submitted', 'accepted', 'rejected', 'role_assigned', 'id_card_generated', 'pdf_regenerated', 'pdf_error', 'email_sent', 'email_error', 'email_skipped'] },
     note: String,
+    date: { type: Date, default: Date.now },
     timestamp: { type: Date, default: Date.now }
   }],
   createdAt: { type: Date, default: Date.now }

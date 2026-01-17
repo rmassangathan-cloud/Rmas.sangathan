@@ -8,10 +8,7 @@ body {
 }
 
 .site-header {
-    background-image: url('/images/slogan-bg.svg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    position: relative;
     color: #fff;
     padding: 0 30px;
     display: flex;

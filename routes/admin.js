@@ -31,133 +31,309 @@ async function generateMembershipId(district) {
   return `NHRA/BIH/${districtCode}/${year}/${String(serial).padStart(3, '0')}`;
 }
 
-// Helper function to format date in Hindi
-function formatDateHindi(date) {
+// Helper function to format date in English
+function formatDateEnglish(date) {
   const options = { year: 'numeric', month: 'long', day: 'numeric' };
-  return date.toLocaleDateString('hi-IN', options);
+  return date.toLocaleDateString('en-IN', options);
 }
 
 // Helper function to generate PDF
 async function generateMembershipPDF(membership, qrCodeDataURL) {
    console.log('🎨 Starting PDF generation for:', membership.fullName);
 
-   const browser = await puppeteer.launch({
-      headless: 'new',
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--single-process',
-        '--no-zygote'
-      ]
-   });
+   // Resolve Puppeteer executable path: prefer env, else check common Chrome locations
+   console.log('RAW env PUPPETEER_EXECUTABLE_PATH:', JSON.stringify(process.env.PUPPETEER_EXECUTABLE_PATH));
+   let execPath = process.env.PUPPETEER_EXECUTABLE_PATH || '';
+   execPath = execPath ? execPath.replace(/^"(.*)"$/, '$1') : '';
+   console.log('Sanitized execPath candidate:', execPath);
+   if (!execPath) {
+      const candidates = [
+         'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+         'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe'
+      ];
+      execPath = candidates.find(p => fs.existsSync(p)) || '';
+      console.log('Found execPath from common candidates:', execPath || 'none');
+   }
+   if (!execPath) {
+      console.warn('⚠️ No Chrome/Chromium executable found in env or common paths; Puppeteer may fail to launch');
+   } else if (!fs.existsSync(execPath)) {
+      console.warn('⚠️ Puppeteer exec path set but file not found:', execPath);
+   }
+   console.log('Using Puppeteer executablePath:', execPath || 'default bundled');
+
+   // Browser will be launched inside the retry loop below so each attempt gets a fresh process
+   // (this helps in cases where prior launches may have left a bad state)
+
+   // Try multiple attempts to create the page+PDF to handle transient Puppeteer errors
+   const maxAttempts = parseInt(process.env.PDF_RETRY || '3', 10);
+   const baseBackoff = parseInt(process.env.PDF_BACKOFF_MS || '500', 10);
+   const sleep = (ms) => new Promise(res => setTimeout(res, ms));
+
+   let lastError = null;
+   let pdfBuffer = null;
+
+   // Read EJS template and image assets once
+   const templatePath = path.join(__dirname, '../views/pdf/joining-letter.ejs');
+   console.log('📄 Reading template from:', templatePath);
+   const template = fs.readFileSync(templatePath, 'utf8');
+
+   // Read and encode images to base64 with error handling
+   let nhraLogo = '';
+   let memberPhoto = '';
+   let digitalSignature = '';
+   let officialStamp = '';
+   let stampBase64 = '';
 
    try {
-      const page = await browser.newPage();
-
-      // Read EJS template
-      const templatePath = path.join(__dirname, '../views/pdf/joining-letter.ejs');
-      console.log('📄 Reading template from:', templatePath);
-      const template = fs.readFileSync(templatePath, 'utf8');
-
-      // Read and encode images to base64 with error handling
-      let nhraLogo = '';
-      let memberPhoto = '';
-      let digitalSignature = '';
-      let officialStamp = '';
-
-      try {
-         // Use existing logo.jpeg as NHRA logo
-         const nhraLogoPath = path.join(__dirname, '../public/images/logo.jpeg');
-         if (fs.existsSync(nhraLogoPath)) {
-            nhraLogo = fs.readFileSync(nhraLogoPath).toString('base64');
-            console.log('✅ NHRA logo loaded');
-         } else {
-            console.log('⚠️ NHRA logo not found, using placeholder');
-            nhraLogo = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==').toString('base64');
-         }
-      } catch (err) {
-         console.error('❌ Error loading NHRA logo:', err.message);
+      const nhraLogoPath = path.join(__dirname, '../public/images/logo.jpeg');
+      if (fs.existsSync(nhraLogoPath)) {
+         nhraLogo = fs.readFileSync(nhraLogoPath).toString('base64');
+         console.log('✅ NHRA logo loaded');
+      } else {
+         console.log('⚠️ NHRA logo not found, using placeholder');
          nhraLogo = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==').toString('base64');
       }
+   } catch (err) {
+      console.error('❌ Error loading NHRA logo:', err.message);
+      nhraLogo = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==').toString('base64');
+   }
 
-      try {
-         // Member photo
-         const memberPhotoPath = path.join(__dirname, '../public', membership.photo.replace('/uploads/', 'uploads/'));
-         if (fs.existsSync(memberPhotoPath)) {
-            memberPhoto = fs.readFileSync(memberPhotoPath).toString('base64');
-            console.log('✅ Member photo loaded');
-         } else {
-            console.log('⚠️ Member photo not found, using placeholder');
-            memberPhoto = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==').toString('base64');
-         }
-      } catch (err) {
-         console.error('❌ Error loading member photo:', err.message);
+   try {
+      const memberPhotoPath = path.join(__dirname, '../public', membership.photo.replace('/uploads/', 'uploads/'));
+      if (fs.existsSync(memberPhotoPath)) {
+         memberPhoto = fs.readFileSync(memberPhotoPath).toString('base64');
+         console.log('✅ Member photo loaded');
+      } else {
+         console.log('⚠️ Member photo not found, using placeholder');
          memberPhoto = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==').toString('base64');
       }
-
-      try {
-         // Create placeholder for digital signature
-         console.log('📝 Using placeholder for digital signature');
-         digitalSignature = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==').toString('base64');
-      } catch (err) {
-         console.error('❌ Error creating digital signature placeholder:', err.message);
-         digitalSignature = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==').toString('base64');
-      }
-
-      try {
-         // Create placeholder for official stamp
-         console.log('🏛️ Using placeholder for official stamp');
-         officialStamp = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==').toString('base64');
-      } catch (err) {
-         console.error('❌ Error creating official stamp placeholder:', err.message);
-         officialStamp = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==').toString('base64');
-      }
-
-      // Format issue date in Hindi
-      const issueDateHindi = formatDateHindi(new Date());
-      console.log('📅 Issue date in Hindi:', issueDateHindi);
-
-      // Render EJS template
-      console.log('🔧 Rendering EJS template...');
-      const html = ejs.render(template, {
-         membership,
-         qrCodeDataURL,
-         nhraLogo,
-         memberPhoto,
-         digitalSignature,
-         officialStamp,
-         issueDateHindi
-      });
-
-      console.log('📄 Setting page content...');
-      await page.setContent(html, { waitUntil: 'networkidle0' });
-
-      console.log('📋 Generating PDF...');
-      const pdfBuffer = await page.pdf({
-         format: 'A4',
-         printBackground: true,
-         margin: {
-            top: '20mm',
-            right: '15mm',
-            bottom: '20mm',
-            left: '15mm'
-         }
-      });
-
-      console.log('✅ PDF generated successfully, size:', pdfBuffer.length, 'bytes');
-      await browser.close();
-      return pdfBuffer;
-
    } catch (err) {
-      console.error('❌ PDF generation error:', err.message);
-      console.error('Stack trace:', err.stack);
-      if (browser) {
-         await browser.close();
-      }
-      throw err;
+      console.error('❌ Error loading member photo:', err.message);
+      memberPhoto = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==').toString('base64');
    }
+
+   try {
+      console.log('📝 Using placeholder for digital signature');
+      digitalSignature = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==').toString('base64');
+   } catch (err) {
+      console.error('❌ Error creating digital signature placeholder:', err.message);
+      digitalSignature = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==').toString('base64');
+   }
+
+   try {
+      console.log('🏛️ Using placeholder for official stamp');
+      officialStamp = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==').toString('base64');
+   } catch (err) {
+      console.error('❌ Error creating official stamp placeholder:', err.message);
+      officialStamp = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==').toString('base64');
+   }
+
+   // Load stamp image for member photo overlay
+   try {
+      const stampPath = path.join(__dirname, '../public/images/stamp.png');
+      if (fs.existsSync(stampPath)) {
+         stampBase64 = fs.readFileSync(stampPath).toString('base64');
+         console.log('✅ Stamp image loaded');
+      } else {
+         console.log('⚠️ Stamp image not found, using placeholder');
+         stampBase64 = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==').toString('base64');
+      }
+   } catch (err) {
+      console.error('❌ Error loading stamp image:', err.message);
+      stampBase64 = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==').toString('base64');
+   }
+
+   // Format issue date in English
+   const issueDateEnglish = formatDateEnglish(new Date());
+   console.log('📅 Issue date in English:', issueDateEnglish);
+
+   // Map primary assigned role into a simple member object for the template
+   let primaryAssigned = (membership.assignedRoles && membership.assignedRoles[0]) ? membership.assignedRoles[0] : null;
+   let memberForTemplate = {
+     name: membership.fullName || 'N/A',
+     email: membership.email || 'N/A',
+     phone: membership.mobile || membership.phone || 'N/A',
+     role: primaryAssigned ? (primaryAssigned.roleName || primaryAssigned.role) : (membership.jobRole || 'Member'),
+     role_hin: null,
+     team: primaryAssigned ? (primaryAssigned.teamType || membership.teamType) : (membership.teamType || '—'),
+     level: primaryAssigned ? (primaryAssigned.level || '—') : '—'
+   };
+
+   // Try to resolve Hindi role name from roles_hierarchy if available
+   try {
+     const rolesPath = path.join(__dirname, '../public/locations/roles_hierarchy.json');
+     if (fs.existsSync(rolesPath)) {
+       const rolesData = JSON.parse(fs.readFileSync(rolesPath, 'utf8'));
+       if (primaryAssigned && primaryAssigned.role && !memberForTemplate.role_hin) {
+         for (const catKey of Object.keys(rolesData.categories || {})) {
+           const match = (rolesData.categories[catKey].roles || []).find(r => r.code === primaryAssigned.role || r.code === primaryAssigned.roleCode);
+           if (match) {
+             memberForTemplate.role_hin = match.name;
+             break;
+           }
+         }
+       }
+     }
+   } catch (e) {
+     console.error('⚠️ roles_hierarchy lookup failed:', e.message);
+   }
+   if (!memberForTemplate.role_hin) memberForTemplate.role_hin = memberForTemplate.role || null;
+
+   // Dates and membership metadata
+   const date = issueDateEnglish;
+   const startDate = issueDateEnglish;
+   const endDate = formatDateEnglish(new Date(new Date().setFullYear(new Date().getFullYear() + 1)));
+   const membershipIdVal = membership.membershipId || null;
+   const verifyUrl = membershipIdVal ? `${process.env.APP_BASE_URL || 'http://localhost:3000'}/verify/${membershipIdVal}` : null;
+
+   // Add member photo to memberForTemplate for template access
+   memberForTemplate.photo = memberPhoto ? 'data:image/jpeg;base64,' + memberPhoto : null;
+
+   // Render EJS template with aligned variables and base64 signature
+   console.log('🔧 Rendering EJS template...');
+   const html = ejs.render(template, {
+      membership,
+      member: memberForTemplate,
+      qrDataUrl: qrCodeDataURL,
+      qrCodeDataURL,
+      nhraLogo,
+      memberPhoto: memberPhoto ? 'data:image/jpeg;base64,' + memberPhoto : null,
+      stampBase64,
+      signatureUrl: 'data:image/png;base64,' + digitalSignature,
+      officialStamp,
+      issueDateEnglish,
+      date,
+      startDate,
+      endDate,
+      membershipId: membershipIdVal,
+      refNo: membership.refNo || '',
+      verifyUrl,
+      signerName: process.env.SIGNER_NAME || 'State President',
+      signerDesignation: process.env.SIGNER_DESIGNATION || 'NHRA Bihar',
+      orgWebsite: process.env.ORG_WEBSITE || 'https://nhra.in',
+      orgPhone: process.env.ORG_PHONE || 'N/A',
+      orgAddress: process.env.ORG_ADDRESS || 'NHRA Bihar, 123, Civil Lines, Patna, Bihar - 800001'
+   });
+
+   // Attempt to generate PDF with retries
+   let launchExec = execPath || undefined;
+   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      let browser = null;
+      try {
+         console.log(`Attempt ${attempt}/${maxAttempts}: launching browser (execPath: ${launchExec ? 'custom' : 'bundled'})`);
+         // Use Windows-friendly flags and avoid single-process mode which can be unstable on some platforms
+         const launchOpts = { headless: 'new', args: [ '--no-sandbox','--disable-setuid-sandbox','--disable-dev-shm-usage','--disable-gpu','--disable-extensions' ] };
+         if (launchExec) launchOpts.executablePath = launchExec;
+         // Optional: enable Chromium stdout/stderr capture when debugging (set PUPPETEER_DUMPIO=true in env)
+         if (process.env.PUPPETEER_DUMPIO === 'true') {
+           console.log('🪵 Puppeteer dumpio enabled (dumping Chromium stdout/stderr to the server logs)');
+           launchOpts.dumpio = true;
+         }
+         browser = await puppeteer.launch(launchOpts);
+
+         const page = await browser.newPage();
+         // Workaround for transient 'Requesting main frame too early' errors on some Chrome installations
+         try {
+           await page.goto('about:blank', { waitUntil: 'load', timeout: 5000 });
+         } catch (gErr) {
+           console.warn('⚠️ about:blank navigation failed or timed out:', gErr && gErr.message);
+         }
+
+         // Give the page a short moment to be usable
+         try { await page.waitForTimeout(150); } catch (e) { /* ignore */ }
+
+         console.log('📄 Setting page content...');
+         // First try in-memory setContent
+         let setContentSucceeded = false;
+         try {
+           await page.setContent(html, { waitUntil: 'networkidle0', timeout: 15000 });
+           setContentSucceeded = true;
+         } catch (setErr) {
+           console.error('❌ page.setContent failed:', setErr && setErr.message);
+           // Attempt file-based fallback in the same attempt
+           try {
+             const os = require('os');
+             const tmpDir = path.join(os.tmpdir(), 'nhra_pdf');
+             if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
+             const tmpFile = path.join(tmpDir, `joining_${membership._id || Date.now()}_${attempt}.html`);
+             fs.writeFileSync(tmpFile, html, 'utf8');
+             console.log('🗂️ Wrote fallback HTML to:', tmpFile);
+
+             // Use file:// URL to load the content
+             const fileUrl = `file:///${tmpFile.replace(/\\/g, '/')}`;
+             console.log('📄 Navigating to fallback file URL:', fileUrl);
+             await page.goto(fileUrl, { waitUntil: 'networkidle0', timeout: 20000 });
+
+             // Ensure DOM is fully ready
+             try { await page.waitForFunction('document.readyState === "complete"', { timeout: 5000 }); } catch(e) {}
+
+             setContentSucceeded = true;
+           } catch (fileErr) {
+             console.error('❌ File-based fallback failed:', fileErr && (fileErr.stack || fileErr.message));
+           }
+         }
+
+         if (!setContentSucceeded) {
+           throw new Error('Both setContent and file-based fallback failed');
+         }
+
+         console.log('📋 Generating PDF...');
+         pdfBuffer = await page.pdf({ format: 'A4', printBackground: true, margin: { top: '20mm', right: '15mm', bottom: '0mm', left: '15mm' } });
+         console.log('✅ PDF generated successfully, size:', pdfBuffer.length, 'bytes');
+         await browser.close();
+         break;
+      } catch (err) {
+         lastError = err;
+         console.error(`❌ PDF attempt ${attempt} failed:`, err && err.message);
+         if (err && err.stack) console.error(err.stack);
+
+         // If we see frame/session related errors, try again without custom executable path
+         try {
+           const msg = (err && err.message) ? err.message.toString() : '';
+           if (/Requesting main frame too early|Session closed/i.test(msg)) {
+             if (launchExec) {
+               console.warn('⚠️ Detected frame/session error - retrying without custom PUPPETEER_EXECUTABLE_PATH');
+               launchExec = undefined; // next attempt will use bundled Chromium
+             }
+           }
+         } catch (e) { /* ignore */ }
+
+         try { if (browser) await browser.close(); } catch (closeErr) { console.error('Error closing browser after failure:', closeErr && closeErr.message); }
+         if (attempt < maxAttempts) {
+            const delay = baseBackoff * attempt;
+            console.log(`⏳ Retrying PDF generation in ${delay}ms...`);
+            await sleep(delay);
+         }
+      }
+   }
+
+   if (!pdfBuffer) {
+      console.error('❌ All PDF generation attempts failed, attempting a minimal fallback PDF');
+      try {
+         const fallbackHtml = `<!doctype html><html><head><meta charset="utf-8"><title>NHRA Joining Letter (Fallback)</title></head><body><div style="font-family: Arial, sans-serif; padding: 20px;"><h1>NHRA Joining Letter</h1><p><strong>Name:</strong> ${membership.fullName || 'N/A'}</p><p><strong>Membership ID:</strong> ${membership.membershipId || membershipIdVal || 'N/A'}</p><p>This is a fallback joining letter generated because the full template failed to render.</p></div></body></html>`;
+
+         const fbLaunchOpts = { headless: 'new', args: [ '--no-sandbox','--disable-setuid-sandbox','--disable-dev-shm-usage','--single-process','--no-zygote' ] };
+         if (launchExec) fbLaunchOpts.executablePath = launchExec;
+
+         const browserFb = await puppeteer.launch(fbLaunchOpts);
+         const pageFb = await browserFb.newPage();
+         try { await pageFb.goto('about:blank', { waitUntil: 'load', timeout: 5000 }); } catch (gErr) { console.warn('⚠️ about:blank nav in fallback failed:', gErr && gErr.message); }
+         try { await pageFb.waitForTimeout(200); } catch(e) {}
+         await pageFb.setContent(fallbackHtml, { waitUntil: 'networkidle0', timeout: 10000 });
+         pdfBuffer = await pageFb.pdf({ format: 'A4', printBackground: true });
+         await browserFb.close();
+         console.log('✅ Fallback PDF generated successfully, size:', pdfBuffer && pdfBuffer.length);
+      } catch (fbErr) {
+         console.error('❌ Fallback PDF generation failed:', fbErr && (fbErr.stack || fbErr.message));
+      }
+   }
+
+   if (!pdfBuffer) {
+      console.error('❌ All PDF generation attempts (including fallback) failed');
+      throw lastError || new Error('Unknown error generating PDF');
+   }
+
+   return pdfBuffer;
 }
 
 // Admin login redirect
@@ -306,6 +482,45 @@ router.get('/forms/:id', ensureAuthenticated, async (req,res) => {
     const form = await Membership.findById(req.params.id).populate('assignedTo').lean();
     if (!form) return res.redirect('/admin/forms');
 
+    // Authorization: ensure current user can view/manage this form
+    const canView = canPerformActions(req.user, form);
+    if (!canView) return res.status(403).send('Forbidden');
+
+    // Backfill assignedRoles from legacy fields if necessary so UI shows role immediately
+    try {
+      if (form.status === 'accepted' && (!form.assignedRoles || form.assignedRoles.length === 0) && form.jobRole && form.teamType) {
+        console.log('🔁 Backfilling assignedRoles from legacy fields for form:', form._id.toString());
+        form.assignedRoles = [{
+          category: 'karyakarini',
+          role: form.jobRole,
+          roleName: form.jobRole,
+          teamType: form.teamType,
+          level: 'state',
+          location: form.state || null,
+          assignedBy: null,
+          assignedAt: new Date(),
+          reason: 'Backfilled from legacy fields on view'
+        }];
+        form.history = form.history || [];
+        form.history.push({ by: req.user ? req.user._id : null, role: req.user ? req.user.role : 'system', action: 'role_assigned', note: `Backfilled legacy role: ${form.jobRole} / ${form.teamType}`, date: new Date() });
+        await form.save();
+        console.log('✅ Backfilled assignedRoles for form:', form._id.toString());
+      }
+    } catch (bfErr) {
+      console.error('❌ Backfill on view error:', bfErr.message);
+    }
+
+    // Log document URLs to help debug missing Character Certificate in admin view
+    try {
+      const certUrl = form.documentsUrl || form.characterCertUrl || form.aadhaarUrl || null;
+      console.log('Viewing form id:', form._id.toString(), 'documentsUrl:', form.documentsUrl, 'characterCertUrl:', form.characterCertUrl, 'aadhaarUrl:', form.aadhaarUrl);
+      if (certUrl && certUrl.startsWith('/uploads/')) {
+        const filePath = require('path').join(__dirname, '..', 'public', certUrl.replace(/^\//, ''));
+        const fs = require('fs');
+        console.log('Character certificate file exists on disk:', fs.existsSync(filePath), 'path:', filePath);
+      }
+    } catch (logErr) { console.error('Error logging certUrl for form view:', logErr); }
+
     // determine eligible users based on current user's cascade permissions
     let users = [];
     if (req.user.role === 'superadmin') {
@@ -452,16 +667,52 @@ router.post('/forms/:id/accept', ensureAuthenticated, async (req, res) => {
     console.log('💾 Updating form status...');
     form.status = 'accepted';
 
-    // Assign role if provided
+    // Assign role if provided (legacy form fields in the ACCEPT form). Convert into canonical assignedRoles so the public team page picks it up.
     if (req.body.jobRole && req.body.teamType) {
       const canAssign = canAssignRole(req.user, form, req.body.teamType);
       if (canAssign) {
+        // Keep legacy fields for compatibility
         form.jobRole = req.body.jobRole;
         form.teamType = req.body.teamType;
-        console.log('✅ Role assigned during acceptance:', req.body.jobRole, req.body.teamType);
+        console.log('✅ Role assigned during acceptance (legacy fields):', req.body.jobRole, req.body.teamType);
+
+        // Also create an assignedRoles entry so this member shows on the public team pages
+        form.assignedRoles = [{
+          category: 'karyakarini', // fallback category for legacy single-role assign
+          role: req.body.jobRole, // use jobRole as role code/name for legacy data
+          roleName: req.body.jobRole,
+          teamType: req.body.teamType,
+          level: 'state', // fallback level
+          location: form.state || null,
+          assignedBy: req.user._id,
+          assignedAt: new Date(),
+          reason: req.body.note || 'Assigned during acceptance'
+        }];
+        form.history = form.history || [];
+        form.history.push({ by: req.user._id, role: req.user.role, action: 'role_assigned', note: `Assigned (legacy) ${req.body.jobRole} in ${req.body.teamType} team`, date: new Date() });
+
       } else {
         console.log('⚠️ Cannot assign role - insufficient permissions');
       }
+    }
+
+    // Backfill: if legacy fields already present on the form (e.g., older submissions) convert them into assignedRoles when accepting
+    if ((!form.assignedRoles || form.assignedRoles.length === 0) && form.jobRole && form.teamType) {
+      console.log('🔁 Backfilling legacy jobRole/teamType into assignedRoles');
+      form.assignedRoles = [{
+        category: 'karyakarini',
+        role: form.jobRole,
+        roleName: form.jobRole,
+        teamType: form.teamType,
+        level: 'state',
+        location: form.state || null,
+        assignedBy: req.user._id,
+        assignedAt: new Date(),
+        reason: 'Backfilled from legacy fields on accept'
+      }];
+      form.history = form.history || [];
+      form.history.push({ by: req.user._id, role: req.user.role, action: 'role_assigned', note: `Backfilled role from legacy fields: ${form.jobRole} / ${form.teamType}`, date: new Date() });
+      console.log('✅ Backfilled legacy role to assignedRoles');
     }
 
     form.history = form.history || [];
@@ -470,7 +721,7 @@ router.post('/forms/:id/accept', ensureAuthenticated, async (req, res) => {
       role: req.user.role,
       action: 'accepted',
       note: req.body.note || 'Accepted',
-      timestamp: new Date()
+      date: new Date()
     });
 
     await form.save();
@@ -588,7 +839,7 @@ router.post('/forms/:id/resend-joining-letter', ensureAuthenticated, async (req,
     try {
       await sendMail(mailOptions);
       form.history = form.history || [];
-      form.history.push({ by: req.user._id, role: req.user.role, action: 'resend_joining_letter', note: `Resent to ${form.email}`, timestamp: new Date() });
+      form.history.push({ by: req.user._id, role: req.user.role, action: 'resend_joining_letter', note: `Resent to ${form.email}`, date: new Date() });
       await form.save();
       console.log('✅ Resend email sent to:', form.email);
       return res.json({ ok: true, msg: 'Joining letter resent successfully' });
@@ -638,7 +889,137 @@ router.post('/forms/:id/reject', ensureAuthenticated, async (req, res) => {
   }
 });
 
-// Assign job role to accepted member
+// GET manage role form
+router.get('/forms/:id/manage-role', ensureAuthenticated, async (req, res) => {
+  try {
+    const form = await Membership.findById(req.params.id).lean();
+    if (!form) return res.redirect('/admin/forms');
+    if (form.status !== 'accepted') return res.status(400).send('Only accepted members can be assigned roles');
+
+    // Authorization: ensure user has scope to manage/assign roles for this form
+    const allowed = canPerformActions(req.user, form);
+    if (!allowed) return res.status(403).send('Forbidden');
+
+    res.render('admin/manage-role', { form });
+  } catch (err) {
+    console.error('Manage role GET error:', err);
+    res.redirect('/admin/forms');
+  }
+});
+
+// POST manage role assignment
+router.post('/forms/:id/manage-role', ensureAuthenticated, async (req, res) => {
+  try {
+    const form = await Membership.findById(req.params.id);
+    if (!form) return res.redirect('/admin/forms');
+    if (form.status !== 'accepted') return res.status(400).send('Only accepted members can be assigned roles');
+
+    const { category, role, level, state, division, district, block, teamType, reason, regeneratePdf } = req.body;
+    if (!category || !role || !teamType || !level || !reason) {
+      return res.status(400).send('Category, role, team, level, and reason are required');
+    }
+
+    // Determine location based on level
+    let location = null;
+    if (level === 'state' && state) location = state;
+    else if (level === 'division' && division) location = division;
+    else if (level === 'district' && district) location = district;
+    else if (level === 'block' && block) location = block;
+
+    // Load role details to get name
+    const fs = require('fs');
+    const path = require('path');
+    const rolesPath = path.join(__dirname, '..', 'public', 'locations', 'roles_hierarchy.json');
+    const rolesData = JSON.parse(fs.readFileSync(rolesPath, 'utf8'));
+    const roleData = rolesData.categories[category].roles.find(r => r.code === role);
+
+    if (!roleData) return res.status(400).send('Invalid role selected');
+
+    // Authorization: ensure current user can assign this role at the requested level
+    const allowedAssign = canAssignRole(req.user, form, teamType);
+    if (!allowedAssign) return res.status(403).send('Forbidden - insufficient permissions to assign this role');
+
+    // Create assignedRoles array
+    form.assignedRoles = [{
+      category,
+      role: roleData.code,
+      roleName: roleData.name,
+      teamType,
+      level,
+      location: location || null,
+      assignedBy: req.user._id,
+      assignedAt: new Date(),
+      reason
+    }];
+
+    // Update history
+    form.history = form.history || [];
+    form.history.push({
+      by: req.user._id,
+      role: req.user.role,
+      action: 'role_assigned',
+      note: `Assigned: ${roleData.name} (${level}${location ? ` - ${location}` : ''}) - ${reason}`,
+      date: new Date()
+    });
+
+    // Ensure membershipId exists
+    if (!form.membershipId) {
+      try {
+        const membershipId = await generateMembershipId(form.district || form.city || 'UNKNOWN');
+        form.membershipId = membershipId;
+        form.history.push({ by: req.user._id, role: req.user.role, action: 'membership_id_generated', note: `Generated ID ${membershipId}`, date: new Date() });
+      } catch (idErr) {
+        console.error('❌ Error generating membership ID:', idErr.message);
+      }
+    }
+
+    await form.save();
+
+    // Ensure team pages see the update: set a simple cache-buster in app locals
+    try {
+      req.app.locals.teamCacheBuster = Date.now();
+      console.log('🔁 teamCacheBuster updated:', req.app.locals.teamCacheBuster);
+    } catch (e) { console.error('⚠️ Could not update app locals cache buster:', e.message); }
+
+    // Notify member by email to download documents (no PDF generation)
+    (async () => {
+      try {
+        if (!form.email) {
+          await Membership.findByIdAndUpdate(form._id, { $push: { history: { by: req.user._id, role: req.user.role, action: 'no_email_for_download', note: 'No email to notify member for downloads', date: new Date() } } });
+          console.log('⚠️ No email found; skipping download notification');
+          return;
+        }
+
+        const { sendMail } = require('../utils/mailer');
+        const link = `${process.env.APP_BASE_URL || `${req.protocol}://${req.get('host')}`}/documents/request-download?email=${encodeURIComponent(form.email)}`;
+
+        const assigned = (form.assignedRoles && form.assignedRoles[0]) ? form.assignedRoles[0] : null;
+        const roleDisplay = assigned ? (assigned.roleName || assigned.role) : (form.jobRole || 'Assigned role');
+
+        await sendMail({
+          from: process.env.EMAIL_USER,
+          to: form.email,
+          subject: 'बधाई हो! आपका पद असाइन किया गया – NHRA',
+          text: `नमस्ते ${form.fullName},\n\nआपको '${roleDisplay}' पद पर असाइन किया गया है। आप अपना ID Card और Joining Letter डाउनलोड करने के लिए इस लिंक पर जा सकते हैं:\n\n${link}\n\nधन्यवाद,\nNHRA Bihar Team`
+        });
+
+        await Membership.findByIdAndUpdate(form._id, { $push: { history: { by: req.user._id, role: req.user.role, action: 'download_notification_sent', note: `Notified ${form.email} to download documents`, date: new Date() } } });
+
+        console.log('✅ Download notification sent to member');
+      } catch (err) {
+        console.error('❌ Error sending download notification:', err && err.message);
+        try { await Membership.findByIdAndUpdate(form._id, { $push: { history: { by: req.user._id, role: req.user.role, action: 'download_notification_error', note: err && err.message, date: new Date() } } }); } catch (e) { console.error('❌ Error saving history for notification failure:', e && e.message); }
+      }
+    })();
+
+    res.redirect('/admin/forms/' + req.params.id);
+  } catch (err) {
+    console.error('Manage role POST error:', err);
+    res.redirect('/admin/forms');
+  }
+});
+
+// Assign job role to accepted member (legacy - keep for backward compatibility)
 router.post('/forms/:id/assign-role', ensureAuthenticated, async (req, res) => {
   try {
     const form = await Membership.findById(req.params.id);
@@ -660,7 +1041,7 @@ router.post('/forms/:id/assign-role', ensureAuthenticated, async (req, res) => {
       role: req.user.role,
       action: 'role_assigned',
       note: `Assigned role: ${jobRole} in ${teamType} team`,
-      timestamp: new Date()
+      date: new Date()
     });
 
     // Ensure membershipId exists (generate if missing)
@@ -668,7 +1049,7 @@ router.post('/forms/:id/assign-role', ensureAuthenticated, async (req, res) => {
       try {
         const membershipId = await generateMembershipId(form.district || form.city || 'UNKNOWN');
         form.membershipId = membershipId;
-        form.history.push({ by: req.user._id, role: req.user.role, action: 'membership_id_generated', note: `Generated ID ${membershipId}`, timestamp: new Date() });
+        form.history.push({ by: req.user._id, role: req.user.role, action: 'membership_id_generated', note: `Generated ID ${membershipId}`, date: new Date() });
         console.log('✅ Membership ID generated during role assignment:', membershipId);
       } catch (idErr) {
         console.error('❌ Error generating membership ID during role assign:', idErr.message);
@@ -677,71 +1058,40 @@ router.post('/forms/:id/assign-role', ensureAuthenticated, async (req, res) => {
 
     await form.save();
 
-    // Now generate QR, PDF and send joining letter email immediately
+    // ensure team pages pick up this change
+    try { req.app.locals.teamCacheBuster = Date.now(); console.log('🔁 teamCacheBuster updated (legacy assign):', req.app.locals.teamCacheBuster); } catch(e){}
+
+    // Notify member by email to download documents (no PDF generation)
     (async () => {
       try {
-        console.log('✉️ Preparing to send joining letter after role assignment for:', form.fullName);
-        const membershipId = form.membershipId;
-        const qrCodeDataURL = await QRCode.toDataURL(`${req.protocol}://${req.get('host')}/verify/${membershipId}`);
-
-        // Generate PDF
-        let pdfBuffer;
-        try {
-          pdfBuffer = await generateMembershipPDF(form, qrCodeDataURL);
-          const pdfDir = path.join(__dirname, '../public/pdfs');
-          if (!fs.existsSync(pdfDir)) fs.mkdirSync(pdfDir, { recursive: true });
-          const pdfFilename = membershipId.replace(/\//g, '_') + '.pdf';
-          const pdfPath = path.join(pdfDir, pdfFilename);
-          fs.writeFileSync(pdfPath, pdfBuffer);
-          form.pdfUrl = `/pdfs/${pdfFilename}`;
-          form.history.push({ by: req.user._id, role: req.user.role, action: 'pdf_generated', note: `PDF generated at ${form.pdfUrl}`, timestamp: new Date() });
+        if (!form.email) {
+          form.history = form.history || [];
+          form.history.push({ by: req.user._id, role: req.user.role, action: 'no_email_for_download', note: 'No email to notify member for downloads', date: new Date() });
           await form.save();
-          console.log('✅ PDF generated and saved during role assignment:', pdfPath);
-        } catch (pdfErr) {
-          console.error('❌ PDF generation failed during role assignment:', pdfErr.message);
-          form.history.push({ by: req.user._id, role: req.user.role, action: 'pdf_error', note: pdfErr.message, timestamp: new Date() });
-          await form.save();
+          console.log('⚠️ No email found; skipping download notification (legacy assign)');
+          return;
         }
 
-        // Send email with PDF if email exists
-        if (form.email) {
-          try {
-            const { sendMail } = require('../utils/mailer');
-            const mailOptions = {
-              from: process.env.EMAIL_USER,
-              to: form.email,
-              subject: '🎉 NHRA Joining Letter - Your role has been assigned',
-              text: `नमस्ते ${form.fullName},\n\nआपको निम्नलिखित पद पर नियुक्त किया गया है: ${jobRole} (टिम: ${teamType}).\n\nMembership ID: ${form.membershipId}\n\nडाउनलोड करें: ${req.protocol}://${req.get('host')}${form.pdfUrl || ''}\n\nQR कोड स्कैन करके अपनी सदस्यता को किसी भी समय वेरीफाई कर सकते हैं।\n\nधन्यवाद,\nNHRA Bihar Team`
-            };
-            if (form.pdfUrl) {
-              const pdfPath = path.join(__dirname, '..', 'public', form.pdfUrl.replace(/^\/+/, ''));
-              if (fs.existsSync(pdfPath)) {
-                mailOptions.attachments = [{ filename: `NHRA_Membership_${form.membershipId}.pdf`, path: pdfPath }];
-              }
-            }
+        const { sendMail } = require('../utils/mailer');
+        const link = `${process.env.APP_BASE_URL || `${req.protocol}://${req.get('host')}`}/documents/request-download?email=${encodeURIComponent(form.email)}`;
 
-            const sendResult = await sendMail(mailOptions);
-            if (sendResult === null) {
-              console.log('⚠️ Mailer skipped sending (no credentials)');
-              form.history.push({ by: req.user._id, role: req.user.role, action: 'email_skipped', note: `Attempted to send to ${form.email} but mailer not configured`, timestamp: new Date() });
-            } else {
-              console.log('✅ Joining letter email sent to:', form.email);
-              form.history.push({ by: req.user._id, role: req.user.role, action: 'joining_letter_sent', note: `Sent to ${form.email}`, timestamp: new Date() });
-            }
-            await form.save();
-          } catch (mailErr) {
-            console.error('❌ Error sending joining letter after role assignment:', mailErr.message);
-            form.history.push({ by: req.user._id, role: req.user.role, action: 'email_error', note: mailErr.message, timestamp: new Date() });
-            await form.save();
-          }
-        } else {
-          console.log('⚠️ No email found on form, cannot send joining letter');
-          form.history.push({ by: req.user._id, role: req.user.role, action: 'no_email', note: 'No email to send joining letter to', timestamp: new Date() });
-          await form.save();
-        }
+        const roleDisplay = jobRole || form.jobRole || 'Assigned role';
 
+        await sendMail({
+          from: process.env.EMAIL_USER,
+          to: form.email,
+          subject: 'बधाई हो! आपका पद असाइन किया गया – NHRA',
+          text: `नमस्ते ${form.fullName},\n\nआपको ${roleDisplay} पद पर असाइन किया गया है। आप अपना ID Card और Joining Letter डाउनलोड करने के लिए इस लिंक पर जा सकते हैं:\n\n${link}\n\nधन्यवाद,\nNHRA Bihar Team`
+        });
+
+        form.history = form.history || [];
+        form.history.push({ by: req.user._id, role: req.user.role, action: 'download_notification_sent', note: `Notified ${form.email} to download documents (legacy assign)`, date: new Date() });
+        await form.save();
+
+        console.log('✅ Download notification sent to member (legacy assign)');
       } catch (err) {
-        console.error('❌ Unexpected error in post-role-assignment email flow:', err.message);
+        console.error('❌ Error sending download notification (legacy assign):', err && err.message);
+        try { form.history = form.history || []; form.history.push({ by: req.user._id, role: req.user.role, action: 'download_notification_error', note: err && err.message, date: new Date() }); await form.save(); } catch (e) { console.error('❌ Error saving history for notification failure:', e && e.message); }
       }
     })();
 
@@ -819,6 +1169,74 @@ function getAccessibleEntities(user) {
   return entities;
 }
 
+// AJAX endpoint for roles by category
+router.get('/roles', ensureAuthenticated, (req, res) => {
+  try {
+    const category = req.query.category;
+    if (!category) return res.status(400).json({ error: 'Category required' });
+
+    const fs = require('fs');
+    const path = require('path');
+    const rolesPath = path.join(__dirname, '..', 'public', 'locations', 'roles_hierarchy.json');
+    const rolesData = JSON.parse(fs.readFileSync(rolesPath, 'utf8'));
+
+    if (!rolesData.categories || !rolesData.categories[category]) {
+      return res.status(404).json({ error: 'Category not found' });
+    }
+
+    res.json(rolesData.categories[category].roles);
+  } catch (err) {
+    console.error('Error loading roles:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// AJAX endpoint for locations by level
+router.get('/locations', ensureAuthenticated, (req, res) => {
+  try {
+    const level = req.query.level;
+    const divisionQuery = req.query.division;
+    const districtQuery = req.query.district;
+    if (!level) return res.status(400).json({ error: 'Level required' });
+
+    const fs = require('fs');
+    const path = require('path');
+
+    if (level === 'state') {
+      res.json(['Bihar']); // Only Bihar supported
+    } else if (level === 'division') {
+      const divisionsPath = path.join(__dirname, '..', 'public', 'locations', 'bihar_divisions.json');
+      const divisionsData = JSON.parse(fs.readFileSync(divisionsPath, 'utf8'));
+      res.json(Object.keys(divisionsData));
+    } else if (level === 'district') {
+      const divisionsPath = path.join(__dirname, '..', 'public', 'locations', 'bihar_divisions.json');
+      const divisionsData = JSON.parse(fs.readFileSync(divisionsPath, 'utf8'));
+      if (divisionQuery) {
+        // Return districts for the specific division if available
+        const districts = divisionsData[divisionQuery] || [];
+        return res.json(districts);
+      }
+      const allDistricts = Object.values(divisionsData).flat();
+      res.json([...new Set(allDistricts)]); // Remove duplicates
+    } else if (level === 'block') {
+      const blocksPath = path.join(__dirname, '..', 'public', 'locations', 'bihar_blocks.json');
+      const blocksData = JSON.parse(fs.readFileSync(blocksPath, 'utf8'));
+      if (districtQuery) {
+        // Return blocks for the specific district if available
+        const blocks = blocksData[districtQuery] || [];
+        return res.json(blocks);
+      }
+      const allBlocks = Object.values(blocksData).flat();
+      res.json([...new Set(allBlocks)]); // Remove duplicates
+    } else {
+      res.status(400).json({ error: 'Invalid level' });
+    }
+  } catch (err) {
+    console.error('Error loading locations:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Helper function to check if user can assign roles
 function canAssignRole(user, membership, teamType) {
   if (user.role === 'superadmin') return true;
@@ -844,6 +1262,17 @@ function canAssignRole(user, membership, teamType) {
 // new user form
 router.get('/users/new', ensureRole('superadmin'), (req, res) => {
   res.render('admin/user_form', { user: null, error: null });
+});
+
+// Debug: list recent memberships (superadmin only)
+router.get('/debug/recent-memberships', ensureRole('superadmin'), async (req, res) => {
+  try {
+    const recents = await Membership.find().sort({ createdAt: -1 }).limit(50).lean();
+    res.json(recents.map(m => ({ _id: m._id, fullName: m.fullName, district: m.district, division: m.division, block: m.block, assignedDistrict: m.assignedDistrict, status: m.status, createdAt: m.createdAt })));
+  } catch (err) {
+    console.error('Debug recent memberships error:', err.message);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // create user
@@ -973,4 +1402,8 @@ router.post('/users/:id', ensureRole('superadmin'), async (req, res) => {
   }
 });
 
-module.exports = router;
+// Export router and helper functions used by scripts
+module.exports = router
+// Expose helper for on-demand generation by public routes
+router.generateMembershipPDF = generateMembershipPDF;
+module.exports.generateMembershipPDF = generateMembershipPDF;

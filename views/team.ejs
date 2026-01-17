@@ -8,17 +8,21 @@
     <div class="level-section">
       <h2 style="border-bottom:2px solid #007bff;padding-bottom:10px;margin-bottom:30px;">राज्य स्तर (State Level)</h2>
       <div class="team-grid">
-        <% ['core', 'mahila', 'yuva', 'alpsankhyak', 'scst'].forEach(teamType => { %>
+        <% ['karyakarini', 'sahayataSamiti', 'janchDal'].forEach(category => { %>
           <div class="team-card">
-            <h3><%= teamNames[teamType] %></h3>
-            <% if(teamData.state[teamType] && teamData.state[teamType].length > 0) { %>
+            <h3><%= teamNames[category] %></h3>
+            <% if(teamData.state[category] && teamData.state[category].length > 0) { %>
               <div class="members-list">
-                <% teamData.state[teamType].forEach(member => { %>
+                <% teamData.state[category].forEach(member => { %>
                   <div class="member-item">
                     <img src="<%= member.photo %>" alt="<%= member.name %>" class="member-photo">
                     <div class="member-info">
                       <div class="member-name"><%= member.name %></div>
-                      <div class="member-role"><%= member.role %></div>
+                      <div class="member-role"><%= member.roleName %>
+                        <% if(member.teamType) { %>
+                          <span style="color:#888;margin-left:8px;font-size:0.9em;">• <%= member.teamType %></span>
+                        <% } %>
+                      </div>
                     </div>
                   </div>
                 <% }); %>
@@ -35,17 +39,21 @@
     <div class="level-section">
       <h2 style="border-bottom:2px solid #28a745;padding-bottom:10px;margin-bottom:30px;">प्रभाग स्तर (Division Level)</h2>
       <div class="team-grid">
-        <% ['core', 'mahila', 'yuva', 'alpsankhyak', 'scst'].forEach(teamType => { %>
+        <% ['karyakarini', 'sahayataSamiti', 'janchDal'].forEach(category => { %>
           <div class="team-card">
-            <h3><%= teamNames[teamType] %></h3>
-            <% if(teamData.division[teamType] && teamData.division[teamType].length > 0) { %>
+            <h3><%= teamNames[category] %></h3>
+            <% if(teamData.division[category] && teamData.division[category].length > 0) { %>
               <div class="members-list">
-                <% teamData.division[teamType].forEach(member => { %>
+                <% teamData.division[category].forEach(member => { %>
                   <div class="member-item">
                     <img src="<%= member.photo %>" alt="<%= member.name %>" class="member-photo">
                     <div class="member-info">
                       <div class="member-name"><%= member.name %></div>
-                      <div class="member-role"><%= member.role %></div>
+                      <div class="member-role"><%= member.roleName %>
+                        <% if(member.teamType) { %>
+                          <span style="color:#888;margin-left:8px;font-size:0.9em;">• <%= member.teamType %></span>
+                        <% } %>
+                      </div>
                     </div>
                   </div>
                 <% }); %>
@@ -62,17 +70,21 @@
     <div class="level-section">
       <h2 style="border-bottom:2px solid #ffc107;padding-bottom:10px;margin-bottom:30px;">जिला स्तर (District Level)</h2>
       <div class="team-grid">
-        <% ['core', 'mahila', 'yuva', 'alpsankhyak', 'scst'].forEach(teamType => { %>
+        <% ['karyakarini', 'sahayataSamiti', 'janchDal'].forEach(category => { %>
           <div class="team-card">
-            <h3><%= teamNames[teamType] %></h3>
-            <% if(teamData.district[teamType] && teamData.district[teamType].length > 0) { %>
+            <h3><%= teamNames[category] %></h3>
+            <% if(teamData.district[category] && teamData.district[category].length > 0) { %>
               <div class="members-list">
-                <% teamData.district[teamType].forEach(member => { %>
+                <% teamData.district[category].forEach(member => { %>
                   <div class="member-item">
                     <img src="<%= member.photo %>" alt="<%= member.name %>" class="member-photo">
                     <div class="member-info">
                       <div class="member-name"><%= member.name %></div>
-                      <div class="member-role"><%= member.role %></div>
+                      <div class="member-role"><%= member.roleName %>
+                        <% if(member.teamType) { %>
+                          <span style="color:#888;margin-left:8px;font-size:0.9em;">• <%= member.teamType %></span>
+                        <% } %>
+                      </div>
                     </div>
                   </div>
                 <% }); %>
@@ -89,17 +101,21 @@
     <div class="level-section">
       <h2 style="border-bottom:2px solid #dc3545;padding-bottom:10px;margin-bottom:30px;">ब्लॉक स्तर (Block Level)</h2>
       <div class="team-grid">
-        <% ['core', 'mahila', 'yuva', 'alpsankhyak', 'scst'].forEach(teamType => { %>
+        <% ['karyakarini', 'sahayataSamiti', 'janchDal'].forEach(category => { %>
           <div class="team-card">
-            <h3><%= teamNames[teamType] %></h3>
-            <% if(teamData.block[teamType] && teamData.block[teamType].length > 0) { %>
+            <h3><%= teamNames[category] %></h3>
+            <% if(teamData.block[category] && teamData.block[category].length > 0) { %>
               <div class="members-list">
-                <% teamData.block[teamType].forEach(member => { %>
+                <% teamData.block[category].forEach(member => { %>
                   <div class="member-item">
                     <img src="<%= member.photo %>" alt="<%= member.name %>" class="member-photo">
                     <div class="member-info">
                       <div class="member-name"><%= member.name %></div>
-                      <div class="member-role"><%= member.role %></div>
+                      <div class="member-role"><%= member.roleName %>
+                        <% if(member.teamType) { %>
+                          <span style="color:#888;margin-left:8px;font-size:0.9em;">• <%= member.teamType %></span>
+                        <% } %>
+                      </div>
                     </div>
                   </div>
                 <% }); %>

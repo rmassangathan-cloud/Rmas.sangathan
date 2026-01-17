@@ -1,8 +1,16 @@
+// Load environment variables first
+require('dotenv').config();
+
 // Configure Puppeteer for serverless deployment
 process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 'true';
-process.env.PUPPETEER_EXECUTABLE_PATH = process.env.PUPPETEER_EXECUTABLE_PATH || undefined;
 
-require('dotenv').config();
+// Global error handlers to capture and log uncaught errors during startup
+process.on('unhandledRejection', (reason, p) => {
+    console.error('Unhandled Rejection at:', p, 'reason:', reason);
+});
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err && err.stack ? err.stack : err);
+});
 const express = require('express');
 const mongoose = require('mongoose');
 const expressLayouts = require('express-ejs-layouts');
@@ -119,6 +127,9 @@ app.use('/admin', require('./routes/admin'));
 // Pages routes (join form, home etc.)
 app.use('/', require('./routes/pages'));
 
+// Documents routes (public download flow for ID card / joining letter)
+app.use('/documents', require('./routes/documents'));
+
 // Connect to MongoDB if MONGO_URI is provided
 if (process.env.MONGO_URI) {
     mongoose.connect(process.env.MONGO_URI).then(() => {
@@ -129,6 +140,14 @@ if (process.env.MONGO_URI) {
     });
 } else {
     logger.warn('No MONGO_URI provided - starting without database');
+}
+
+// Start the server only when running directly (prevents tests from starting a second server)
+const PORT = process.env.PORT || 5000;
+if (require.main === module) {
+    app.listen(PORT, () => {
+        logger.info(`Server running on port ${PORT}`);
+    });
 }
 
 module.exports = app;

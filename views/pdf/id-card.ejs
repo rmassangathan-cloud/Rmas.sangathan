@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<title>NHRA ID Card</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+body{
+    font-family:'Noto Sans Devanagari', sans-serif;
+    background:#f5f5f5;
+    display:flex;
+    gap:20px;
+    padding:20px;
+}
+
+.card{
+    width:54mm;
+    height:85.6mm;
+    border:1px solid #000;
+    display:flex;
+    flex-direction:column;
+    box-sizing:border-box;
+    background:#fff;
+}
+
+.front{
+    position: relative;
+}
+
+.front::before{
+    content: '';
+    position: absolute;
+    top: 60%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 25mm;
+    height: 25mm;
+    background-image: url('data:image/png;base64,<%= nhraLogo %>');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.1;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.front > *{
+    position: relative;
+    z-index: 1;
+}
+
+/* ---------- HEADER ---------- */
+.header{
+    position: relative;
+    color:#fff;
+    padding:1mm;
+    font-size:2.5mm;
+    font-weight:bold;
+    display: flex;
+    flex-direction: column;
+}
+
+.slogan-strip{
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.5mm;
+    margin-bottom: 0.2mm;
+    line-height: 1.1;
+}
+
+.slogan-left, .slogan-center, .slogan-right{
+    flex: 1;
+    text-align: center;
+}
+
+.main-header{
+    display: grid;
+    grid-template-columns: 6mm 1fr 10mm;
+    align-items: center;
+    margin-bottom: 0.2mm;
+}
+
+.main-header img{
+    height: 4mm;
+    margin-right: 1mm;
+}
+
+.main-header .title{
+    font-size: 2.5mm;
+    line-height: 1.1;
+    text-align: center;
+    flex: 1;
+}
+
+.registration{
+    font-size: 1.5mm;
+    text-align: right;
+    line-height: 1.1;
+}
+
+.org-address{
+    font-size: 2.5mm;
+    text-align: center;
+    line-height: 1.1;
+    font-weight: bold;
+    color :rgb(0, 0, 0);
+    margin-top: 0.4mm;
+    padding: 0;
+}
+
+/* ---------- PHOTO ---------- */
+.photo-box{
+    text-align:center;
+    margin-top:1.5mm;
+    position:relative;
+}
+
+.photo-box img{
+    width:22mm;
+    height:22mm;
+    border:1px solid #000;
+    object-fit:cover;
+}
+
+.stamp{
+    position:absolute;
+    bottom:0;
+    right:0;
+    width:7mm;
+    height:7mm;
+    border-radius:50%;
+}
+
+/* ---------- DETAILS ---------- */
+.details{
+    padding:2mm;
+    font-size:2.6mm;
+    flex:1;
+}
+
+.field{
+    margin-bottom: 1mm;
+}
+
+.label{
+    font-weight:bold;
+    color:rgb(1,0,102);
+    display: inline;
+}
+
+.value{
+    display: inline;
+    margin-left: 2mm;
+}
+
+
+
+
+.official-text{
+    text-align: center;
+    font-size: 2mm;
+    margin-top: 1mm;
+    font-weight: bold;
+}
+
+/* ---------- FOOTER ---------- */
+.footer{
+    background:rgb(254,0,0);
+    color:#fff;
+    text-align:center;
+    font-size:2.4mm;
+    padding:1mm;
+}
+
+/* ---------- BACK ---------- */
+.back .header{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:rgb(1,0,102);
+    color:#fff;
+    font-size:2.5mm;
+    font-weight:bold;
+    padding:2mm 1mm;
+}
+
+.back .content{
+    padding:3mm;
+    font-size:2.6mm;
+    flex:1;
+}
+
+.back .qr{
+    display:flex;
+    justify-content:center;
+    margin-top:3.5mm;
+}
+
+.back .qr img{
+    width:26mm;
+    height:26mm;
+}
+
+.back .qr-text{
+    text-align: center;
+    font-size: 1.8mm;
+    margin: 1mm 0;
+    font-weight: bold;
+}
+
+.back .disclaimer{
+    border: 0.5px solid #000;
+    padding: 1mm;
+    margin: 1mm 0;
+    font-size: 1.5mm;
+    line-height: 1.2;
+    text-align: center;
+}
+
+.back .disclaimer div{
+    margin-bottom: 0.5mm;
+}
+
+.back .disclaimer div:last-child{
+    margin-bottom: 0;
+}
+</style>
+</head>
+
+<body>
+
+<!-- ================= FRONT SIDE ================= -->
+<div class="card front">
+
+    <div class="header">
+        <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 830 50" preserveAspectRatio="none" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;">
+            <polygon points="0,0 830,0 0,50" fill="#2b235f" />
+            <polygon points="0,50 830,0 830,50" fill="#d92523" />
+        </svg>
+        <div class="slogan-strip">
+            <span class="slogan-left">मानव हित सर्वोपरि</span>
+            <span class="slogan-center">सत्यमेव जयते</span>
+            <span class="slogan-right">न्याय ही धर्म है</span>
+        </div>
+        <div class="main-header">
+            <img src="data:image/png;base64,<%= nhraLogo %>">
+            <div class="title">
+                राष्ट्रीय मानवाधिकार संगठन
+            </div>
+            <div class="registration">
+                पंजीकरण संख्या<br>4120/2020
+            </div>
+        </div>
+
+    </div>
+
+    <div class="org-address">
+        D-2, S/F, Gali No. 9, Best Jyoti Nagar, Shahdara Delhi-94
+    </div>
+
+        <div class="photo-box">
+        <img src="data:image/jpeg;base64,<%= memberPhoto %>">
+        <img src="data:image/png;base64,<%= stampImage || 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==' %>" class="stamp">
+    </div>
+
+    <div class="details">
+        <div class="field">
+            <span class="label">Name:</span>
+            <span class="value"><%= membership.fullName %></span>
+        </div>
+
+        <div class="field">
+            <span class="label">Father Name:</span>
+            <span class="value"><%= membership.fatherName %></span>
+        </div>
+
+        <div class="field">
+            <span class="label">Designation:</span>
+            <span class="value"><%
+              // Build designation from level + role + location (e.g., "Katihar Media Incharge" or "State Media Incharge")
+              var levelName = '';
+              var roleName = '';
+              var locationName = '';
+              var level = '';
+              
+              if (membership.assignedRoles && membership.assignedRoles[0]) {
+                var ar = membership.assignedRoles[0];
+                level = ar.level;
+                
+                // Get location for all levels
+                locationName = ar.location || '';
+                
+                // Map level to display name
+                if (ar.level === 'state' || ar.level === 'pradesh') levelName = 'State';
+                else if (ar.level === 'division') levelName = 'Division';
+                else if (ar.level === 'district') levelName = 'District';
+                else if (ar.level === 'block') levelName = 'Block';
+                else levelName = ar.level || '';
+                
+                roleName = ar.roleName || ar.role || '';
+              } else {
+                levelName = member.level || '';
+                roleName = member.role || membership.jobRole || '';
+                locationName = membership.district || membership.state || '';
+              }
+
+              // Map Hindi role names to English
+              var englishRoleMap = {
+                'अध्यक्ष': 'President',
+                'उपाध्यक्ष': 'Vice President',
+                'वरिष्ठ उपाध्यक्ष': 'Senior Vice President',
+                'महासचिव': 'General Secretary',
+                'सचिव': 'Secretary',
+                'संगठन सचिव': 'Organization Secretary',
+                'संयुक्त सचिव': 'Joint Secretary',
+                'विधि सचिव': 'Legal Secretary',
+                'कोषाध्यक्ष': 'Treasurer',
+                'आईटी सेल प्रभारी': 'IT Cell Incharge',
+                'मीडिया प्रभारी': 'Media Incharge',
+                'मीडिया सचिव': 'Media Secretary',
+                'प्रचार सचिव': 'Publicity Secretary',
+                'प्रेस सचिव': 'Press Secretary',
+                'प्रवक्ता': 'Spokesperson',
+                'युवा समन्वयक': 'Youth Coordinator',
+                'महिला समन्वयक': 'Women Coordinator',
+                'अल्पसंख्यक समन्वयक': 'Minority Coordinator',
+                'SC/ST समन्वयक': 'SC/ST Coordinator',
+                'जाँच दल सदस्य': 'Investigation Team Member'
+              };
+
+              if (englishRoleMap[roleName]) {
+                roleName = englishRoleMap[roleName];
+              }
+
+              // Build designation based on level
+              var designation = '';
+              if (level === 'state' || level === 'pradesh') {
+                // State level: "State Role"
+                designation = (levelName ? levelName + ' ' : '') + roleName;
+              } else if (level === 'division' || level === 'district' || level === 'block') {
+                // Division, District, Block: "LocationName Role"
+                designation = (locationName ? locationName + ' ' : '') + roleName;
+              } else {
+                // Default
+                designation = (levelName ? levelName + ' ' : '') + (locationName ? locationName + ' ' : '') + roleName;
+              }
+            %><%= designation || 'Member' %></span>
+        </div>
+
+        <div class="field">
+            <span class="label">DOB:</span>
+            <span class="value"><% if (membership.dob) { %><%= new Date(membership.dob).toLocaleDateString('en-GB') %><% } else { %>N/A<% } %></span>
+        </div>
+
+        <div class="field">
+            <span class="label">Blood Group:</span>
+            <span class="value"><%= membership.bloodGroup %></span>
+        </div>
+
+        <div class="field">
+            <span class="label">Jurisdiction:</span>
+            <span class="value">All India</span>
+        </div>
+
+        <div class="field">
+            <span class="label">Issued On:</span>
+            <span class="value"><%
+                const issueDate = new Date();
+                const day = String(issueDate.getDate()).padStart(2, '0');
+                const month = String(issueDate.getMonth() + 1).padStart(2, '0');
+                const year = issueDate.getFullYear();
+            %><%= day %>/<%= month %>/<%= year %></span>
+        </div>
+
+        <div class="official-text">
+            Official Member Identity Card
+        </div>
+    </div>
+
+
+    <div class="footer">
+        ID: <%= membership.membershipId %>
+    </div>
+
+</div>
+
+<!-- ================= BACK SIDE ================= -->
+<div class="card back">
+
+    <div class="header">
+        <div class="title" style="text-align: center;">Rashtriya Manav Adhikar Sangathan</div>
+    </div>
+
+    <div class="content">
+        <div class="field">
+            <span class="label">Mobile:</span>
+            <span class="value"><%= membership.mobile %></span>
+        </div>
+
+        <div class="field">
+            <span class="label">Email:</span>
+            <span class="value"><%= membership.email %></span>
+        </div>
+
+        <div class="field">
+            <span class="label">Address:</span>
+            <span class="value">
+                <%= membership.houseNo %>,
+                <%= membership.street %>,
+                <%= membership.village %>,
+                <%= membership.district %>,
+                <%= membership.state %>,
+                <%= membership.pincode %>
+            </span>
+        </div>
+
+        <div class="field">
+            <span class="label">Valid Upto:</span>
+            <span class="value">
+                <%
+                  const today = new Date();
+                  const validUpto = new Date(today);
+                  validUpto.setFullYear(today.getFullYear() + 1);
+                %>
+                <%= validUpto.toLocaleDateString('en-GB') %>
+            </span>
+        </div>
+
+        <div class="qr">
+            <img src="<%= qrCodeDataURL %>">
+        </div>
+        <div class="qr-text">
+            Scan QR code to verify card authenticity
+        </div>
+        <div class="disclaimer">
+            <div>Issued to the member only.</div>
+            <div>Misuse of this card may lead to cancellation.</div>
+            <div>The association is not responsible for any illegal activity of the card holder.</div>
+        </div>
+    </div>
+
+    <div class="footer">
+        Authorized ID Card
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -60,3 +60,26 @@ If you want, I can:
 - Add an example `docker-compose.yml` for local testing
 
 Tell me which of the above you'd like me to implement next.
+
+---
+
+## Documents download flow (new)
+
+- Removed background PDF and ID card generation that previously ran on role assignment by admins.
+- Now, when a role is assigned, admins will *send a notification email* to the member with a link to request downloads.
+- Public flow added:
+  - Header link: "ID Card / Joining Letter" -> `/documents/request-download`
+  - User provides name + email and receives an OTP via email
+  - User verifies OTP and is redirected to a short-lived profile page with buttons to download ID Card or Joining Letter
+  - PDFs are generated on-demand (server-side) and returned as downloads
+
+Manual tests to run after deploy:
+1) Assign a role in admin to an existing member with an email; verify an email is sent with a link containing their email.
+2) Click header -> ID Card / Joining Letter -> enter the member's email and correct name if asked -> receive OTP in email.
+3) Enter OTP -> confirm you see the profile page and can download both documents; verify file contents and that downloads complete.
+4) Try invalid OTP and expired tokens to ensure proper error messages and no document access.
+
+Notes:
+- Ensure `PUPPETEER_EXECUTABLE_PATH` is set on the host or use the default bundled Chromium in environments that support it.
+- Add `APP_BASE_URL` to .env for absolute links in emails.
+- Optional: enable `RECAPTCHA_SECRET` and `RECAPTCHA_SITE_KEY` to protect the request form from abuse.

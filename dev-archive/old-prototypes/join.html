@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>National Human Rights Association</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+    <header class="site-header">
+    <div class="slogan-strip">
+        <span class="slogan-left">मानव हित सर्वोपरि</span>
+        <span class="slogan-center">सत्यमेव जयते</span>
+        <span class="slogan-right">न्याय ही धर्म है</span>
+    </div>
+    <div class="main-header">
+        <div class="logo">
+            <a href="/"><img src="/images/logo.jpeg" alt="Organization Logo" data-key="logo_alt" data-attr="alt"></a>
+        </div>
+        <div class="org-name-container">
+            <h1 id="org-name" data-key="org_name">National Human Rights Association</h1>
+        </div>
+        <div class="header-right-placeholder"></div> <!-- To balance the flexbox -->
+    </div>
+    <div class="nav-bar">
+        <button class="hamburger" aria-label="Toggle navigation menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <nav>
+            <ul>
+                <li><a href="/" data-key="nav_home">Home</a></li>
+                <li><a href="/about" data-key="nav_about">About Us</a></li>
+                <li><a href="/team" data-key="nav_team">Our Team</a></li>
+                <li><a href="/activities" data-key="nav_activities">Activities</a></li>
+                <li><a href="/news" data-key="nav_news">News</a></li>
+                <li><a href="/gallery" data-key="nav_gallery">Gallery</a></li>
+                <li><a href="/join" data-key="nav_join">Join Us</a></li>
+                <li><a href="/contact" data-key="nav_contact">Contact Us</a></li>
+                <!-- Admin Login Link -->
+                <li><a href="/admin/login" style="color: #d92523; font-weight: bold;">🔐 Admin Login</a></li>
+            </ul>
+        </nav>
+        <div class="search-bar">
+            <input type="text" placeholder="Search..." data-key="search_placeholder" data-attr="placeholder">
+            <i class="search-icon"></i>
+        </div>
+        <div class="lang-toggle">
+            <select id="language-selector">
+                <option value="en">EN</option>
+                <option value="hi">HI</option>
+                <option value="ur">UR</option>
+            </select>
+        </div>
+    </div>
+</header>
+
+
+    <main>
+        <section class="join-us-page">
+    <div class="container">
+        <div class="join-card">
+            <div class="join-card-left">
+                <h2>Join NHRA</h2>
+                <p class="lead">समाज के लिए कार्य करें — सदस्यता के लिए आवेदन करें। नीचे दी गई जानकारी भरें।</p>
+
+                
+                
+
+                <form id="membershipForm" class="membership-form" method="POST" action="/join" enctype="multipart/form-data" novalidate>
+                    <div class="form-row two-col">
+                        <label>पूर्ण नाम / Full Name *</label>
+                        <input name="fullName" required value="">
+                    </div>
+
+                    <div class="form-row two-col">
+                        <label>पिता / पति का नाम *</label>
+                        <input name="fatherName" required value="">
+                    </div>
+
+                    <div class="form-row two-col">
+                        <label>जन्म तिथि / Date of Birth *</label>
+                        <input type="date" name="dob" required value="">
+                    </div>
+
+                    <div class="form-row two-col">
+                        <label>लिंग / Gender *</label>
+                        <select name="gender" required>
+                            <option value="" selected>-- चुनें / Select --</option>
+                            <option value="male" >पुरुष / Male</option>
+                            <option value="female" >महिला / Female</option>
+                            <option value="other" >अन्य / Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row two-col">
+                        <label>मोबाइल नंबर / Mobile *</label>
+                        <input name="mobile" required value="">
+                    </div>
+
+                    <div class="form-row two-col">
+                        <label>ईमेल / Email *</label>
+                        <input type="email" name="email" required value="">
+                    </div>
+
+                    
+
+                    <div class="form-row two-col">
+                        <label>Blood Group</label>
+                        <select name="bloodGroup">
+                            <option value="" selected>-- Select --</option>
+                            <option value="A+" >A+</option>
+                            <option value="A-" >A-</option>
+                            <option value="B+" >B+</option>
+                            <option value="B-" >B-</option>
+                            <option value="O+" >O+</option>
+                            <option value="O-" >O-</option>
+                            <option value="AB+" >AB+</option>
+                            <option value="AB-" >AB-</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row two-col">
+                        <label>शैक्षणिक योग्यता / Education</label>
+                        <select name="education">
+                            <option value="" selected>-- चुनें / Select --</option>
+                            <option value="None" >None</option>
+                            <option value="Primary" >Primary</option>
+                            <option value="Secondary" >Secondary</option>
+                            <option value="Higher Secondary" >Higher Secondary</option>
+                            <option value="Diploma" >Diploma</option>
+                            <option value="Bachelor" >Bachelor</option>
+                            <option value="Master" >Master</option>
+                            <option value="PhD" >PhD</option>
+                            <option value="Other" >Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row two-col">
+                        <label>पेशा / Occupation</label>
+                        <select name="occupation">
+                            <option value="" selected>-- चुनें / Select --</option>
+                            <option value="Student" >Student</option>
+                            <option value="Unemployed" >Unemployed</option>
+                            <option value="Farmer / Agriculture" >Farmer / Agriculture</option>
+                            <option value="Labour / Daily Wage Worker" >Labour / Daily Wage Worker</option>
+                            <option value="Private Job" >Private Job</option>
+                            <option value="Government Job" >Government Job</option>
+                            <option value="Self Employed" >Self Employed</option>
+                            <option value="Business / Trader" >Business / Trader</option>
+                            <option value="Teacher / Professor" >Teacher / Professor</option>
+                            <option value="Doctor / Medical Professional" >Doctor / Medical Professional</option>
+                            <option value="Engineer / IT Professional" >Engineer / IT Professional</option>
+                            <option value="Lawyer" >Lawyer</option>
+                            <option value="Journalist / Media" >Journalist / Media</option>
+                            <option value="Social Worker / NGO" >Social Worker / NGO</option>
+                            <option value="Artist / Writer" >Artist / Writer</option>
+                            <option value="Driver" >Driver</option>
+                            <option value="Housewife / Homemaker" >Housewife / Homemaker</option>
+                            <option value="Retired" >Retired</option>
+                            <option value="Other" >Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row two-col">
+                        <label>पहचान प्रमाण (Aadhaar / ID No.)</label>
+                        <input name="idNumber" value="">
+                    </div>
+
+                    <div class="form-row two-col">
+                        <label>राज्य / State *</label>
+                        <select name="state" id="stateSelect" required>
+                            <option value="" selected>-- चुनें / Select --</option>
+                            <option value="Bihar" >Bihar</option>
+                            <option value="Andhra Pradesh" >Andhra Pradesh</option>
+                            <option value="Arunachal Pradesh" >Arunachal Pradesh</option>
+                            <option value="Assam" >Assam</option>
+                            <option value="Chhattisgarh" >Chhattisgarh</option>
+                            <option value="Goa" >Goa</option>
+                            <option value="Gujarat" >Gujarat</option>
+                            <option value="Haryana" >Haryana</option>
+                            <option value="Himachal Pradesh" >Himachal Pradesh</option>
+                            <option value="Jharkhand" >Jharkhand</option>
+                            <option value="Karnataka" >Karnataka</option>
+                            <option value="Kerala" >Kerala</option>
+                            <option value="Madhya Pradesh" >Madhya Pradesh</option>
+                            <option value="Maharashtra" >Maharashtra</option>
+                            <option value="Manipur" >Manipur</option>
+                            <option value="Meghalaya" >Meghalaya</option>
+                            <option value="Mizoram" >Mizoram</option>
+                            <option value="Nagaland" >Nagaland</option>
+                            <option value="Odisha" >Odisha</option>
+                            <option value="Punjab" >Punjab</option>
+                            <option value="Rajasthan" >Rajasthan</option>
+                            <option value="Sikkim" >Sikkim</option>
+                            <option value="Tamil Nadu" >Tamil Nadu</option>
+                            <option value="Telangana" >Telangana</option>
+                            <option value="Tripura" >Tripura</option>
+                            <option value="Uttar Pradesh" >Uttar Pradesh</option>
+                            <option value="Uttarakhand" >Uttarakhand</option>
+                            <option value="West Bengal" >West Bengal</option>
+                            <option value="Andaman and Nicobar Islands" >Andaman and Nicobar Islands</option>
+                            <option value="Chandigarh" >Chandigarh</option>
+                            <option value="Dadra and Nagar Haveli and Daman and Diu" >Dadra and Nagar Haveli and Daman and Diu</option>
+                            <option value="Delhi" >Delhi</option>
+                            <option value="Jammu and Kashmir" >Jammu and Kashmir</option>
+                            <option value="Ladakh" >Ladakh</option>
+                            <option value="Lakshadweep" >Lakshadweep</option>
+                        </select>
+                    </div>
+
+                    
+
+                    <div class="form-row two-col">
+                        <label>परमंडल / Parmandal *</label>
+                        <select name="parmandal" id="parmandalSelect" required>
+                            <option value="">-- चुनें / Select --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row two-col">
+                        <label>ज़िला / Jila *</label>
+                        <select name="jila" id="jilaSelect" required>
+                            <option value="">-- चुनें / Select --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row two-col">
+                        <label>ब्लॉक / Block *</label>
+                        <select name="block" id="blockSelect" required>
+                            <option value="">-- चुनें / Select --</option>
+                        </select>
+                    </div>
+
+                    
+                    <script>
+                        // Server-provided defaults for preselection (if any)
+                        window.__NHRA_LOCATION = {"parmandal":"","jila":"","block":""};
+                    </script>
+
+                    <div id="locationStatus" style="font-size:0.95em;color:#666;margin-top:6px;"></div>
+
+                    <!-- Address fields always visible -->
+                    <div class="form-row two-col">
+                        <label>House/House No</label>
+                        <input name="houseNo" value="">
+                    </div>
+
+                    <div class="form-row two-col">
+                        <label>Street</label>
+                        <input name="street" value="">
+                    </div>
+
+                    <div class="form-row two-col">
+                        <label>Panchayat</label>
+                        <input name="panchayat" value="">
+                    </div>
+
+                    <div class="form-row two-col">
+                        <label>Village</label>
+                        <input name="village" value="">
+                    </div>
+
+                    <div class="form-row two-col">
+                        <label>Pincode</label>
+                        <input name="pincode" value="">
+                    </div>
+
+                    <div class="form-row two-col">
+                        <label>पासपोर्ट साइज फोटो *</label>
+                        <input type="file" name="photo" accept="image/*" id="photoInput" required>
+                        <small class="hint">फाइल साइज 1MB से कम होनी चाहिए</small>
+                    </div>
+
+                    <div class="form-row two-col">
+                        <label>Documents (Aadhaar + Character Certificate) *</label>
+                        <input type="file" name="documents" accept="application/pdf" id="documentsInput" required>
+                        <small class="hint">एक PDF फाइल जिसमें Aadhaar और Character Certificate दोनों हों — फाइल साइज 1MB से कम</small>
+                    </div> 
+
+                    <div class="form-row full">
+                        <label>संस्था से जुड़ने का उद्देश्य *</label>
+                        <textarea name="reason" rows="5" required></textarea>
+                    </div>
+
+                    <div class="form-row full declaration">
+                        <label>
+                            <input type="checkbox" name="agreedToTerms" id="agreedToTerms"  required>
+                            मैं संस्था के नियमों का पालन करूंगा/करूंगी * (<a href="/terms" class="terms-link" target="_blank" rel="noopener">Terms and Conditions पढ़ें</a>)
+                        </label>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" id="submitBtn">आवेदन जमा करें</button>
+                </form>
+            </div>
+                <div class="photo-preview" id="photoPreview">
+                    <img alt="Preview" id="photoPreviewImg">
+                </div>
+
+                <!-- Error highlight style -->
+                <style>
+                    .input-error { box-shadow: 0 0 0 3px rgba(255,0,0,0.12); border-color: #dc3545 !important; }
+                </style>
+                <div class="help">
+                    <h4>Tips</h4>
+                    <ul>
+                        <li>सबमिट करने से पहले सभी * वाले फ़ील्ड भरें।</li>
+                        <li>मोबाइल नंबर सही और चालू होना चाहिए।</li>
+                        <li><strong>Aadhaar और Character Certificate दोनों एक ही PDF में अपलोड करें (1MB के नीचे)।</strong></li>
+                    </ul>
+                </div>
+            </aside>
+        </div>
+    </div>
+</section>
+
+<script>
+    (function(){
+        const form = document.getElementById('membershipForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const agreed = document.getElementById('agreedToTerms');
+        const photoInput = document.getElementById('photoInput');
+        const photoPreviewImg = document.getElementById('photoPreviewImg');
+
+        // New: intercept submit, validate, and submit via AJAX to show popup and preserve form data on failure
+        form.addEventListener('submit', function(e){
+            e.preventDefault();
+
+            // Clear previous error highlights
+            document.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
+            const statusEl = document.getElementById('locationStatus');
+            if (statusEl) { statusEl.textContent = ''; statusEl.style.color = '#666'; }
+
+            const errors = [];
+            const requiredFields = [
+                { name: 'fullName', label: 'Full name' },
+                { name: 'fatherName', label: 'Father/Husband name' },
+                { name: 'dob', label: 'Date of birth' },
+                { name: 'gender', label: 'Gender' },
+                { name: 'mobile', label: 'Mobile' },
+                { name: 'email', label: 'Email' },
+                { name: 'state', label: 'State' },
+                { name: 'parmandal', label: 'Parm' },
+                { name: 'jila', label: 'District' },
+                { name: 'block', label: 'Block' },
+                { name: 'reason', label: 'Reason' },
+                { name: 'agreedToTerms', label: 'Agreement' }
+            ];
+
+            requiredFields.forEach(f => {
+                const el = form.querySelector(`[name="${f.name}"]`);
+                if (!el) return;
+                let ok = true;
+                if (el.type === 'checkbox') ok = el.checked;
+                else if (el.tagName === 'SELECT' || el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                    ok = (el.value && el.value.toString().trim().length > 0);
+                }
+                if (!ok) {
+                    errors.push(f.label + ' is required');
+                    el.classList.add('input-error');
+                }
+            });
+
+            // Files validation: if inputs exist and required attr present
+            const photoInput = document.getElementById('photoInput');
+            const docsInput = document.getElementById('documentsInput');
+            if (photoInput && photoInput.required && (!photoInput.files || photoInput.files.length === 0)) {
+                errors.push('Passport-size photo is required');
+                photoInput.classList.add('input-error');
+            }
+            if (docsInput && docsInput.required && (!docsInput.files || docsInput.files.length === 0)) {
+                errors.push('Documents PDF is required');
+                docsInput.classList.add('input-error');
+            }
+
+            if (errors.length > 0) {
+                // Show a popup with errors and highlight fields
+                showModal('Submission failed', errors.join('\n'));
+                submitBtn.disabled = false; submitBtn.textContent = 'आवेदन जमा करें';
+                return;
+            }
+
+            // Build FormData and send via fetch
+            const fd = new FormData(form);
+            submitBtn.disabled = true; submitBtn.textContent = 'सबमिट किया जा रहा है...';
+
+            fetch('/join', { method: 'POST', body: fd, credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+                .then(async res => {
+                    const contentType = res.headers.get('content-type') || '';
+                    if (contentType.includes('application/json')) return res.json();
+                    // fallback: if server returns HTML (non-AJAX), assume navigation will happen; show generic message
+                    return { ok: true, msg: 'Submitted (server returned non-JSON). If you see the form page again, check for errors.' };
+                })
+                .then(json => {
+                    if (json.ok) {
+                        showModal('Submission successful', json.msg || 'Your application has been submitted successfully.');
+                        // Optionally clear form after success
+                        form.reset();
+                        submitBtn.disabled = false; submitBtn.textContent = 'आवेदन जमा करें';
+                    } else {
+                        // Show server-side validation errors
+                        const msgs = json.errors ? json.errors.join('\n') : (json.msg || 'Submission failed');
+                        showModal('Submission failed', msgs);
+                        // Highlight fields indicated by server
+                        if (json.fields) {
+                            Object.keys(json.fields).forEach(k => {
+                                const el = form.querySelector(`[name="${k}"]`);
+                                if (el) el.classList.add('input-error');
+                            });
+                        }
+                        submitBtn.disabled = false; submitBtn.textContent = 'आवेदन जमा करें';
+                    }
+                })
+                .catch(err => {
+                    console.error('Submission error:', err);
+                    showModal('Submission error', 'Network or server error occurred. Please try again.');
+                    submitBtn.disabled = false; submitBtn.textContent = 'आवेदन जमा करें';
+                });
+        });
+
+        // Ensure submit button is enabled when returning to the page (in case it was left disabled)
+        window.addEventListener('load', function(){
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'आवेदन जमा करें'; }
+            const statusEl = document.getElementById('locationStatus');
+            if (statusEl && statusEl.textContent && statusEl.textContent.trim().length > 0) {
+                // keep server messages visible
+            }
+        });
+
+        // Modal helper
+        function showModal(title, message) {
+            let modal = document.getElementById('nhraModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'nhraModal';
+                modal.style.position = 'fixed';
+                modal.style.left = '0';
+                modal.style.top = '0';
+                modal.style.width = '100%';
+                modal.style.height = '100%';
+                modal.style.display = 'flex';
+                modal.style.alignItems = 'center';
+                modal.style.justifyContent = 'center';
+                modal.style.background = 'rgba(0,0,0,0.5)';
+                modal.style.zIndex = '9999';
+                const inner = document.createElement('div');
+                inner.style.background = '#fff';
+                inner.style.padding = '20px';
+                inner.style.borderRadius = '8px';
+                inner.style.maxWidth = '600px';
+                inner.style.width = '90%';
+                inner.id = 'nhraModalInner';
+                modal.appendChild(inner);
+                document.body.appendChild(modal);
+                modal.addEventListener('click', function(e){ if (e.target === modal) modal.style.display = 'none'; });
+            }
+            const inner = document.getElementById('nhraModalInner');
+            inner.innerHTML = `<h3 style="margin-top:0">${title}</h3><pre style="white-space:pre-wrap">${message}</pre><div style="text-align:right;margin-top:12px;"><button id="nhraModalClose" class="btn">Close</button></div>`;
+            modal.style.display = 'flex';
+            document.getElementById('nhraModalClose').addEventListener('click', function(){ modal.style.display = 'none'; });
+        }
+
+        if (photoInput) {
+            photoInput.addEventListener('change', function(){
+                const file = this.files && this.files[0];
+                if (!file) return;
+                if (!file.type.startsWith('image/')) { alert('Please select an image file'); this.value = ''; return; }
+                // client-side size limit 1MB
+                if (file.size > 1 * 1024 * 1024) { alert('Image too large. Maximum 1MB allowed.'); this.value = ''; return; }
+                const reader = new FileReader();
+                reader.onload = function(ev){ photoPreviewImg.src = ev.target.result; };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Combined documents (Aadhaar + Character Certificate) client-side validation
+        const documentsInput = document.getElementById('documentsInput');
+        if (documentsInput) {
+            documentsInput.addEventListener('change', function(){
+                const f = this.files && this.files[0];
+                if (!f) return;
+                if (f.type !== 'application/pdf') { alert('Please upload a PDF containing Aadhaar and Character Certificate.'); this.value = ''; return; }
+                if (f.size > 1 * 1024 * 1024) { alert('File too large. Maximum 1MB allowed.'); this.value = ''; return; }
+            });
+        }
+
+        // mobile input sanitization
+        const mobileInput = form.querySelector('input[name="mobile"]');
+        if (mobileInput) {
+            mobileInput.addEventListener('input', function(){ this.value = this.value.replace(/[^0-9+\s-]/g, ''); });
+        }
+
+        // Bihar locations now handled by external script: /js/bihar-locations.js
+        // See /public/js/bihar-locations.js for implementation and debugging logs
+        
+        
+    })();
+</script>
+
+<script src="/js/form.js"></script>
+<script src="/js/bihar-locations.js"></script>
+
+<style>
+    /* Join card layout */
+    .join-card { display: grid; grid-template-columns: 1fr; gap: 30px; align-items: start; max-width: 1100px; margin: 0 auto; }
+    .join-card-left { background: #fff; padding: 28px; border-radius: 12px; box-shadow: 0 6px 30px rgba(0,0,0,0.06); }
+    .join-card-right { background: transparent; }
+    .join-card h2 { margin-top: 0; color: #2b235f; }
+    .lead { color: #555; margin-bottom: 18px; }
+    .form-row { margin-bottom: 14px; }
+    .form-row.two-col { display: inline-block; width: calc(50% - 10px); margin-right: 20px; }
+    .form-row.full { display:block; width:100%; }
+    .form-row label { display:block; font-weight:600; margin-bottom:6px; color:#2b235f; }
+    .form-row input, .form-row textarea, .form-row select { width:100%; padding:10px 12px; border-radius:8px; border:1px solid #ddd; }
+    .declaration { margin-top:10px; }
+    .form-actions { display:flex; gap:12px; margin-top:18px; justify-content:center; }
+    .photo-preview { background:#fff; padding:12px; border-radius:8px; box-shadow:0 4px 16px rgba(0,0,0,0.05); text-align:center; }
+    .photo-preview img { width:200px; height:auto; border-radius:6px; }
+    .help { margin-top:18px; font-size:0.95rem; color:#444; }
+    .terms-link { color:#1a73e8; text-decoration:underline; }
+
+    @media (max-width: 900px) {
+        .join-card { grid-template-columns: 1fr; }
+        .form-row.two-col { width:100%; margin-right:0; }
+        .photo-preview img { width:150px; }
+    }
+</style>
+    </main>
+
+    <footer>
+    <p>&copy; Rāṣṭrīya Manavadhikar Sangathan, 2025 | Social Media Placeholders</p>
+</footer>
+
+    <script src="/images/main.js"></script>
+</body>
+</html>

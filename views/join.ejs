@@ -12,7 +12,9 @@
                     <div class="alert error"><%= error %></div>
                 <% } %>
 
-                <form id="membershipForm" class="membership-form" method="POST" action="/join" enctype="multipart/form-data" novalidate>
+                <% const safeOldData = oldData || {}; %>
+
+                <form id="membershipForm" class="membership-form" method="POST" action="/join" enctype="multipart/form-data" novalidate data-nhra-location='<%- JSON.stringify({ parmandal: safeOldData.division || '', jila: safeOldData.district || '', block: safeOldData.block || '' }) %>'>
                     <div class="form-row two-col">
                         <label>पूर्ण नाम / Full Name *</label>
                         <input name="fullName" required value="<%= typeof fullName !== 'undefined' ? fullName : '' %>">
@@ -177,16 +179,8 @@
                         </select>
                     </div>
 
-                    <% const safeOldData = oldData || {}; %>
-                    <script>
-                        // Server-provided defaults for preselection (if any)
-                        window.__NHRA_LOCATION = <%- JSON.stringify({
-                            parmandal: safeOldData.division || '',
-                            jila: safeOldData.district || '',
-                            block: safeOldData.block || ''
-                        }) %>;
-                    </script>
-
+                    <!-- Store server-provided defaults for preselection on the form element to avoid inline scripts (CSP-safe) -->
+                    
                     <div id="locationStatus" style="font-size:0.95em;color:#666;margin-top:6px;"></div>
 
                     <!-- Address fields always visible -->
@@ -246,6 +240,11 @@
                 <div class="photo-preview" id="photoPreview">
                     <img alt="Preview" id="photoPreviewImg">
                 </div>
+
+                <!-- Error highlight style -->
+                <style>
+                    .input-error { box-shadow: 0 0 0 3px rgba(255,0,0,0.12); border-color: #dc3545 !important; }
+                </style>
                 <div class="help">
                     <h4>Tips</h4>
                     <ul>
@@ -259,57 +258,9 @@
     </div>
 </section>
 
-<script>
-    (function(){
-        const form = document.getElementById('membershipForm');
-        const submitBtn = document.getElementById('submitBtn');
-        const agreed = document.getElementById('agreedToTerms');
-        const photoInput = document.getElementById('photoInput');
-        const photoPreviewImg = document.getElementById('photoPreviewImg');
-
-        form.addEventListener('submit', function(e){
-            submitBtn.disabled = true; submitBtn.textContent = 'सबमिट किया जा रहा है...';
-        });
-
-        if (photoInput) {
-            photoInput.addEventListener('change', function(){
-                const file = this.files && this.files[0];
-                if (!file) return;
-                if (!file.type.startsWith('image/')) { alert('Please select an image file'); this.value = ''; return; }
-                // client-side size limit 1MB
-                if (file.size > 1 * 1024 * 1024) { alert('Image too large. Maximum 1MB allowed.'); this.value = ''; return; }
-                const reader = new FileReader();
-                reader.onload = function(ev){ photoPreviewImg.src = ev.target.result; };
-                reader.readAsDataURL(file);
-            });
-        }
-
-        // Combined documents (Aadhaar + Character Certificate) client-side validation
-        const documentsInput = document.getElementById('documentsInput');
-        if (documentsInput) {
-            documentsInput.addEventListener('change', function(){
-                const f = this.files && this.files[0];
-                if (!f) return;
-                if (f.type !== 'application/pdf') { alert('Please upload a PDF containing Aadhaar and Character Certificate.'); this.value = ''; return; }
-                if (f.size > 1 * 1024 * 1024) { alert('File too large. Maximum 1MB allowed.'); this.value = ''; return; }
-            });
-        }
-
-        // mobile input sanitization
-        const mobileInput = form.querySelector('input[name="mobile"]');
-        if (mobileInput) {
-            mobileInput.addEventListener('input', function(){ this.value = this.value.replace(/[^0-9+\s-]/g, ''); });
-        }
-
-        // Bihar locations now handled by external script: /js/bihar-locations.js
-        // See /public/js/bihar-locations.js for implementation and debugging logs
-        
-        
-    })();
-</script>
-
-<script src="/js/form.js"></script>
-<script src="/js/bihar-locations.js"></script>
+<script src="/js/form.js" defer></script>
+<script src="/js/bihar-locations.js" defer></script>
+<script src="/js/join.js" defer></script>
 
 <style>
     /* Join card layout */

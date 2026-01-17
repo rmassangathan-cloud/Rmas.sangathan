@@ -1,0 +1,109 @@
+<section class="admin-manage-role">
+  <div class="container" style="max-width:800px;margin:30px auto;padding:20px;border:1px solid #eee;border-radius:8px;">
+    <h2>Manage Role Assignment</h2>
+    <p><strong>Member:</strong> <%= form.fullName %></p>
+    <p><strong>Current Status:</strong> <%= form.status %></p>
+
+    <% if (form.assignedRoles && form.assignedRoles.length > 0) { %>
+      <div style="background:#e8f5e8;padding:15px;border-radius:4px;margin-bottom:20px;">
+        <h3>Current Role Assignment</h3>
+        <p><strong>Category:</strong> <%= form.assignedRoles[0].category %></p>
+        <p><strong>Role:</strong> <%= form.assignedRoles[0].roleName %></p>
+        <p><strong>Team:</strong> <%= form.assignedRoles[0].teamType %></p>
+        <p><strong>Level:</strong> <%= form.assignedRoles[0].level %></p>
+        <% if (form.assignedRoles[0].location) { %>
+          <p><strong>Location:</strong> <%= form.assignedRoles[0].location %></p>
+        <% } %>
+      </div>
+    <% } %>
+
+    <form id="roleForm" method="POST" action="/admin/forms/<%= form._id %>/manage-role">
+      <div style="margin-bottom:20px;">
+        <label style="display:block;font-weight:bold;margin-bottom:5px;">Category</label>
+        <select name="category" id="categorySelect" required style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
+          <option value="">-- Select Category --</option>
+          <option value="karyakarini" <%= (form.assignedRoles && form.assignedRoles[0] && form.assignedRoles[0].category === 'karyakarini') ? 'selected' : '' %>>कार्यकारिणी / Executive Committee</option>
+          <option value="sahayataSamiti" <%= (form.assignedRoles && form.assignedRoles[0] && form.assignedRoles[0].category === 'sahayataSamiti') ? 'selected' : '' %>>सहायता समिति / Support Committees</option>
+          <option value="janchDal" <%= (form.assignedRoles && form.assignedRoles[0] && form.assignedRoles[0].category === 'janchDal') ? 'selected' : '' %>>जाँच दल / Investigation Team</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:20px;">
+        <label style="display:block;font-weight:bold;margin-bottom:5px;">Role</label>
+        <select name="role" id="roleSelect" required data-selected-role="<%= (form.assignedRoles && form.assignedRoles[0]) ? form.assignedRoles[0].role : '' %>" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
+          <option value="">-- Select Category First --</option>
+        </select>
+      </div>
+
+      <div id="teamSection" style="margin-bottom:20px;display:none;">
+        <label style="display:block;font-weight:bold;margin-bottom:5px;">Team</label>
+        <select name="teamType" id="teamSelect" required style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
+          <option value="">-- Select Team --</option>
+          <option value="core" <%= (form.assignedRoles && form.assignedRoles[0] && form.assignedRoles[0].teamType === 'core') ? 'selected' : '' %>>Core / कोर</option>
+          <option value="mahila" <%= (form.assignedRoles && form.assignedRoles[0] && form.assignedRoles[0].teamType === 'mahila') ? 'selected' : '' %>>Mahila / महिला</option>
+          <option value="yuva" <%= (form.assignedRoles && form.assignedRoles[0] && form.assignedRoles[0].teamType === 'yuva') ? 'selected' : '' %>>Yuva / युवा</option>
+          <option value="alpsankhyak" <%= (form.assignedRoles && form.assignedRoles[0] && form.assignedRoles[0].teamType === 'alpsankhyak') ? 'selected' : '' %>>Alpsankhyak / अल्पसंख्यक</option>
+          <option value="scst" <%= (form.assignedRoles && form.assignedRoles[0] && form.assignedRoles[0].teamType === 'scst') ? 'selected' : '' %>>SC/ST</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:20px;">
+        <label style="display:block;font-weight:bold;margin-bottom:5px;">Level</label>
+        <select name="level" id="levelSelect" required style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
+          <option value="">-- Select Level --</option>
+          <option value="state" <%= (form.assignedRoles && form.assignedRoles[0] && form.assignedRoles[0].level === 'state') ? 'selected' : '' %>>State Level</option>
+          <option value="division" <%= (form.assignedRoles && form.assignedRoles[0] && form.assignedRoles[0].level === 'division') ? 'selected' : '' %>>Division Level</option>
+          <option value="district" <%= (form.assignedRoles && form.assignedRoles[0] && form.assignedRoles[0].level === 'district') ? 'selected' : '' %>>District Level</option>
+          <option value="block" <%= (form.assignedRoles && form.assignedRoles[0] && form.assignedRoles[0].level === 'block') ? 'selected' : '' %>>Block Level</option>
+        </select>
+      </div>
+
+      <!-- Progressive Location Sections -->
+      <div id="stateSection" style="margin-bottom:20px;display:none;">
+        <label style="display:block;font-weight:bold;margin-bottom:5px;">State</label>
+        <select name="state" id="stateSelect" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
+          <option value="Bihar">Bihar</option>
+        </select>
+      </div>
+
+      <div id="divisionSection" style="margin-bottom:20px;display:none;">
+        <label style="display:block;font-weight:bold;margin-bottom:5px;">Division</label>
+        <select name="division" id="divisionSelect" data-selected-division="<%= (form.assignedRoles && form.assignedRoles[0] && form.assignedRoles[0].level === 'division') ? form.assignedRoles[0].location : '' %>" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
+          <option value="">-- Select Division --</option>
+        </select>
+      </div>
+
+      <div id="districtSection" style="margin-bottom:20px;display:none;">
+        <label style="display:block;font-weight:bold;margin-bottom:5px;">District</label>
+        <select name="district" id="districtSelect" data-selected-district="<%= (form.assignedRoles && form.assignedRoles[0] && form.assignedRoles[0].level === 'district') ? form.assignedRoles[0].location : '' %>" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
+          <option value="">-- Select District --</option>
+        </select>
+      </div>
+
+      <div id="blockSection" style="margin-bottom:20px;display:none;">
+        <label style="display:block;font-weight:bold;margin-bottom:5px;">Block</label>
+        <select name="block" id="blockSelect" data-selected-block="<%= (form.assignedRoles && form.assignedRoles[0] && form.assignedRoles[0].level === 'block') ? form.assignedRoles[0].location : '' %>" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
+          <option value="">-- Select Block --</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:20px;">
+        <label style="display:block;font-weight:bold;margin-bottom:5px;">Reason (Required)</label>
+        <textarea name="reason" required placeholder="Enter reason for role assignment..." style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;min-height:80px;"></textarea>
+      </div>
+
+      <div style="margin-bottom:20px;">
+        <label style="display:inline-block;margin-right:10px;">
+          <input type="checkbox" name="regeneratePdf" checked> Regenerate PDF & Send Email
+        </label>
+      </div>
+
+      <div style="display:flex;gap:10px;">
+        <button type="submit" class="btn btn-primary" style="padding:10px 20px;background:#007bff;color:white;border:none;border-radius:4px;cursor:pointer;">Assign Role</button>
+        <a href="/admin/forms/<%= form._id %>" class="btn" style="padding:10px 20px;background:#eee;color:#333;text-decoration:none;border-radius:4px;">Cancel</a>
+      </div>
+    </form>
+  </div>
+  </section>
+
+  <script src="/js/manage-role.js"></script>

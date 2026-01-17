@@ -18,8 +18,9 @@
           
           <div>
             <h3 style="margin-top:0;"><%= form.fullName %></h3>
+            <% const statusClass = form.status === 'accepted' ? 'status-accepted' : (form.status === 'rejected' ? 'status-rejected' : 'status-pending'); %>
             <p style="margin:5px 0;"><strong>Status:</strong> 
-              <span style="padding:3px 8px;border-radius:12px;font-size:0.9em;background:<%= form.status==='accepted'?'#28a745':(form.status==='rejected'?'#dc3545':'#ffc107') %>;color:<%= form.status==='pending'?'#333':'#fff' %>">
+              <span class="status-badge <%= statusClass %>">
                 <%= form.status.toUpperCase() %>
               </span>
             </p>
@@ -60,7 +61,10 @@
             <br>
             <small style="color:#666;margin-top:5px;display:block;">Combined Aadhaar + Character Certificate (PDF format)</small>
             <br>
-            <embed src="<%= certUrl %>" width="100%" height="600" type="application/pdf" style="border:1px solid #ddd;border-radius:4px;margin-top:10px;">
+            <!-- Use iframe instead of embed to avoid object-src CSP blocking -->
+            <iframe src="<%= certUrl %>" width="100%" height="600" style="border:1px solid #ddd;border-radius:4px;margin-top:10px;">
+              <p>Your browser cannot display PDFs inline. You can <a href="<%= certUrl %>" download>download the PDF</a> instead.</p>
+            </iframe>
           <% } else { %>
             <span style="color:#dc3545;font-weight:bold;">❌ No Character Certificate attached</span>
           <% } %>
@@ -93,37 +97,9 @@
         <div style="background:#fff;padding:20px;border:1px solid #ddd;border-radius:8px;margin-bottom:20px;box-shadow:0 2px 5px rgba(0,0,0,0.05);">
           <h3 style="margin-top:0;font-size:1.2em;">Take Action</h3>
           <% if(form.status === 'pending') { %>
-            <form method="POST" action="/admin/forms/<%= form._id %>/accept" style="margin-bottom:15px;">
-              <input type="text" name="note" placeholder="Acceptance Note (Optional)" style="width:100%;padding:8px;margin-bottom:5px;border:1px solid #ccc;border-radius:4px;">
-              <div style="margin-bottom:10px;">
-                <label style="display:block;margin-bottom:5px;font-size:0.9em;font-weight:bold;">Assign Role (Optional):</label>
-                <select name="jobRole" style="width:100%;padding:8px;margin-bottom:5px;border:1px solid #ccc;border-radius:4px;">
-                  <option value="">-- No Role --</option>
-                  <option value="अध्यक्ष">अध्यक्ष</option>
-                  <option value="वरिष्ठ उपाध्यक्ष">वरिष्ठ उपाध्यक्ष</option>
-                  <option value="उपाध्यक्ष">उपाध्यक्ष</option>
-                  <option value="महासचिव">महासचिव</option>
-                  <option value="सचिव">सचिव</option>
-                  <option value="संगठन सचिव">संगठन सचिव</option>
-                  <option value="संयुक्त सचिव">संयुक्त सचिव</option>
-                  <option value="विधि सचिव">विधि सचिव</option>
-                  <option value="कोषाध्यक्ष">कोषाध्यक्ष</option>
-                  <option value="मीडिया प्रभारी">मीडिया प्रभारी</option>
-                  <option value="मीडिया सचिव">मीडिया सचिव</option>
-                  <option value="प्रचार सचिव">प्रचार सचिव</option>
-                  <option value="प्रेस सचिव">प्रेस सचिव</option>
-                  <option value="प्रवक्ता">प्रवक्ता</option>
-                  <option value="कार्यक्रम सचिव">कार्यक्रम सचिव</option>
-                  <option value="कार्यकारिणी सदस्य">कार्यकारिणी सदस्य</option>
-                </select>
-                <select name="teamType" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
-                  <option value="core">Core Team (कोर टीम)</option>
-                  <option value="mahila">Mahila Team (महिला टीम)</option>
-                  <option value="yuva">Yuva Team (युवा टीम)</option>
-                  <option value="alpsankhyak">Alpsankhyak Team (अल्पसंख्यक टीम)</option>
-                  <option value="scst">SC/ST Team (SC/ST टीम)</option>
-                </select>
-              </div>
+              <form method="POST" action="/admin/forms/<%= form._id %>/accept" style="margin-bottom:15px;">
+              <input type="text" name="note" placeholder="Acceptance Note (Optional)" style="width:100%;padding:8px;margin-bottom:8px;border:1px solid #ccc;border-radius:4px;">
+              <p style="font-size:0.9em;color:#666;margin:6px 0 12px;">Role assignment is available after acceptance via the "Manage Role Assignment" button below.</p>
               <button class="btn" style="width:100%;padding:10px;background:#28a745;color:white;border:none;border-radius:4px;cursor:pointer;">Accept Application</button>
             </form>
 
@@ -142,49 +118,41 @@
         <% if(form.status === 'accepted') { %>
         <div style="background:#fff;padding:20px;border:1px solid #ddd;border-radius:8px;margin-bottom:20px;box-shadow:0 2px 5px rgba(0,0,0,0.05);">
           <h3 style="margin-top:0;font-size:1.2em;">Role Assignment</h3>
-          <% if(form.jobRole) { %>
-            <p><strong>Current Role:</strong> <%= form.jobRole %></p>
-            <p><strong>Team:</strong> <%= form.teamType === 'core' ? 'Core Team (कोर टीम)' :
-                                      form.teamType === 'mahila' ? 'Mahila Team (महिला टीम)' :
-                                      form.teamType === 'yuva' ? 'Yuva Team (युवा टीम)' :
-                                      form.teamType === 'alpsankhyak' ? 'Alpsankhyak Team (अल्पसंख्यक टीम)' :
-                                      'SC/ST Team (SC/ST टीम)' %></p>
+
+          <!-- Show current role assignment -->
+          <% if(form.assignedRoles && form.assignedRoles.length > 0) { %>
+            <div style="background:#e8f5e8;padding:10px;border-radius:4px;margin-bottom:15px;">
+              <p><strong>Current Role:</strong> <%= form.assignedRoles[0].roleName %></p>
+              <p><strong>Category:</strong> <%= form.assignedRoles[0].category %></p>
+              <p><strong>Team:</strong> <%= form.assignedRoles[0].teamType %></p>
+              <p><strong>Level:</strong> <%= form.assignedRoles[0].level %></p>
+              <% if(form.assignedRoles[0].location) { %>
+                <p><strong>Location:</strong> <%= form.assignedRoles[0].location %></p>
+              <% } %>
+            </div>
+          <% } else if(form.jobRole) { %>
+            <!-- Legacy role display -->
+            <div style="background:#fff3cd;padding:10px;border-radius:4px;margin-bottom:15px;">
+              <p><strong>Legacy Role:</strong> <%= form.jobRole %></p>
+              <p><strong>Team:</strong> <%= form.teamType %></p>
+              <small style="color:#856404;">This uses the old role system. Click "Manage Role" to upgrade.</small>
+            </div>
           <% } else { %>
             <p style="color:#dc3545;">No role assigned yet.</p>
           <% } %>
 
-          <form method="POST" action="/admin/forms/<%= form._id %>/assign-role">
-            <label style="display:block;margin-bottom:5px;font-size:0.9em;font-weight:bold;">Assign/Update Role:</label>
-            <select name="jobRole" required style="width:100%;padding:8px;margin-bottom:5px;border:1px solid #ccc;border-radius:4px;">
-              <option value="">-- Select Role --</option>
-              <option value="अध्यक्ष" <%= form.jobRole === 'अध्यक्ष' ? 'selected' : '' %>>अध्यक्ष</option>
-              <option value="वरिष्ठ उपाध्यक्ष" <%= form.jobRole === 'वरिष्ठ उपाध्यक्ष' ? 'selected' : '' %>>वरिष्ठ उपाध्यक्ष</option>
-              <option value="उपाध्यक्ष" <%= form.jobRole === 'उपाध्यक्ष' ? 'selected' : '' %>>उपाध्यक्ष</option>
-              <option value="महासचिव" <%= form.jobRole === 'महासचिव' ? 'selected' : '' %>>महासचिव</option>
-              <option value="सचिव" <%= form.jobRole === 'सचिव' ? 'selected' : '' %>>सचिव</option>
-              <option value="संगठन सचिव" <%= form.jobRole === 'संगठन सचिव' ? 'selected' : '' %>>संगठन सचिव</option>
-              <option value="संयुक्त सचिव" <%= form.jobRole === 'संयुक्त सचिव' ? 'selected' : '' %>>संयुक्त सचिव</option>
-              <option value="विधि सचिव" <%= form.jobRole === 'विधि सचिव' ? 'selected' : '' %>>विधि सचिव</option>
-              <option value="कोषाध्यक्ष" <%= form.jobRole === 'कोषाध्यक्ष' ? 'selected' : '' %>>कोषाध्यक्ष</option>
-              <option value="मीडिया प्रभारी" <%= form.jobRole === 'मीडिया प्रभारी' ? 'selected' : '' %>>मीडिया प्रभारी</option>
-              <option value="मीडिया सचिव" <%= form.jobRole === 'मीडिया सचिव' ? 'selected' : '' %>>मीडिया सचिव</option>
-              <option value="प्रचार सचिव" <%= form.jobRole === 'प्रचार सचिव' ? 'selected' : '' %>>प्रचार सचिव</option>
-              <option value="प्रेस सचिव" <%= form.jobRole === 'प्रेस सचिव' ? 'selected' : '' %>>प्रेस सचिव</option>
-              <option value="प्रवक्ता" <%= form.jobRole === 'प्रवक्ता' ? 'selected' : '' %>>प्रवक्ता</option>
-              <option value="कार्यक्रम सचिव" <%= form.jobRole === 'कार्यक्रम सचिव' ? 'selected' : '' %>>कार्यक्रम सचिव</option>
-              <option value="कार्यकारिणी सदस्य" <%= form.jobRole === 'कार्यकारिणी सदस्य' ? 'selected' : '' %>>कार्यकारिणी सदस्य</option>
-            </select>
-            <select name="teamType" required style="width:100%;padding:8px;margin-bottom:10px;border:1px solid #ccc;border-radius:4px;">
-              <option value="core" <%= form.teamType === 'core' ? 'selected' : '' %>>Core Team (कोर टीम)</option>
-              <option value="mahila" <%= form.teamType === 'mahila' ? 'selected' : '' %>>Mahila Team (महिला टीम)</option>
-              <option value="yuva" <%= form.teamType === 'yuva' ? 'selected' : '' %>>Yuva Team (युवा टीम)</option>
-              <option value="alpsankhyak" <%= form.teamType === 'alpsankhyak' ? 'selected' : '' %>>Alpsankhyak Team (अल्पसंख्यक टीम)</option>
-              <option value="scst" <%= form.teamType === 'scst' ? 'selected' : '' %>>SC/ST Team (SC/ST टीम)</option>
-            </select>
-            <button class="btn" style="width:100%;padding:8px;background:#007bff;color:white;border:none;border-radius:4px;cursor:pointer;">Assign/Update Role</button>
-          </form>
+          <!-- Manage Role Button -->
+          <div style="margin-bottom:15px;">
+            <a href="/admin/forms/<%= form._id %>/manage-role" class="btn" style="width:100%;padding:10px;background:#28a745;color:white;text-decoration:none;border-radius:4px;display:inline-block;text-align:center;font-weight:bold;">
+              🎯 Manage Role Assignment
+            </a>
+            <small style="display:block;color:#666;margin-top:6px;text-align:center;">Advanced role assignment with cascading selections</small>
+          </div>
+
+
+
           <div style="margin-top:10px;">
-            <button id="resend-joining-btn" class="btn" style="width:100%;padding:10px;background:#17a2b8;color:white;border:none;border-radius:4px;cursor:pointer;">
+            <button id="resend-joining-btn" data-form-id="<%= form._id %>" data-email="<%= form.email %>" class="btn" style="width:100%;padding:10px;background:#17a2b8;color:white;border:none;border-radius:4px;cursor:pointer;">
               📨 Resend Joining Letter
             </button>
             <small style="display:block;color:#666;margin-top:6px;">Sends the joining letter PDF to <strong><%= form.email || 'N/A' %></strong></small>
@@ -202,7 +170,7 @@
                   <div style="font-weight:bold;color:#333;"><%= h.action.toUpperCase() %></div>
                   <div style="color:#666;font-size:0.85em;">
                     By: <%= h.role || 'System' %> <br>
-                    <%= new Date(h.date).toLocaleString() %>
+                    <%= new Date(h.date || h.timestamp).toLocaleString() %>
                   </div>
                   <% if(h.note) { %>
                     <div style="margin-top:3px;font-style:italic;color:#555;">"<%= h.note %>"</div>
@@ -219,32 +187,12 @@
     </div>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const btn = document.getElementById('resend-joining-btn');
-      if (!btn) return;
-      btn.addEventListener('click', async function () {
-        if (!confirm('Are you sure you want to resend the joining letter to <%= form.email %>?')) return;
-        btn.disabled = true; btn.innerText = 'Sending...';
-        try {
-          const res = await fetch('/admin/forms/<%= form._id %>/resend-joining-letter', {
-            method: 'POST',
-            headers: { 'Accept': 'application/json' },
-            credentials: 'same-origin'
-          });
-          const data = await res.json();
-          if (res.ok && data.ok) {
-            alert(data.msg || 'Joining letter resent successfully');
-            window.location.reload();
-          } else {
-            alert('Failed: ' + (data.msg || res.statusText));
-          }
-        } catch (e) {
-          alert('Error sending email: ' + e.message);
-        } finally {
-          btn.disabled = false; btn.innerText = '📨 Resend Joining Letter';
-        }
-      });
-    });
-  </script>
+  <script src="/js/admin-form.js" defer></script>
+
+  <style>
+    .status-badge { padding:3px 8px;border-radius:12px;font-size:0.9em;display:inline-block;color:#fff }
+    .status-accepted { background:#28a745; }
+    .status-rejected { background:#dc3545; }
+    .status-pending { background:#ffc107;color:#333 }
+  </style>
 </section>
