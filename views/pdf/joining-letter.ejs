@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>NHRA - Joining Letter</title>
+  <title>RMAS - Joining Letter</title>
   <style>
     /* A4 page setup (print-ready) */
     @page { size: A4; margin: 0; }
@@ -439,7 +439,7 @@
 
         <div class="main-header">
           <div class="logo" aria-hidden="true">
-            <img src="data:image/jpeg;base64,<%= nhraLogo %>" alt="NHRA Logo">
+            <img src="data:image/jpeg;base64,<%= rmasLogo || nhraLogo %>" alt="RMAS Logo">
           </div>
 
           <div class="title" role="heading" aria-level="1">
@@ -454,7 +454,7 @@
 
     <!-- Watermark logo in center -->
     <div class="watermark">
-      <img src="data:image/jpeg;base64,<%= nhraLogo %>" alt="Watermark">
+      <img src="data:image/jpeg;base64,<%= rmasLogo || nhraLogo %>" alt="Watermark">
     </div>
 
     <div class="body-wrapper">
@@ -643,15 +643,15 @@
     <div class="terms">
       <strong>Terms & Conditions (English)</strong>
       <ol>
-        <li>This appointment is purely honorary and voluntary in nature and does not create any employer–employee relationship with the National Human Rights Association (NHRA).</li>
+        <li>This appointment is purely honorary and voluntary in nature and does not create any employer–employee relationship with Rashtriya Manav Adhikar Sangathan (RMAS).</li>
         <li>The membership is granted subject to verification of documents, credentials, and background information provided by the member.</li>
-        <li>The member shall strictly work in accordance with the objectives, constitution, rules, and code of conduct of NHRA.</li>
-        <li>The member shall not misuse the name, logo, identity card, letterhead, or any official platform of NHRA for personal, political, financial, or unlawful purposes.</li>
-        <li>Any activity against national integrity, social harmony, human rights principles, or NHRA’s reputation will be treated as serious misconduct.</li>
-        <li>The membership is valid for the specified period and must be renewed as per NHRA norms and procedures.</li>
-        <li>NHRA reserves the right to suspend or terminate the membership at any time without prior notice if rules are violated or conduct is found inappropriate.</li>
-        <li>The member shall return the NHRA identity card, documents, and materials upon resignation, termination, or expiry of membership.</li>
-        <li>The member agrees that NHRA shall not be responsible for any personal, legal, or financial liabilities arising from individual actions.</li>
+        <li>The member shall strictly work in accordance with the objectives, constitution, rules, and code of conduct of RMAS.</li>
+        <li>The member shall not misuse the name, logo, identity card, letterhead, or any official platform of RMAS for personal, political, financial, or unlawful purposes.</li>
+        <li>Any activity against national integrity, social harmony, human rights principles, or RMAS's reputation will be treated as serious misconduct.</li>
+        <li>The membership is valid for the specified period and must be renewed as per RMAS norms and procedures.</li>
+        <li>RMAS reserves the right to suspend or terminate the membership at any time without prior notice if rules are violated or conduct is found inappropriate.</li>
+        <li>The member shall return the RMAS identity card, documents, and materials upon resignation, termination, or expiry of membership.</li>
+        <li>The member agrees that RMAS shall not be responsible for any personal, legal, or financial liabilities arising from individual actions.</li>
       </ol>
     </div>
 
@@ -806,7 +806,7 @@
                   <img src="data:image/png;base64,<%= stampBase64 %>" alt="Authorized Signature" style="max-width:120px;height:auto;display:block;">
                 </div>
                 <div class="name" style="font-size: 11px; margin-top: 3px;"><%= signerName || 'State President' %></div>
-                <div class="designation" style="font-size: 9px;"><%= signerDesignation || 'NHRA Bihar' %></div>
+                <div class="designation" style="font-size: 9px;"><%= signerDesignation || 'RMAS Bihar' %></div>
               </div>
           </div>
         </div>
@@ -815,7 +815,7 @@
       <!-- Footer - moved inside hindi-terms-second for page 2 only -->
       <div class="footer" role="contentinfo">
         <div style="font-weight:700;">National Human Rights Association - Bihar</div>
-        <div class="hin"><%= orgAddress || 'NHRA Bihar, 123, Civil Lines, Patna, Bihar - 800001' %></div>
+        <div class="hin"><%= orgAddress || 'D-2, S/F, Gali No. 9, Best Jyoti Nagar, Shahdara, Delhi-94' %></div>
         <div style="margin-top:4px;">
           Website: <a href="<%= orgWebsite %>"><%= orgWebsite %></a> • Contact: <%= orgPhone %>
         </div>

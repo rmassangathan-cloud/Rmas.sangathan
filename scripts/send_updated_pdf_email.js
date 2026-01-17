@@ -12,7 +12,7 @@ const mongoose = require('mongoose');
     const m = await M.findOne({ membershipId });
     if (!m) { console.error('Membership not found:', membershipId); await mongoose.disconnect(); process.exit(1); }
     if (!m.email) { console.error('No email for membership:', membershipId); await mongoose.disconnect(); process.exit(1); }
-    const res = await sendMail({ from: process.env.EMAIL_USER, to: m.email, subject: 'NHRA Joining Letter - Role Assigned', text: 'Your role has been assigned. Please find the joining letter attached.', attachments: [{ filename: `${membershipId.replace(/\//g,'_')}-joining_letter.pdf`, path: attach }] });
+    const res = await sendMail({ from: process.env.EMAIL_USER, to: m.email, subject: 'RMAS Joining Letter - Role Assigned', text: 'Your role has been assigned. Please find the joining letter attached.', attachments: [{ filename: `${membershipId.replace(/\//g,'_')}-joining_letter.pdf`, path: attach }] });
     console.log('SEND_RESULT:', res && res.accepted);
     await M.findOneAndUpdate({ membershipId }, { $push: { history: { by: null, role: 'system', action: 'email_sent', note: 'Role assignment email sent (test)', date: new Date() } } });
     await mongoose.disconnect();

@@ -17,7 +17,7 @@ async function generateMembershipId(district) {
 
   // Find the last membership ID for this district and year
   const lastMembership = await Membership.findOne({
-    membershipId: new RegExp(`NHRA/BIH/${districtCode}/${year}/`)
+    membershipId: new RegExp(`RMAS/BIH/${districtCode}/${year}/`)
   }).sort({ membershipId: -1 });
 
   let serial = 1;
@@ -28,7 +28,7 @@ async function generateMembershipId(district) {
     }
   }
 
-  return `NHRA/BIH/${districtCode}/${year}/${String(serial).padStart(3, '0')}`;
+  return `RMAS/BIH/${districtCode}/${year}/${String(serial).padStart(3, '0')}`;
 }
 
 // Helper function to format date in English
@@ -88,13 +88,13 @@ async function generateMembershipPDF(membership, qrCodeDataURL) {
       const nhraLogoPath = path.join(__dirname, '../public/images/logo.jpeg');
       if (fs.existsSync(nhraLogoPath)) {
          nhraLogo = fs.readFileSync(nhraLogoPath).toString('base64');
-         console.log('✅ NHRA logo loaded');
+         console.log('✅ RMAS logo loaded');
       } else {
-         console.log('⚠️ NHRA logo not found, using placeholder');
+         console.log('⚠️ RMAS logo not found, using placeholder');
          nhraLogo = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==').toString('base64');
       }
    } catch (err) {
-      console.error('❌ Error loading NHRA logo:', err.message);
+      console.error('❌ Error loading RMAS logo:', err.message);
       nhraLogo = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==').toString('base64');
    }
 
@@ -209,10 +209,10 @@ async function generateMembershipPDF(membership, qrCodeDataURL) {
       refNo: membership.refNo || '',
       verifyUrl,
       signerName: process.env.SIGNER_NAME || 'State President',
-      signerDesignation: process.env.SIGNER_DESIGNATION || 'NHRA Bihar',
-      orgWebsite: process.env.ORG_WEBSITE || 'https://nhra.in',
+      signerDesignation: process.env.SIGNER_DESIGNATION || 'RMAS Bihar',
+      orgWebsite: process.env.ORG_WEBSITE || 'https://rmas.org.in',
       orgPhone: process.env.ORG_PHONE || 'N/A',
-      orgAddress: process.env.ORG_ADDRESS || 'NHRA Bihar, 123, Civil Lines, Patna, Bihar - 800001'
+      orgAddress: process.env.ORG_ADDRESS || 'D-2, S/F, Gali No. 9, Best Jyoti Nagar, Shahdara, Delhi-94'
    });
 
    // Attempt to generate PDF with retries
@@ -253,7 +253,7 @@ async function generateMembershipPDF(membership, qrCodeDataURL) {
            // Attempt file-based fallback in the same attempt
            try {
              const os = require('os');
-             const tmpDir = path.join(os.tmpdir(), 'nhra_pdf');
+             const tmpDir = path.join(os.tmpdir(), 'rmas_pdf');
              if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
              const tmpFile = path.join(tmpDir, `joining_${membership._id || Date.now()}_${attempt}.html`);
              fs.writeFileSync(tmpFile, html, 'utf8');
@@ -310,7 +310,7 @@ async function generateMembershipPDF(membership, qrCodeDataURL) {
    if (!pdfBuffer) {
       console.error('❌ All PDF generation attempts failed, attempting a minimal fallback PDF');
       try {
-         const fallbackHtml = `<!doctype html><html><head><meta charset="utf-8"><title>NHRA Joining Letter (Fallback)</title></head><body><div style="font-family: Arial, sans-serif; padding: 20px;"><h1>NHRA Joining Letter</h1><p><strong>Name:</strong> ${membership.fullName || 'N/A'}</p><p><strong>Membership ID:</strong> ${membership.membershipId || membershipIdVal || 'N/A'}</p><p>This is a fallback joining letter generated because the full template failed to render.</p></div></body></html>`;
+         const fallbackHtml = `<!doctype html><html><head><meta charset="utf-8"><title>RMAS Joining Letter (Fallback)</title></head><body><div style="font-family: Arial, sans-serif; padding: 20px;"><h1>RMAS Joining Letter</h1><p><strong>Name:</strong> ${membership.fullName || 'N/A'}</p><p><strong>Membership ID:</strong> ${membership.membershipId || membershipIdVal || 'N/A'}</p><p>This is a fallback joining letter generated because the full template failed to render.</p></div></body></html>`;
 
          const fbLaunchOpts = { headless: 'new', args: [ '--no-sandbox','--disable-setuid-sandbox','--disable-dev-shm-usage','--single-process','--no-zygote' ] };
          if (launchExec) fbLaunchOpts.executablePath = launchExec;
@@ -421,7 +421,7 @@ router.post('/forms/:id/claim', ensureAuthenticated, async (req, res) => {
     const { sendMail } = require('../utils/mailer');
     if (form.email) {
       try {
-        await sendMail({ from: process.env.EMAIL_USER, to: form.email, subject: 'आपका आवेदन अब प्रोसेस में है', text: `नमस्ते ${form.fullName},\n\nआपके आवेदन को ${req.user.name} (हमारे अधिकारी) द्वारा लिया गया है और अब प्रोसेस किया जा रहा है।\n\nधन्यवाद,\nNHRA` });
+        await sendMail({ from: process.env.EMAIL_USER, to: form.email, subject: 'आपका आवेदन अब प्रोसेस में है', text: `नमस्ते ${form.fullName},\n\nआपके आवेदन को ${req.user.name} (हमारे अधिकारी) द्वारा लिया गया है और अब प्रोसेस किया जा रहा है।\n\nधन्यवाद,\nRMAS` });
       } catch (e) { console.error('Claim email error:', e); }
     }
 
@@ -445,7 +445,7 @@ router.post('/forms/:id/accept-quick', ensureAuthenticated, async (req, res) => 
     await form.save();
     const { sendMail } = require('../utils/mailer');
     if (form.email) {
-      try { await sendMail({ from: process.env.EMAIL_USER, to: form.email, subject: 'आपका सदस्यता आवेदन स्वीकार किया गया', text: `नमस्ते ${form.fullName},\n\nआपका सदस्यता आवेदन स्वीकार कर लिया गया है।\n\nधन्यवाद,\nNHRA` }); } catch (e) { console.error('Quick accept email error:', e); }
+      try { await sendMail({ from: process.env.EMAIL_USER, to: form.email, subject: 'आपका सदस्यता आवेदन स्वीकार किया गया', text: `नमस्ते ${form.fullName},\n\nआपका सदस्यता आवेदन स्वीकार कर लिया गया है।\n\nधन्यवाद,\nRMAS` }); } catch (e) { console.error('Quick accept email error:', e); }
     }
     res.redirect('/admin/forms');
   } catch (err) {
@@ -467,7 +467,7 @@ router.post('/forms/:id/reject-quick', ensureAuthenticated, async (req, res) => 
     await form.save();
     const { sendMail } = require('../utils/mailer');
     if (form.email) {
-      try { await sendMail({ from: process.env.EMAIL_USER, to: form.email, subject: 'आपका सदस्यता आवेदन अस्वीकृत हुआ', text: `नमस्ते ${form.fullName},\n\nकृपया सूचित किया जाता है कि आपका सदस्यता आवेदन अस्वीकृत कर दिया गया है।\n\nधन्यवाद,\nNHRA` }); } catch (e) { console.error('Quick reject email error:', e); }
+      try { await sendMail({ from: process.env.EMAIL_USER, to: form.email, subject: 'आपका सदस्यता आवेदन अस्वीकृत हुआ', text: `नमस्ते ${form.fullName},\n\nकृपया सूचित किया जाता है कि आपका सदस्यता आवेदन अस्वीकृत कर दिया गया है।\n\nधन्यवाद,\nRMAS` }); } catch (e) { console.error('Quick reject email error:', e); }
     }
     res.redirect('/admin/forms');
   } catch (err) {
@@ -735,13 +735,13 @@ router.post('/forms/:id/accept', ensureAuthenticated, async (req, res) => {
         const mailOptions = {
           from: process.env.EMAIL_USER,
           to: form.email,
-          subject: '🎉 Congratulations! आपका NHRA सदस्यता स्वीकार किया गया',
-          text: `नमस्ते ${form.fullName},\n\nबधाई हो! आपका NHRA सदस्यता आवेदन स्वीकार कर लिया गया है।\n\nआपका सदस्यता ID: ${membershipId}\n\n${pdfGenerated ? `आपका जॉइनिंग लेटर डाउनलोड करने के लिए यहाँ क्लिक करें: ${req.protocol}://${req.get('host')}${form.pdfUrl}\n\nQR कोड स्कैन करके अपनी सदस्यता को किसी भी समय वेरीफाई कर सकते हैं।` : 'जॉइनिंग लेटर जल्द ही उपलब्ध कराया जाएगा।'}\n\nधन्यवाद,\nNHRA Bihar Team`
+          subject: '🎉 Congratulations! आपका RMAS सदस्यता स्वीकार किया गया',
+          text: `नमस्ते ${form.fullName},\n\nबधाई हो! आपका RMAS सदस्यता आवेदन स्वीकार कर लिया गया है।\n\nआपका सदस्यता ID: ${membershipId}\n\n${pdfGenerated ? `आपका जॉइनिंग लेटर डाउनलोड करने के लिए यहाँ क्लिक करें: ${req.protocol}://${req.get('host')}${form.pdfUrl}\n\nQR कोड स्कैन करके अपनी सदस्यता को किसी भी समय वेरीफाई कर सकते हैं।` : 'जॉइनिंग लेटर जल्द ही उपलब्ध कराया जाएगा।'}\n\nधन्यवाद,\nRMAS Bihar Team`
         };
 
         if (pdfGenerated && pdfPath) {
           mailOptions.attachments = [{
-            filename: `NHRA_Membership_${membershipId}.pdf`,
+            filename: `RMAS_Membership_${membershipId}.pdf`,
             path: pdfPath
           }];
         }
@@ -828,12 +828,12 @@ router.post('/forms/:id/resend-joining-letter', ensureAuthenticated, async (req,
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: form.email,
-      subject: '📨 NHRA Joining Letter - Resent',
-      text: `नमस्ते ${form.fullName},\n\nयह आपका NHRA Joining Letter पुनः भेजा जा रहा है।\n\nMembership ID: ${membershipId}\n\nडाउनलोड करें: ${req.protocol}://${req.get('host')}${form.pdfUrl}\n\nधन्यवाद,\nNHRA Bihar Team`
+      subject: '📨 RMAS Joining Letter - Resent',
+      text: `नमस्ते ${form.fullName},\n\nयह आपका RMAS Joining Letter पुनः भेजा जा रहा है।\n\nMembership ID: ${membershipId}\n\nडाउनलोड करें: ${req.protocol}://${req.get('host')}${form.pdfUrl}\n\nधन्यवाद,\nRMAS Bihar Team`
     };
 
     if (pdfPath) {
-      mailOptions.attachments = [{ filename: `NHRA_Membership_${membershipId}.pdf`, path: pdfPath }];
+      mailOptions.attachments = [{ filename: `RMAS_Membership_${membershipId}.pdf`, path: pdfPath }];
     }
 
     try {
@@ -877,7 +877,7 @@ router.post('/forms/:id/reject', ensureAuthenticated, async (req, res) => {
           from: process.env.EMAIL_USER,
           to: form.email,
           subject: 'आपका सदस्यता आवेदन अस्वीकृत हुआ',
-          text: `नमस्ते ${form.fullName},\n\nकृपया सूचित किया जाता है कि आपका सदस्यता आवेदन अस्वीकृत कर दिया गया है।\n\nधन्यवाद,\nNHRA`
+          text: `नमस्ते ${form.fullName},\n\nकृपया सूचित किया जाता है कि आपका सदस्यता आवेदन अस्वीकृत कर दिया गया है।\n\nधन्यवाद,\nRMAS`
         });
       } catch (mailErr) { console.error('Reject email error:', mailErr); }
     }
@@ -999,8 +999,8 @@ router.post('/forms/:id/manage-role', ensureAuthenticated, async (req, res) => {
         await sendMail({
           from: process.env.EMAIL_USER,
           to: form.email,
-          subject: 'बधाई हो! आपका पद असाइन किया गया – NHRA',
-          text: `नमस्ते ${form.fullName},\n\nआपको '${roleDisplay}' पद पर असाइन किया गया है। आप अपना ID Card और Joining Letter डाउनलोड करने के लिए इस लिंक पर जा सकते हैं:\n\n${link}\n\nधन्यवाद,\nNHRA Bihar Team`
+          subject: 'बधाई हो! आपका पद असाइन किया गया – RMAS',
+          text: `नमस्ते ${form.fullName},\n\nआपको '${roleDisplay}' पद पर असाइन किया गया है। आप अपना ID Card और Joining Letter डाउनलोड करने के लिए इस लिंक पर जा सकते हैं:\n\n${link}\n\nधन्यवाद,\nRMAS Bihar Team`
         });
 
         await Membership.findByIdAndUpdate(form._id, { $push: { history: { by: req.user._id, role: req.user.role, action: 'download_notification_sent', note: `Notified ${form.email} to download documents`, date: new Date() } } });
@@ -1080,8 +1080,8 @@ router.post('/forms/:id/assign-role', ensureAuthenticated, async (req, res) => {
         await sendMail({
           from: process.env.EMAIL_USER,
           to: form.email,
-          subject: 'बधाई हो! आपका पद असाइन किया गया – NHRA',
-          text: `नमस्ते ${form.fullName},\n\nआपको ${roleDisplay} पद पर असाइन किया गया है। आप अपना ID Card और Joining Letter डाउनलोड करने के लिए इस लिंक पर जा सकते हैं:\n\n${link}\n\nधन्यवाद,\nNHRA Bihar Team`
+          subject: 'बधाई हो! आपका पद असाइन किया गया – RMAS',
+          text: `नमस्ते ${form.fullName},\n\nआपको ${roleDisplay} पद पर असाइन किया गया है। आप अपना ID Card और Joining Letter डाउनलोड करने के लिए इस लिंक पर जा सकते हैं:\n\n${link}\n\nधन्यवाद,\nRMAS Bihar Team`
         });
 
         form.history = form.history || [];

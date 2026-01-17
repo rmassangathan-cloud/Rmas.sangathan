@@ -96,10 +96,10 @@ function formatDateHindi(date) {
       refNo: m.refNo || '',
       verifyUrl,
       signerName: process.env.SIGNER_NAME || 'State President',
-      signerDesignation: process.env.SIGNER_DESIGNATION || 'NHRA Bihar',
-      orgWebsite: process.env.ORG_WEBSITE || 'https://nhra.in',
+      signerDesignation: process.env.SIGNER_DESIGNATION || 'RMAS Bihar',
+      orgWebsite: process.env.ORG_WEBSITE || 'https://rmas.org.in',
       orgPhone: process.env.ORG_PHONE || 'N/A',
-      orgAddress: process.env.ORG_ADDRESS || 'NHRA Bihar, 123, Civil Lines, Patna, Bihar - 800001'
+      orgAddress: process.env.ORG_ADDRESS || 'D-2, S/F, Gali No. 9, Best Jyoti Nagar, Shahdara, Delhi-94'
     });
 
     await page.setContent(html, { waitUntil: 'networkidle0' });

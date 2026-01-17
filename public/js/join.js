@@ -5,13 +5,13 @@ document.addEventListener('DOMContentLoaded', function(){
     // Fetch small preselect JSON from data attribute (CSP-safe)
     let pre = {};
     try {
-        pre = form.dataset.nhraLocation ? JSON.parse(form.dataset.nhraLocation) : {};
+        pre = form.dataset.rmasLocation ? JSON.parse(form.dataset.rmasLocation) : {};
     } catch (err) {
         console.warn('Failed to parse preselects on form:', err);
     }
 
     // Expose for compatibility with older scripts
-    window.__NHRA_LOCATION = pre;
+    window.__RMAS_LOCATION = pre;
 
     const submitBtn = document.getElementById('submitBtn');
     const agreed = document.getElementById('agreedToTerms');
@@ -23,10 +23,10 @@ document.addEventListener('DOMContentLoaded', function(){
 
     // Re-create modal helper (same as previous inline implementation)
     function showModal(title, message) {
-        let modal = document.getElementById('nhraModal');
+        let modal = document.getElementById('rmasModal');
         if (!modal) {
             modal = document.createElement('div');
-            modal.id = 'nhraModal';
+            modal.id = 'rmasModal';
             modal.style.position = 'fixed';
             modal.style.left = '0';
             modal.style.top = '0';
@@ -43,15 +43,15 @@ document.addEventListener('DOMContentLoaded', function(){
             inner.style.borderRadius = '8px';
             inner.style.maxWidth = '600px';
             inner.style.width = '90%';
-            inner.id = 'nhraModalInner';
+            inner.id = 'rmasModalInner';
             modal.appendChild(inner);
             document.body.appendChild(modal);
             modal.addEventListener('click', function(e){ if (e.target === modal) modal.style.display = 'none'; });
         }
-        const inner = document.getElementById('nhraModalInner');
-        inner.innerHTML = `<h3 style="margin-top:0">${title}</h3><pre style="white-space:pre-wrap">${message}</pre><div style="text-align:right;margin-top:12px;"><button id="nhraModalClose" class="btn">Close</button></div>`;
+        const inner = document.getElementById('rmasModalInner');
+        inner.innerHTML = `<h3 style="margin-top:0">${title}</h3><pre style="white-space:pre-wrap">${message}</pre><div style="text-align:right;margin-top:12px;"><button id="rmasModalClose" class="btn">Close</button></div>`;
         modal.style.display = 'flex';
-        document.getElementById('nhraModalClose').addEventListener('click', function(){ modal.style.display = 'none'; });
+        document.getElementById('rmasModalClose').addEventListener('click', function(){ modal.style.display = 'none'; });
     }
 
     // Submit handling (same logic as previous inline version)
@@ -189,6 +189,6 @@ document.addEventListener('DOMContentLoaded', function(){
         mobileInput.addEventListener('input', function(){ this.value = this.value.replace(/[^0-9+\s-]/g, ''); });
     }
 
-    // If bihar-locations provides helpers / preselects, they will read window.__NHRA_LOCATION
-    // so we keep window.__NHRA_LOCATION assigned above
+    // If bihar-locations provides helpers / preselects, they will read window.__RMAS_LOCATION
+    // so we keep window.__RMAS_LOCATION assigned above
 });

@@ -12,7 +12,7 @@ const mongoose = require('mongoose');
   if (!m) { console.error('Membership not found'); await mongoose.disconnect(); process.exit(1); }
 
   const src = path.join(__dirname, '..', 'public', 'pdfs', `${id.replace(/\//g, '_')}_joining_letter.pdf`);
-  const altSrc = path.join(__dirname, '..', 'public', 'pdfs', `NHRA_BIH_KAT_2026_005_joining_letter.pdf`);
+  const altSrc = path.join(__dirname, '..', 'public', 'pdfs', `RMAS_BIH_KAT_2026_005_joining_letter.pdf`);
   const finalSrc = fs.existsSync(src) ? src : (fs.existsSync(altSrc) ? altSrc : null);
   if (!finalSrc) { console.error('Source joining letter not found:', src, altSrc); await mongoose.disconnect(); process.exit(1); }
 

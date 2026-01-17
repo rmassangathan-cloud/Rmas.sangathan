@@ -77,7 +77,7 @@ async function generateIdCard(memberId) {
             nhraLogo = fs.readFileSync(nhraLogoPath).toString('base64');
           }
         } catch (err) {
-          console.error('Error loading NHRA logo:', err.message);
+          console.error('Error loading RMAS logo:', err.message);
         }
 
         // Render EJS template

@@ -48,7 +48,7 @@ router.post('/request-download', async (req, res) => {
     await sendMail({
       from: process.env.EMAIL_USER,
       to: email,
-      subject: 'Your NHRA download OTP',
+      subject: 'Your RMAS download OTP',
       text: `नमस्ते ${member.fullName || ''},\n\nआपका OTP है: ${otp}\nयह ${OTP_TTL_MIN} मिनट के बाद expire हो जाएगा।\n\nयदि आपने अनुरोध नहीं किया है तो इस ईमेल को अनदेखा करें।`
     });
 
@@ -128,7 +128,7 @@ router.post('/generate', async (req, res) => {
         console.log('📄 Generating joining PDF for member:', member._id, member.email || '(no-email)');
         const pdfBuffer = await adminRoutes.generateMembershipPDF(member, qrCodeDataURL);
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename="NHRA_Joining_${member.membershipId || member._id}.pdf"`);
+        res.setHeader('Content-Disposition', `attachment; filename="RMAS_Joining_${member.membershipId || member._id}.pdf"`);
         res.setHeader('Content-Length', String(pdfBuffer.length));
         res.setHeader('Cache-Control', 'no-store');
         console.log('📤 Sending Joining PDF, bytes:', pdfBuffer.length);
@@ -177,7 +177,7 @@ router.post('/generate', async (req, res) => {
       await browser.close();
 
       res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename="NHRA_IDCard_${member.membershipId || member._id}.pdf"`);
+      res.setHeader('Content-Disposition', `attachment; filename="RMAS_IDCard_${member.membershipId || member._id}.pdf"`);
       return res.send(buf);
     } else {
       return res.status(400).send('Invalid document type');

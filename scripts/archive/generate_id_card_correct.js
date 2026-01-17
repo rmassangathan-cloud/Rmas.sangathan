@@ -121,12 +121,12 @@ async function generateIdCard(membershipId) {
           const nhraLogoPath = path.join(__dirname, '../public/images/logo.jpeg');
           if (fs.existsSync(nhraLogoPath)) {
             nhraLogo = fs.readFileSync(nhraLogoPath).toString('base64');
-            console.log('✅ NHRA logo loaded');
+            console.log('✅ RMAS logo loaded');
           } else {
             nhraLogo = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==').toString('base64');
           }
         } catch (err) {
-          console.error('❌ Error loading NHRA logo:', err.message);
+          console.error('❌ Error loading RMAS logo:', err.message);
           nhraLogo = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==').toString('base64');
         }
 
@@ -252,7 +252,7 @@ if (require.main === module) {
   const membershipId = process.argv[2];
   if (!membershipId) {
     console.error('❌ Please provide a membership ID as argument');
-    console.log('Usage: node generate_id_card_correct.js "NHRA/BIH/KAT/2026/001"');
+    console.log('Usage: node generate_id_card_correct.js "RMAS/BIH/KAT/2026/001"');
     process.exit(1);
   }
   generateIdCard(membershipId);

@@ -459,7 +459,7 @@ async function handleJoin(req, res) {
         from: process.env.EMAIL_USER || 'no-reply@example.com',
         to: process.env.EMAIL_USER || process.env.ADMIN_EMAIL || 'admin@example.com',
         replyTo: data.email || data.mobile,
-        subject: 'नया सदस्यता आवेदन - NHRA',
+        subject: 'नया सदस्यता आवेदन - RMAS',
         text: `नया सदस्यता आवेदन प्राप्त हुआ!\n\nपूर्ण नाम: ${data.fullName}\nपिता का नाम: ${data.fatherName || 'N/A'}\nमोबाइल: ${data.mobile}\nईमेल: ${data.email || 'N/A'}\nपूरा पता: ${data.address}\nगाँव/मोहल्ला: ${data.village || 'N/A'}\nप्रखंड: ${data.block || 'N/A'}\nजिला: ${data.district || 'N/A'}\nपिन कोड: ${data.pincode || 'N/A'}\nव्यवसाय: ${data.occupation || 'N/A'}\nAadhaar: ${data.aadhaarUrl || 'N/A'}\nCharacter Certificate: ${data.characterCertUrl || 'N/A'}\nजुड़ने का कारण: ${data.reason}\n\nआवेदन तिथि: ${new Date().toLocaleString('hi-IN')}`
     };
 

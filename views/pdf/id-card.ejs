@@ -2,7 +2,7 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<title>NHRA ID Card</title>
+<title>RMAS ID Card</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
 
@@ -37,7 +37,7 @@ body{
     transform: translate(-50%, -50%);
     width: 25mm;
     height: 25mm;
-    background-image: url('data:image/png;base64,<%= nhraLogo %>');
+    background-image: url('data:image/png;base64,<%= rmasLogo || nhraLogo %>');
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
@@ -245,7 +245,7 @@ body{
             <span class="slogan-right">न्याय ही धर्म है</span>
         </div>
         <div class="main-header">
-            <img src="data:image/png;base64,<%= nhraLogo %>">
+            <img src="data:image/png;base64,<%= rmasLogo || nhraLogo %>">
             <div class="title">
                 राष्ट्रीय मानवाधिकार संगठन
             </div>

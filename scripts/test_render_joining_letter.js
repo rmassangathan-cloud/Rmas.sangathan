@@ -40,10 +40,10 @@ const ejs = require('ejs');
     refNo: 'REF-TEST',
     verifyUrl: '',
     signerName: 'State President',
-    signerDesignation: 'NHRA Bihar',
-    orgWebsite: 'https://nhra.in',
+    signerDesignation: 'RMAS Bihar',
+    orgWebsite: 'https://rmas.org.in',
     orgPhone: 'N/A',
-    orgAddress: 'NHRA Bihar, 123, Civil Lines, Patna, Bihar - 800001'
+    orgAddress: 'D-2, S/F, Gali No. 9, Best Jyoti Nagar, Shahdara, Delhi-94'
   });
 
   // find chrome

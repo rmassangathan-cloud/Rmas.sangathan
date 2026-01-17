@@ -50,7 +50,7 @@ const admin = require('../routes/admin');
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: fresh.email,
-      subject: 'बधाई हो! आपका नया पद असाइन किया गया – NHRA',
+      subject: 'बधाई हो! आपका नया पद असाइन किया गया – RMAS',
       text: `नमस्ते ${fresh.fullName},\n\nआपको ${roleNameHi} पद पर ${assigned.teamType || '—'} में ${assigned.level || '—'} स्तर पर असाइन किया गया है। अपडेटेड जॉइनिंग लेटर संलग्न है।\n\nधन्यवाद,\nNHRA Bihar Team`,
     };
 

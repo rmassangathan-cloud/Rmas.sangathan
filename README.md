@@ -1,10 +1,10 @@
-# National Human Rights Association (NHRA) Initiative
+# Rashtriya Manav Adhikar Sangathan (RMAS) Initiative
 
-A comprehensive digital platform for the National Human Rights Association (NHRA) in Bihar, India, designed to streamline membership management, administrative operations, and human rights advocacy through a hierarchical organizational structure.
+A comprehensive digital platform for Rashtriya Manav Adhikar Sangathan (RMAS) in Bihar, India, designed to streamline membership management, administrative operations, and human rights advocacy through a hierarchical organizational structure.
 
 ## 📋 Description
 
-The NHRA Initiative is a full-stack web application that digitizes and modernizes the operations of a human rights association. The platform enables:
+The RMAS Initiative is a full-stack web application that digitizes and modernizes the operations of a human rights association. The platform enables:
 
 - **Membership Management**: Streamlined application process with document verification
 - **Hierarchical Administration**: Multi-level admin system (State → Division → District → Block)
@@ -120,7 +120,7 @@ The NHRA Initiative is a full-stack web application that digitizes and modernize
 ## 📁 Project Structure
 
 ```
-nhra-website/
+rmas-website/
 ├── 📁 middleware/           # Express middleware (auth, role validation)
 │   ├── auth.js             # Authentication middleware
 │   └── role.js             # Role-based access control
@@ -187,8 +187,8 @@ nhra-website/
 
 1. **Clone the repository**
     ```bash
-    git clone https://github.com/human2394right-dotcom/NHRA.git
-    cd NHRA
+    git clone https://github.com/rmassangathan-cloud/Rmas.sangathan.git
+    cd Rmas.sangathan
     ```
 
 2. **Configure environment**
@@ -352,7 +352,7 @@ npm start
 ## 👥 Contributors
 
 - **Primary Developer**: Main developer focused on technical implementation
-- **Project Sponsor**: NHRA organization leadership
+- **Project Sponsor**: RMAS organization leadership
 - **Future Contributors**: Open for community contributions
 
 ## 📄 License
@@ -365,9 +365,9 @@ ISC License - A permissive license suitable for open-source NGO projects.
 - Create an issue on the GitHub repository
 - Contact the development team through the admin panel
 
-**For NHRA organization inquiries:**
-- Visit the official NHRA website
-- Contact local NHRA representatives
+**For RMAS organization inquiries:**
+- Visit the official RMAS website
+- Contact local RMAS representatives
 
 ---
 
