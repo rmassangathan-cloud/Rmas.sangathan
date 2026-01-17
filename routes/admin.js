@@ -196,6 +196,7 @@ async function generateMembershipPDF(membership, qrCodeDataURL) {
       member: memberForTemplate,
       qrDataUrl: qrCodeDataURL,
       qrCodeDataURL,
+      rmasLogo: nhraLogo,
       nhraLogo,
       memberPhoto: memberPhoto ? 'data:image/jpeg;base64,' + memberPhoto : null,
       stampBase64,

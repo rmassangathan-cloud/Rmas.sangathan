@@ -84,6 +84,7 @@ function formatDateHindi(date) {
       member: memberForTemplate,
       qrDataUrl: qrCodeDataURL,
       qrCodeDataURL,
+      rmasLogo: nhraLogo,
       nhraLogo,
       memberPhoto,
       signatureUrl: 'data:image/png;base64,'+digitalSignature,

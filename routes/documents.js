@@ -167,7 +167,7 @@ router.post('/generate', async (req, res) => {
 
       const designation = (member.assignedRoles && member.assignedRoles[0]) ? `${member.assignedRoles[0].level || ''} ${member.assignedRoles[0].roleName || member.assignedRoles[0].role || ''} ${member.assignedRoles[0].location || ''}`.trim() : (member.jobRole || 'Member');
 
-      const idCardHtml = ejs.render(idCardTemplate, { membership: member, nhraLogo, memberPhoto, stampImage, qrCodeDataURL, issueDateHindi: new Date().toLocaleDateString('hi-IN'), designation });
+      const idCardHtml = ejs.render(idCardTemplate, { membership: member, rmasLogo: nhraLogo, nhraLogo, memberPhoto, stampImage, qrCodeDataURL, issueDateHindi: new Date().toLocaleDateString('hi-IN'), designation });
 
       const execPath = (process.env.PUPPETEER_EXECUTABLE_PATH || '').replace(/^"(.*)"$/, '$1') || undefined;
       const browser = await puppeteer.launch({ headless: 'new', executablePath: execPath });

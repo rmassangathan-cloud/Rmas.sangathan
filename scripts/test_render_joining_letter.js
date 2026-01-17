@@ -27,6 +27,7 @@ const ejs = require('ejs');
     member: { name: 'Test User', email: 'test@example.com', role: 'Volunteer', role_hin: 'स्वयंसेवक', team: 'State', level: 'State' },
     qrDataUrl: '',
     qrCodeDataURL: '',
+    rmasLogo: nhraLogo,
     nhraLogo,
     memberPhoto: '',
     stampBase64,
