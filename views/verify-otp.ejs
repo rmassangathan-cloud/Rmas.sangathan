@@ -1,0 +1,46 @@
+<div class="container" style="max-width:450px;margin:80px auto;padding:30px;border:1px solid #ddd;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.1);">
+  <h2 style="text-align:center;margin-bottom:10px;color:#2b235f;">🔐 Verify OTP</h2>
+  <p style="text-align:center;color:#666;margin-bottom:25px;font-size:0.95em;">Enter the 6-digit OTP sent to your email</p>
+  
+  <% if (error) { %>
+    <div style="background:#ffebee;color:#c62828;padding:12px;border-radius:4px;margin-bottom:20px;border-left:4px solid #c62828;">
+      ❌ <%= error %>
+    </div>
+  <% } %>
+
+  <% if (success) { %>
+    <div style="background:#f0f7f4;color:#2d7a4a;padding:12px;border-radius:4px;margin-bottom:20px;border-left:4px solid #28a745;">
+      ✅ <%= success %>
+    </div>
+  <% } %>
+
+  <form method="POST" action="/verify-otp">
+    <div style="margin-bottom:15px;">
+      <label style="display:block;margin-bottom:8px;font-weight:bold;color:#333;">Email Address</label>
+      <input type="email" name="email" value="<%= email %>" required placeholder="admin@example.com" 
+             style="width:100%;padding:12px;border:1px solid #ccc;border-radius:4px;box-sizing:border-box;">
+    </div>
+
+    <div style="margin-bottom:20px;">
+      <label style="display:block;margin-bottom:8px;font-weight:bold;color:#333;">6-Digit OTP</label>
+      <input type="text" name="otp" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" 
+             required placeholder="000000" 
+             style="width:100%;padding:12px;border:2px solid #17a2b8;border-radius:4px;box-sizing:border-box;text-align:center;font-size:18px;letter-spacing:5px;font-weight:bold;">
+      <small style="color:#666;display:block;margin-top:5px;">Enter the 6-digit code from your email</small>
+    </div>
+    
+    <button type="submit" style="width:100%;padding:12px;background:#17a2b8;color:white;border:none;border-radius:4px;cursor:pointer;font-size:16px;font-weight:bold;">Verify OTP</button>
+  </form>
+
+  <div style="text-align:center;margin-top:25px;padding-top:20px;border-top:1px solid #ddd;">
+    <p style="margin:0;color:#666;font-size:0.9em;">Didn't receive the OTP?</p>
+    <a href="/forgot-password" style="color:#17a2b8;text-decoration:none;font-weight:bold;">Request New OTP →</a>
+  </div>
+
+  <div style="background:#f0f7f4;border:1px solid #c3e6cb;padding:12px;border-radius:5px;margin-top:20px;font-size:0.85em;color:#2d7a4a;line-height:1.6;">
+    <strong>💡 OTP Tips:</strong><br>
+    • Check your spam folder if not received<br>
+    • OTP expires in 10 minutes<br>
+    • Do not share your OTP with anyone
+  </div>
+</div>

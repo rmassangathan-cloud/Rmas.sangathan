@@ -3,6 +3,7 @@ const router = express.Router();
 const Membership = require('../models/Membership');
 const DownloadOtp = require('../models/DownloadOtp');
 const { sendMail } = require('../utils/mailer');
+const { logAction } = require('../utils/auditLogger');
 const crypto = require('crypto');
 const QRCode = require('qrcode');
 const fs = require('fs');
@@ -127,6 +128,26 @@ router.post('/generate', async (req, res) => {
       try {
         console.log('📄 Generating joining PDF for member:', member._id, member.email || '(no-email)');
         const pdfBuffer = await adminRoutes.generateMembershipPDF(member, qrCodeDataURL);
+        
+        // Log the joining letter download
+        await logAction({
+          action: 'joining_letter_downloaded',
+          req: req,
+          targetId: member._id,
+          targetType: 'Document',
+          targetName: `Joining Letter - ${member.fullName || member.email}`,
+          details: {
+            membershipId: member.membershipId,
+            memberName: member.fullName,
+            memberEmail: member.email,
+            fileName: `RMAS_Joining_${member.membershipId || member._id}.pdf`,
+            fileSize: pdfBuffer.length,
+            downloadType: 'joining_letter',
+            documentType: 'Joining Letter'
+          },
+          note: `Joining letter downloaded by ${rec.email}`
+        });
+        
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename="RMAS_Joining_${member.membershipId || member._id}.pdf"`);
         res.setHeader('Content-Length', String(pdfBuffer.length));
@@ -175,6 +196,25 @@ router.post('/generate', async (req, res) => {
       await page.setContent(idCardHtml, { waitUntil: 'networkidle0' });
       const buf = await page.pdf({ format: 'A4', printBackground: true });
       await browser.close();
+
+      // Log the ID card download
+      await logAction({
+        action: 'id_card_downloaded',
+        req: req,
+        targetId: member._id,
+        targetType: 'Document',
+        targetName: `ID Card - ${member.fullName || member.email}`,
+        details: {
+          membershipId: member.membershipId,
+          memberName: member.fullName,
+          memberEmail: member.email,
+          fileName: `RMAS_IDCard_${member.membershipId || member._id}.pdf`,
+          fileSize: buf.length,
+          downloadType: 'id_card',
+          documentType: 'ID Card'
+        },
+        note: `ID card downloaded by ${rec.email}`
+      });
 
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="RMAS_IDCard_${member.membershipId || member._id}.pdf"`);

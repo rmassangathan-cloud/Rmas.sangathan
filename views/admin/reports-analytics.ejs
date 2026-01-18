@@ -1,0 +1,258 @@
+<div style="max-width:1400px;margin:0 auto;padding:20px;">
+  <h2 style="color:#2b235f;margin-bottom:10px;">📊 Reports & Analytics</h2>
+  <p style="color:#666;margin-bottom:20px;">Comprehensive membership and activity analytics dashboard</p>
+
+  <!-- Summary Cards -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:15px;margin-bottom:30px;">
+    <div style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:20px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+      <div style="font-size:0.9em;opacity:0.9;">Total Members</div>
+      <div style="font-size:2.5em;font-weight:bold;margin:10px 0;"><%= totals.total %></div>
+      <div style="font-size:0.85em;opacity:0.8;">Across all levels</div>
+    </div>
+
+    <div style="background:linear-gradient(135deg,#f093fb 0%,#f5576c 100%);color:white;padding:20px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+      <div style="font-size:0.9em;opacity:0.9;">✅ Accepted</div>
+      <div style="font-size:2.5em;font-weight:bold;margin:10px 0;"><%= totals.accepted %></div>
+      <div style="font-size:0.85em;opacity:0.8;"><%= ((totals.accepted / totals.total * 100) || 0).toFixed(1) %>% of total</div>
+    </div>
+
+    <div style="background:linear-gradient(135deg,#fa709a 0%,#fee140 100%);color:white;padding:20px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+      <div style="font-size:0.9em;opacity:0.9;">⏳ Pending</div>
+      <div style="font-size:2.5em;font-weight:bold;margin:10px 0;"><%= appStatus.pending %></div>
+      <div style="font-size:0.85em;opacity:0.8;"><%= appStatus.claimed %> claimed</div>
+    </div>
+
+    <div style="background:linear-gradient(135deg,#4facfe 0%,#00f2fe 100%);color:white;padding:20px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+      <div style="font-size:0.9em;opacity:0.9;">📥 Downloads</div>
+      <div style="font-size:2.5em;font-weight:bold;margin:10px 0;"><%= totalDownloads %></div>
+      <div style="font-size:0.85em;opacity:0.8;">Documents downloaded</div>
+    </div>
+  </div>
+
+  <!-- Charts Section -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(500px,1fr));gap:20px;margin-bottom:30px;">
+    <!-- Status Distribution Chart -->
+    <div style="background:white;border:1px solid #ddd;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+      <h3 style="margin-top:0;color:#2b235f;">Status Distribution</h3>
+      <canvas id="statusChart" height="200"></canvas>
+    </div>
+
+    <!-- Team Distribution Chart -->
+    <div style="background:white;border:1px solid #ddd;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+      <h3 style="margin-top:0;color:#2b235f;">Team Type Distribution</h3>
+      <canvas id="teamChart" height="200"></canvas>
+    </div>
+
+    <!-- Monthly Growth Chart -->
+    <div style="background:white;border:1px solid #ddd;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1);grid-column:1 / -1;">
+      <h3 style="margin-top:0;color:#2b235f;">Monthly Growth (Last 12 Months)</h3>
+      <canvas id="growthChart" height="100"></canvas>
+    </div>
+
+    <!-- Document Downloads Chart -->
+    <div style="background:white;border:1px solid #ddd;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1);grid-column:1 / -1;">
+      <h3 style="margin-top:0;color:#2b235f;">Document Downloads (Last 30 Days)</h3>
+      <canvas id="downloadsChart" height="100"></canvas>
+    </div>
+  </div>
+
+  <!-- Location Summary Table -->
+  <div style="background:white;border:1px solid #ddd;border-radius:8px;padding:20px;margin-bottom:30px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+    <h3 style="margin-top:0;color:#2b235f;">Top Locations</h3>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr style="background:#f5f5f5;border-bottom:2px solid #ddd;">
+            <th style="padding:12px;text-align:left;font-weight:bold;">State</th>
+            <th style="padding:12px;text-align:left;font-weight:bold;">Division</th>
+            <th style="padding:12px;text-align:left;font-weight:bold;">District</th>
+            <th style="padding:12px;text-align:right;font-weight:bold;">Members</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (locationData && locationData.length > 0) { %>
+            <% locationData.forEach((loc, idx) => { %>
+              <tr style="border-bottom:1px solid #eee;background:<%= idx % 2 === 0 ? 'white' : '#f9f9f9' %>;">
+                <td style="padding:12px;"><%= loc._id.state || '-' %></td>
+                <td style="padding:12px;"><%= loc._id.division || '-' %></td>
+                <td style="padding:12px;"><%= loc._id.district || '-' %></td>
+                <td style="padding:12px;text-align:right;font-weight:bold;"><%= loc.count %></td>
+              </tr>
+            <% }); %>
+          <% } else { %>
+            <tr>
+              <td colspan="4" style="padding:20px;text-align:center;color:#999;">No data available</td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Export Button -->
+  <div style="background:white;border:1px solid #ddd;border-radius:8px;padding:20px;margin-bottom:30px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+    <h3 style="margin-top:0;color:#2b235f;">Export Reports</h3>
+    <form method="POST" action="/admin/reports-analytics/export" style="display:flex;gap:10px;">
+      <select name="reportType" style="padding:10px;border:1px solid #ccc;border-radius:4px;">
+        <option value="summary">Summary Report</option>
+        <option value="members">Members Details</option>
+        <option value="downloads">Document Downloads</option>
+      </select>
+      <button type="submit" style="padding:10px 20px;background:#28a745;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:bold;">
+        📥 Export as CSV
+      </button>
+    </form>
+  </div>
+
+  <!-- Info Box -->
+  <div style="background:#e7f3ff;border:1px solid #b3d9ff;border-radius:5px;padding:15px;color:#004085;">
+    <strong>ℹ️ Dashboard Information:</strong><br>
+    • Last updated: <%= new Date().toLocaleString('en-IN') %><br>
+    • Your role: <strong><%= currentUser.role %></strong><br>
+    <% if (currentUser.role.startsWith('state_')) { %>
+    • Viewing data for: <strong><%= currentUser.state %> State</strong> and below<br>
+    <% } else if (currentUser.role.startsWith('division_')) { %>
+    • Viewing data for: <strong><%= currentUser.division %> Division</strong> and below<br>
+    <% } else if (currentUser.role.startsWith('district_')) { %>
+    • Viewing data for: <strong><%= currentUser.districts.join(', ') %> District(s)</strong><br>
+    <% } %>
+  </div>
+</div>
+
+<!-- Load Chart.js from CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
+<script>
+  // Helper function to get random colors
+  function getColors(count) {
+    const colors = [
+      '#667eea', '#764ba2', '#f093fb', '#f5576c', '#fa709a', '#fee140',
+      '#4facfe', '#00f2fe', '#43e97b', '#38f9d7', '#fa709a', '#fee140'
+    ];
+    return colors.slice(0, count);
+  }
+
+  // Status Distribution Chart
+  <%
+    const statusData = stats.statusCounts || [];
+    const statusLabels = statusData.map(s => (s._id || 'Unknown').toUpperCase());
+    const statusValues = statusData.map(s => s.count);
+  %>
+  <% if (statusLabels.length > 0) { %>
+  const statusCtx = document.getElementById('statusChart').getContext('2d');
+  new Chart(statusCtx, {
+    type: 'doughnut',
+    data: {
+      labels: <%= JSON.stringify(statusLabels) %>,
+      datasets: [{
+        data: <%= JSON.stringify(statusValues) %>,
+        backgroundColor: getColors(<%= statusLabels.length %>),
+        borderColor: '#fff',
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'bottom'
+        }
+      }
+    }
+  });
+  <% } %>
+
+  // Team Distribution Chart
+  <%
+    const teamData = stats.teamDistribution || [];
+    const teamLabels = teamData.map(t => (t._id || 'Unknown'));
+    const teamValues = teamData.map(t => t.count);
+  %>
+  <% if (teamLabels.length > 0) { %>
+  const teamCtx = document.getElementById('teamChart').getContext('2d');
+  new Chart(teamCtx, {
+    type: 'bar',
+    data: {
+      labels: <%= JSON.stringify(teamLabels) %>,
+      datasets: [{
+        label: 'Members',
+        data: <%= JSON.stringify(teamValues) %>,
+        backgroundColor: '#667eea',
+        borderColor: '#764ba2',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
+  <% } %>
+
+  // Monthly Growth Chart
+  <%
+    const monthlyData = stats.monthlyGrowth || [];
+    const monthLabels = monthlyData.map(m => {
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return months[m._id.month - 1] + ' ' + m._id.year;
+    });
+    const monthValues = monthlyData.map(m => m.count);
+  %>
+  <% if (monthLabels.length > 0) { %>
+  const growthCtx = document.getElementById('growthChart').getContext('2d');
+  new Chart(growthCtx, {
+    type: 'line',
+    data: {
+      labels: <%= JSON.stringify(monthLabels) %>,
+      datasets: [{
+        label: 'New Members',
+        data: <%= JSON.stringify(monthValues) %>,
+        borderColor: '#667eea',
+        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
+  <% } %>
+
+  // Document Downloads Chart
+  <%
+    const dailyData = downloads.dailyDownloads || [];
+    const dayLabels = dailyData.map(d => d._id);
+    const dayValues = dailyData.map(d => d.count);
+  %>
+  <% if (dayLabels.length > 0) { %>
+  const downloadsCtx = document.getElementById('downloadsChart').getContext('2d');
+  new Chart(downloadsCtx, {
+    type: 'line',
+    data: {
+      labels: <%= JSON.stringify(dayLabels) %>,
+      datasets: [{
+        label: 'Downloads',
+        data: <%= JSON.stringify(dayValues) %>,
+        borderColor: '#f5576c',
+        backgroundColor: 'rgba(245, 87, 108, 0.1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
+  <% } %>
+</script>

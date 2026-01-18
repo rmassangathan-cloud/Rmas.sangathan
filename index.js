@@ -46,7 +46,12 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 
 // Apply basic security headers
-app.use(helmet());
+if (process.env.NODE_ENV === 'production') {
+    app.use(helmet());
+} else {
+    // In development, skip helmet to avoid CSP issues
+    console.log('🚧 Development mode: Skipping helmet for easier debugging');
+}
 // Enable CORS only when explicitly enabled via env
 if (process.env.ENABLE_CORS === 'true') {
     app.use(cors());

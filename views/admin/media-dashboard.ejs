@@ -1,0 +1,324 @@
+<div style="max-width:1200px;margin:0 auto;padding:20px;">
+  <h2 style="color:#2b235f;margin-bottom:10px;">📺 Media Management Dashboard</h2>
+  <p style="color:#666;margin-bottom:20px;">Upload and manage media content</p>
+
+  <% if (error) { %>
+    <div style="background:#ffebee;color:#c62828;padding:12px;border-radius:4px;margin-bottom:20px;border-left:4px solid #c62828;">
+      ❌ <%= error %>
+    </div>
+  <% } %>
+
+  <!-- Stats Cards -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-bottom:30px;">
+    <div style="background:#e3f2fd;border-left:4px solid #2196F3;padding:15px;border-radius:4px;">
+      <div style="font-size:0.9em;color:#666;">Total Content</div>
+      <div style="font-size:2em;font-weight:bold;color:#2196F3;"><%= stats.total %></div>
+    </div>
+    <div style="background:#fff3e0;border-left:4px solid #FF9800;padding:15px;border-radius:4px;">
+      <div style="font-size:0.9em;color:#666;">⏳ Pending</div>
+      <div style="font-size:2em;font-weight:bold;color:#FF9800;"><%= stats.pending %></div>
+    </div>
+    <div style="background:#e8f5e9;border-left:4px solid #4CAF50;padding:15px;border-radius:4px;">
+      <div style="font-size:0.9em;color:#666;">✅ Approved</div>
+      <div style="font-size:2em;font-weight:bold;color:#4CAF50;"><%= stats.approved %></div>
+    </div>
+    <div style="background:#ffebee;border-left:4px solid #F44336;padding:15px;border-radius:4px;">
+      <div style="font-size:0.9em;color:#666;">❌ Rejected</div>
+      <div style="font-size:2em;font-weight:bold;color:#F44336;"><%= stats.rejected %></div>
+    </div>
+  </div>
+
+  <!-- Upload Form (Media Incharge Only) -->
+  <% if (isMediaIncharge) { %>
+  <div style="background:white;border:1px solid #ddd;border-radius:8px;padding:20px;margin-bottom:30px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+    <h3 style="margin-top:0;color:#2b235f;">📤 Upload New Content</h3>
+    
+    <form id="uploadForm" style="display:grid;gap:15px;">
+      <div>
+        <label style="display:block;font-weight:bold;margin-bottom:5px;color:#333;">Title *</label>
+        <input type="text" name="title" required placeholder="Enter content title"
+               style="width:100%;padding:10px;border:1px solid #ccc;border-radius:4px;box-sizing:border-box;">
+      </div>
+
+      <div>
+        <label style="display:block;font-weight:bold;margin-bottom:5px;color:#333;">Content Type *</label>
+        <select name="mediaType" required onchange="toggleMediaInput(this.value)"
+                style="width:100%;padding:10px;border:1px solid #ccc;border-radius:4px;">
+          <option value="">Select type...</option>
+          <option value="text">📝 Text</option>
+          <option value="photo">📷 Photo</option>
+          <option value="video">🎥 Video</option>
+        </select>
+      </div>
+
+      <div>
+        <label style="display:block;font-weight:bold;margin-bottom:5px;color:#333;">Category</label>
+        <select name="category"
+                style="width:100%;padding:10px;border:1px solid #ccc;border-radius:4px;">
+          <option value="other">Other</option>
+          <option value="news">📰 News</option>
+          <option value="event">🎉 Event</option>
+          <option value="announcement">📢 Announcement</option>
+          <option value="resource">📚 Resource</option>
+        </select>
+      </div>
+
+      <div>
+        <label style="display:block;font-weight:bold;margin-bottom:5px;color:#333;">Description</label>
+        <textarea name="content" placeholder="Enter content description" rows="4"
+                  style="width:100%;padding:10px;border:1px solid #ccc;border-radius:4px;box-sizing:border-box;font-family:Arial;"></textarea>
+      </div>
+
+      <div id="mediaInputDiv" style="display:none;">
+        <label style="display:block;font-weight:bold;margin-bottom:5px;color:#333;">Upload File (Max 10MB) *</label>
+        <input type="file" name="media" id="mediaInput" accept="image/*,video/*"
+               style="width:100%;padding:10px;border:2px dashed #ccc;border-radius:4px;box-sizing:border-box;">
+        <small style="color:#666;display:block;margin-top:5px;">Accepted: JPG, PNG, GIF, MP4, WebM (Max 10MB)</small>
+      </div>
+
+      <div>
+        <label style="display:block;font-weight:bold;margin-bottom:5px;color:#333;">Tags</label>
+        <input type="text" name="tags" placeholder="Comma separated tags (optional)"
+               style="width:100%;padding:10px;border:1px solid #ccc;border-radius:4px;box-sizing:border-box;">
+      </div>
+
+      <button type="submit" style="padding:12px;background:#2196F3;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:bold;font-size:1em;">
+        📤 Upload Content
+      </button>
+    </form>
+  </div>
+  <% } %>
+
+  <!-- Content Table -->
+  <div style="background:white;border:1px solid #ddd;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr style="background:#f5f5f5;border-bottom:2px solid #ddd;">
+            <th style="padding:12px;text-align:left;font-weight:bold;">Title</th>
+            <th style="padding:12px;text-align:left;font-weight:bold;">Type</th>
+            <th style="padding:12px;text-align:left;font-weight:bold;">Uploaded By</th>
+            <th style="padding:12px;text-align:center;font-weight:bold;">Status</th>
+            <th style="padding:12px;text-align:center;font-weight:bold;">Date</th>
+            <% if (isApprover) { %>
+            <th style="padding:12px;text-align:center;font-weight:bold;">Actions</th>
+            <% } %>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (contents && contents.length > 0) { %>
+            <% contents.forEach((item, idx) => { %>
+              <tr style="border-bottom:1px solid #eee;background:<%= idx % 2 === 0 ? 'white' : '#f9f9f9' %>;">
+                <td style="padding:12px;">
+                  <strong><%= item.title %></strong><br>
+                  <% if (item.mediaUrl) { %>
+                    <a href="<%= item.mediaUrl %>" target="_blank" style="color:#2196F3;font-size:0.85em;">View →</a>
+                  <% } %>
+                </td>
+                <td style="padding:12px;">
+                  <% if (item.mediaType === 'photo') { %>
+                    📷 Photo
+                  <% } else if (item.mediaType === 'video') { %>
+                    🎥 Video
+                  <% } else { %>
+                    📝 Text
+                  <% } %>
+                </td>
+                <td style="padding:12px;">
+                  <%= item.uploadedByName %><br>
+                  <small style="color:#666;"><%= item.uploadedByRole.replace(/_/g, ' ') %></small>
+                </td>
+                <td style="padding:12px;text-align:center;">
+                  <% if (item.status === 'pending') { %>
+                    <span style="background:#fff9e6;color:#ff9800;padding:4px 8px;border-radius:3px;font-size:0.85em;font-weight:bold;">⏳ Pending</span>
+                  <% } else if (item.status === 'approved') { %>
+                    <span style="background:#e8f5e9;color:#4CAF50;padding:4px 8px;border-radius:3px;font-size:0.85em;font-weight:bold;">✅ Approved</span>
+                  <% } else if (item.status === 'rejected') { %>
+                    <span style="background:#ffebee;color:#F44336;padding:4px 8px;border-radius:3px;font-size:0.85em;font-weight:bold;">❌ Rejected</span>
+                  <% } %>
+                </td>
+                <td style="padding:12px;text-align:center;font-size:0.9em;">
+                  <%= new Date(item.uploadedAt).toLocaleDateString('en-IN') %>
+                </td>
+                <% if (isApprover && item.status === 'pending') { %>
+                <td style="padding:12px;text-align:center;">
+                  <button onclick="showApproveModal('<%= item._id %>', '<%= item.title %>')" 
+                          style="background:#4CAF50;color:white;border:none;padding:6px 12px;border-radius:3px;cursor:pointer;font-size:0.85em;margin-right:5px;">
+                    ✅ Approve
+                  </button>
+                  <button onclick="showRejectModal('<%= item._id %>', '<%= item.title %>')" 
+                          style="background:#F44336;color:white;border:none;padding:6px 12px;border-radius:3px;cursor:pointer;font-size:0.85em;">
+                    ❌ Reject
+                  </button>
+                </td>
+                <% } %>
+              </tr>
+            <% }); %>
+          <% } else { %>
+            <tr>
+              <td colspan="<%= isApprover ? '6' : '5' %>" style="padding:20px;text-align:center;color:#999;">
+                No content found
+              </td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Approve Modal -->
+<div id="approveModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:8px;padding:20px;max-width:400px;width:90%;">
+    <h3 style="margin-top:0;color:#2b235f;">Approve Content</h3>
+    <p id="approveTitle" style="color:#666;margin-bottom:15px;"></p>
+    
+    <div style="margin-bottom:15px;">
+      <label style="display:block;font-weight:bold;margin-bottom:5px;">Note (Optional)</label>
+      <textarea id="approveNote" rows="3" placeholder="Add approval note..."
+                style="width:100%;padding:10px;border:1px solid #ccc;border-radius:4px;box-sizing:border-box;"></textarea>
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button onclick="closeModal('approveModal')" style="padding:10px 20px;background:#ccc;border:none;border-radius:4px;cursor:pointer;">Cancel</button>
+      <button onclick="approveContent()" style="padding:10px 20px;background:#4CAF50;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:bold;">Approve</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reject Modal -->
+<div id="rejectModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:8px;padding:20px;max-width:400px;width:90%;">
+    <h3 style="margin-top:0;color:#2b235f;">Reject Content</h3>
+    <p id="rejectTitle" style="color:#666;margin-bottom:15px;"></p>
+    
+    <div style="margin-bottom:15px;">
+      <label style="display:block;font-weight:bold;margin-bottom:5px;">Rejection Reason *</label>
+      <textarea id="rejectionReason" rows="3" placeholder="Please provide reason for rejection..."
+                style="width:100%;padding:10px;border:1px solid #ccc;border-radius:4px;box-sizing:border-box;"></textarea>
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button onclick="closeModal('rejectModal')" style="padding:10px 20px;background:#ccc;border:none;border-radius:4px;cursor:pointer;">Cancel</button>
+      <button onclick="rejectContent()" style="padding:10px 20px;background:#F44336;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:bold;">Reject</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentContentId = '';
+
+function toggleMediaInput(type) {
+  const mediaDiv = document.getElementById('mediaInputDiv');
+  const mediaInput = document.getElementById('mediaInput');
+  
+  if (type === 'photo' || type === 'video') {
+    mediaDiv.style.display = 'block';
+    mediaInput.required = true;
+  } else {
+    mediaDiv.style.display = 'none';
+    mediaInput.required = false;
+  }
+}
+
+function showApproveModal(id, title) {
+  currentContentId = id;
+  document.getElementById('approveTitle').textContent = 'Approve: ' + title;
+  document.getElementById('approveNote').value = '';
+  document.getElementById('approveModal').style.display = 'flex';
+}
+
+function showRejectModal(id, title) {
+  currentContentId = id;
+  document.getElementById('rejectTitle').textContent = 'Reject: ' + title;
+  document.getElementById('rejectionReason').value = '';
+  document.getElementById('rejectModal').style.display = 'flex';
+}
+
+function closeModal(modalId) {
+  document.getElementById(modalId).style.display = 'none';
+}
+
+async function approveContent() {
+  const note = document.getElementById('approveNote').value;
+  
+  try {
+    const response = await fetch(`/admin/media/approve/${currentContentId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ note })
+    });
+
+    const data = await response.json();
+    
+    if (data.success) {
+      alert('Content approved successfully!');
+      location.reload();
+    } else {
+      alert('Error: ' + data.error);
+    }
+  } catch (err) {
+    alert('Error approving content: ' + err.message);
+  }
+}
+
+async function rejectContent() {
+  const reason = document.getElementById('rejectionReason').value.trim();
+  
+  if (!reason) {
+    alert('Please provide rejection reason');
+    return;
+  }
+  
+  try {
+    const response = await fetch(`/admin/media/reject/${currentContentId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ rejectionReason: reason })
+    });
+
+    const data = await response.json();
+    
+    if (data.success) {
+      alert('Content rejected successfully!');
+      location.reload();
+    } else {
+      alert('Error: ' + data.error);
+    }
+  } catch (err) {
+    alert('Error rejecting content: ' + err.message);
+  }
+}
+
+// Upload form handling - only if form exists
+const uploadForm = document.getElementById('uploadForm');
+if (uploadForm) {
+  uploadForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    
+    try {
+      const response = await fetch('/admin/media/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        alert('Content uploaded successfully! Pending approval from administrator.');
+        location.reload();
+      } else {
+        alert('Error: ' + data.error);
+      }
+    } catch (err) {
+      alert('Error uploading content: ' + err.message);
+    }
+  });
+}
+</script>

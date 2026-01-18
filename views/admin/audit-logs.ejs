@@ -1,0 +1,222 @@
+<div style="max-width:1400px;margin:0 auto;padding:20px;">
+  <h2 style="color:#2b235f;margin-bottom:20px;">📋 Audit Logs</h2>
+
+  <!-- Filters Section -->
+  <div style="background:#f9f9f9;border:1px solid #ddd;border-radius:6px;padding:15px;margin-bottom:20px;">
+    <h3 style="margin-top:0;color:#333;">🔍 Filters</h3>
+    
+    <form method="GET" action="/admin/audit-logs" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:15px;align-items:end;">
+      
+      <div>
+        <label style="display:block;font-weight:bold;margin-bottom:5px;color:#333;">Action</label>
+        <select name="action" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
+          <option value="">All Actions</option>
+          <option value="login" <%= query.action === 'login' ? 'selected' : '' %>>Login</option>
+          <option value="logout" <%= query.action === 'logout' ? 'selected' : '' %>>Logout</option>
+          <option value="joining_letter_downloaded" <%= query.action === 'joining_letter_downloaded' ? 'selected' : '' %>>📄 Joining Letter Downloaded</option>
+          <option value="id_card_downloaded" <%= query.action === 'id_card_downloaded' ? 'selected' : '' %>>🆔 ID Card Downloaded</option>
+          <option value="user_created" <%= query.action === 'user_created' ? 'selected' : '' %>>User Created</option>
+          <option value="user_edited" <%= query.action === 'user_edited' ? 'selected' : '' %>>User Edited</option>
+          <option value="user_deleted" <%= query.action === 'user_deleted' ? 'selected' : '' %>>User Deleted</option>
+          <option value="role_assigned" <%= query.action === 'role_assigned' ? 'selected' : '' %>>Role Assigned</option>
+          <option value="form_submitted" <%= query.action === 'form_submitted' ? 'selected' : '' %>>Form Submitted</option>
+          <option value="form_claimed" <%= query.action === 'form_claimed' ? 'selected' : '' %>>Form Claimed</option>
+          <option value="form_accepted" <%= query.action === 'form_accepted' ? 'selected' : '' %>>Form Accepted</option>
+          <option value="form_rejected" <%= query.action === 'form_rejected' ? 'selected' : '' %>>Form Rejected</option>
+          <option value="password_reset_via_otp" <%= query.action === 'password_reset_via_otp' ? 'selected' : '' %>>Password Reset via OTP</option>
+        </select>
+      </div>
+
+      <div>
+        <label style="display:block;font-weight:bold;margin-bottom:5px;color:#333;">User Email</label>
+        <input type="email" name="performedBy" value="<%= query.performedBy || '' %>" placeholder="Filter by email"
+               style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
+      </div>
+
+      <div>
+        <label style="display:block;font-weight:bold;margin-bottom:5px;color:#333;">Level</label>
+        <select name="level" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
+          <option value="">All Levels</option>
+          <option value="superadmin" <%= query.level === 'superadmin' ? 'selected' : '' %>>SuperAdmin</option>
+          <option value="state" <%= query.level === 'state' ? 'selected' : '' %>>State</option>
+          <option value="division" <%= query.level === 'division' ? 'selected' : '' %>>Division</option>
+          <option value="district" <%= query.level === 'district' ? 'selected' : '' %>>District</option>
+          <option value="block" <%= query.level === 'block' ? 'selected' : '' %>>Block</option>
+        </select>
+      </div>
+
+      <div>
+        <label style="display:block;font-weight:bold;margin-bottom:5px;color:#333;">Start Date</label>
+        <input type="date" name="startDate" value="<%= query.startDate || '' %>"
+               style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
+      </div>
+
+      <div>
+        <label style="display:block;font-weight:bold;margin-bottom:5px;color:#333;">End Date</label>
+        <input type="date" name="endDate" value="<%= query.endDate || '' %>"
+               style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
+      </div>
+
+      <div>
+        <label style="display:block;font-weight:bold;margin-bottom:5px;color:#333;">Search</label>
+        <input type="text" name="search" value="<%= query.search || '' %>" placeholder="Name, Email, ID..."
+               style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
+      </div>
+
+      <div style="display:flex;gap:10px;">
+        <button type="submit" style="flex:1;padding:8px 15px;background:#007bff;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:bold;">
+          🔍 Filter
+        </button>
+        <a href="/admin/audit-logs" style="flex:1;padding:8px 15px;background:#6c757d;color:white;border:none;border-radius:4px;cursor:pointer;text-align:center;text-decoration:none;font-weight:bold;">
+          ↺ Reset
+        </a>
+      </div>
+    </form>
+  </div>
+
+  <!-- Export Button -->
+  <div style="margin-bottom:15px;">
+    <form method="GET" action="/admin/audit-logs/export" style="display:inline;">
+      <% if (query.action) { %><input type="hidden" name="action" value="<%= query.action %>"><% } %>
+      <% if (query.performedBy) { %><input type="hidden" name="performedBy" value="<%= query.performedBy %>"><% } %>
+      <% if (query.level) { %><input type="hidden" name="level" value="<%= query.level %>"><% } %>
+      <% if (query.startDate) { %><input type="hidden" name="startDate" value="<%= query.startDate %>"><% } %>
+      <% if (query.endDate) { %><input type="hidden" name="endDate" value="<%= query.endDate %>"><% } %>
+      <button type="submit" style="padding:10px 20px;background:#28a745;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:bold;">
+        📊 Export as CSV
+      </button>
+    </form>
+  </div>
+
+  <!-- Logs Table -->
+  <div style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;background:white;border:1px solid #ddd;">
+      <thead>
+        <tr style="background:#f5f5f5;border-bottom:2px solid #ddd;">
+          <th style="padding:12px;text-align:left;font-weight:bold;border-right:1px solid #ddd;">Timestamp</th>
+          <th style="padding:12px;text-align:left;font-weight:bold;border-right:1px solid #ddd;">Action</th>
+          <th style="padding:12px;text-align:left;font-weight:bold;border-right:1px solid #ddd;">Performed By</th>
+          <th style="padding:12px;text-align:left;font-weight:bold;border-right:1px solid #ddd;">Target</th>
+          <th style="padding:12px;text-align:left;font-weight:bold;border-right:1px solid #ddd;">Level</th>
+          <th style="padding:12px;text-align:left;font-weight:bold;border-right:1px solid #ddd;">IP Address</th>
+          <th style="padding:12px;text-align:left;font-weight:bold;">Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (logs && logs.length > 0) { %>
+          <% logs.forEach(log => { %>
+            <tr style="border-bottom:1px solid #eee;hover {background:#f9f9f9;}">
+              <td style="padding:12px;border-right:1px solid #eee;font-size:0.9em;color:#666;">
+                <%= new Date(log.timestamp).toLocaleString('en-IN') %>
+              </td>
+              <td style="padding:12px;border-right:1px solid #eee;">
+                <span style="background:
+                  <% if (log.action.includes('download')) { %>
+                    #e8f4f8
+                  <% } else if (log.action.includes('delete')) { %>
+                    #ffe8e8
+                  <% } else if (log.action.includes('login') || log.action.includes('logout')) { %>
+                    #e8f5e9
+                  <% } else if (log.action.includes('user')) { %>
+                    #f3e5f5
+                  <% } else { %>
+                    #f5f5f5
+                  <% } %>
+                ;padding:4px 8px;border-radius:3px;font-size:0.85em;font-weight:bold;">
+                  <% if (log.action === 'joining_letter_downloaded') { %>
+                    📄 Joining Letter Downloaded
+                  <% } else if (log.action === 'id_card_downloaded') { %>
+                    🆔 ID Card Downloaded
+                  <% } else { %>
+                    <%= log.action.replace(/_/g, ' ').toUpperCase() %>
+                  <% } %>
+                </span>
+              </td>
+              <td style="padding:12px;border-right:1px solid #eee;">
+                <strong><%= log.performedByName %></strong><br>
+                <small style="color:#666;"><%= log.performedByEmail %></small><br>
+                <small style="color:#999;"><%= log.performedByRole %></small>
+              </td>
+              <td style="padding:12px;border-right:1px solid #eee;">
+                <% if (log.targetName) { %>
+                  <strong><%= log.targetName %></strong><br>
+                  <small style="color:#666;"><%= log.targetType %></small>
+                <% } else { %>
+                  <small style="color:#999;">—</small>
+                <% } %>
+              </td>
+              <td style="padding:12px;border-right:1px solid #eee;text-align:center;">
+                <span style="background:#e3f2fd;padding:3px 8px;border-radius:3px;font-size:0.85em;font-weight:bold;">
+                  <%= log.level %><br>
+                  <small><%= log.levelId %></small>
+                </span>
+              </td>
+              <td style="padding:12px;border-right:1px solid #eee;font-family:monospace;font-size:0.85em;color:#666;">
+                <%= log.ipAddress %>
+              </td>
+              <td style="padding:12px;">
+                <% if (log.action.includes('download')) { %>
+                  <details>
+                    <summary style="cursor:pointer;font-weight:bold;color:#0066cc;">📥 View Details</summary>
+                    <div style="margin-top:8px;background:#f9f9f9;padding:8px;border-radius:3px;font-size:0.85em;">
+                      <% if (log.details && log.details.membershipId) { %>
+                        <strong>Membership ID:</strong> <%= log.details.membershipId %><br>
+                        <strong>Member Name:</strong> <%= log.details.memberName %><br>
+                        <strong>File:</strong> <%= log.details.fileName %><br>
+                      <% } %>
+                      <% if (log.details && log.details.documentType) { %>
+                        <strong>Document Type:</strong> <%= log.details.documentType %><br>
+                      <% } %>
+                      <% if (log.note) { %>
+                        <strong>Note:</strong> <%= log.note %><br>
+                      <% } %>
+                    </div>
+                  </details>
+                <% } else { %>
+                  <details>
+                    <summary style="cursor:pointer;font-weight:bold;color:#0066cc;">▼ Details</summary>
+                    <pre style="background:#f0f0f0;padding:8px;border-radius:3px;overflow-x:auto;font-size:0.8em;margin:8px 0 0 0;"><%= JSON.stringify(log.details, null, 2) %></pre>
+                  </details>
+                <% } %>
+              </td>
+            </tr>
+          <% }); %>
+        <% } else { %>
+          <tr>
+            <td colspan="7" style="padding:20px;text-align:center;color:#999;">
+              No audit logs found
+            </td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <% if (pagination && pagination.pages > 1) { %>
+    <div style="margin-top:20px;text-align:center;">
+      <% if (pagination.hasPrev) { %>
+        <a href="/admin/audit-logs?page=1<%= queryString %>" style="padding:8px 12px;margin:0 3px;background:#007bff;color:white;text-decoration:none;border-radius:3px;">« First</a>
+        <a href="/admin/audit-logs?page=<%= pagination.page - 1 %><%= queryString %>" style="padding:8px 12px;margin:0 3px;background:#007bff;color:white;text-decoration:none;border-radius:3px;">‹ Previous</a>
+      <% } %>
+
+      <span style="padding:8px 12px;margin:0 3px;background:#f0f0f0;border-radius:3px;">
+        Page <%= pagination.page %> of <%= pagination.pages %> (Total: <%= pagination.total %> logs)
+      </span>
+
+      <% if (pagination.hasNext) { %>
+        <a href="/admin/audit-logs?page=<%= pagination.page + 1 %><%= queryString %>" style="padding:8px 12px;margin:0 3px;background:#007bff;color:white;text-decoration:none;border-radius:3px;">Next ›</a>
+        <a href="/admin/audit-logs?page=<%= pagination.pages %><%= queryString %>" style="padding:8px 12px;margin:0 3px;background:#007bff;color:white;text-decoration:none;border-radius:3px;">Last »</a>
+      <% } %>
+    </div>
+  <% } %>
+
+  <div style="margin-top:30px;padding:15px;background:#f0f7ff;border:1px solid #b3d9ff;border-radius:4px;color:#004085;">
+    <strong>ℹ️ Information:</strong><br>
+    • Total logs shown: <%= pagination.total %> records<br>
+    • 📄 Document downloads are highlighted in blue<br>
+    • 🗑️ Delete actions are highlighted in red<br>
+    • 🟢 Login/Logout actions are highlighted in green<br>
+    • Each row shows who performed the action, from which IP, and at what level
+  </div>
+</div>

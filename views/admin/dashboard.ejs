@@ -16,7 +16,7 @@
           <a href="/admin/forms" style="color: white; text-decoration: underline; display: inline-block; margin-top: 10px;">View Applications →</a>
         </div>
 
-        <% if (currentUser && currentUser.role === 'superadmin') { %>
+        <% if (currentUser && (currentUser.role === 'superadmin' || currentUser.role.startsWith('state_') || currentUser.role.startsWith('division_') || currentUser.role.startsWith('district_'))) { %>
         <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 8px;">
           <h3 style="margin: 0 0 10px 0;">👥 User Management</h3>
           <p style="margin: 0; opacity: 0.9;">Create and manage admin users</p>
@@ -24,11 +24,27 @@
         </div>
         <% } %>
 
+        <% if (currentUser && currentUser.role === 'superadmin') { %>
+        <div style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; padding: 20px; border-radius: 8px;">
+          <h3 style="margin: 0 0 10px 0;">📋 Audit Logs</h3>
+          <p style="margin: 0; opacity: 0.9;">Track all system activities and document downloads</p>
+          <a href="/admin/audit-logs" style="color: white; text-decoration: underline; display: inline-block; margin-top: 10px;">View Audit Logs →</a>
+        </div>
+        <% } %>
+
         <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; border-radius: 8px;">
           <h3 style="margin: 0 0 10px 0;">📊 Reports & Analytics</h3>
           <p style="margin: 0; opacity: 0.9;">View membership statistics and reports</p>
-          <span style="opacity: 0.7; font-size: 0.9em;">Coming Soon</span>
+          <a href="/admin/reports-analytics" style="color: white; text-decoration: underline; display: inline-block; margin-top: 10px;">View Reports →</a>
         </div>
+
+        <% if (currentUser && (currentUser.role.includes('media_incharge') || currentUser.role.includes('president') || currentUser.role.includes('secretary') || currentUser.role === 'superadmin')) { %>
+        <div style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; padding: 20px; border-radius: 8px;">
+          <h3 style="margin: 0 0 10px 0;">📺 Media Management</h3>
+          <p style="margin: 0; opacity: 0.9;">Upload and manage media content</p>
+          <a href="/admin/media-dashboard" style="color: white; text-decoration: underline; display: inline-block; margin-top: 10px;">Manage Media →</a>
+        </div>
+        <% } %>
       </div>
 
       <div style="border-top: 1px solid #eee; padding-top: 20px;">
@@ -37,8 +53,15 @@
           <a href="/admin/forms?status=pending" style="background: #ffc107; color: #000; padding: 8px 16px; border-radius: 5px; text-decoration: none; font-size: 0.9em;">📝 Pending Forms</a>
           <a href="/admin/forms?status=accepted" style="background: #28a745; color: white; padding: 8px 16px; border-radius: 5px; text-decoration: none; font-size: 0.9em;">✅ Accepted</a>
           <a href="/admin/forms?status=rejected" style="background: #dc3545; color: white; padding: 8px 16px; border-radius: 5px; text-decoration: none; font-size: 0.9em;">❌ Rejected</a>
-          <% if (currentUser && currentUser.role === 'superadmin') { %>
+          <a href="/admin/change-password" style="background: #17a2b8; color: white; padding: 8px 16px; border-radius: 5px; text-decoration: none; font-size: 0.9em;">🔐 Change Password</a>
+          <% if (currentUser && (currentUser.role === 'superadmin' || currentUser.role.startsWith('state_') || currentUser.role.startsWith('division_') || currentUser.role.startsWith('district_'))) { %>
           <a href="/admin/users/new" style="background: #6f42c1; color: white; padding: 8px 16px; border-radius: 5px; text-decoration: none; font-size: 0.9em;">➕ Add User</a>
+          <% } %>
+          <% if (currentUser && currentUser.role === 'superadmin') { %>
+          <a href="/admin/audit-logs" style="background: #e83e8c; color: white; padding: 8px 16px; border-radius: 5px; text-decoration: none; font-size: 0.9em;">📋 Audit Logs</a>
+          <% } %>
+          <% if (currentUser && (currentUser.role.includes('media_incharge') || currentUser.role.includes('president') || currentUser.role.includes('secretary') || currentUser.role === 'superadmin')) { %>
+          <a href="/admin/media-dashboard" style="background: #e91e63; color: white; padding: 8px 16px; border-radius: 5px; text-decoration: none; font-size: 0.9em;">📺 Media Dashboard</a>
           <% } %>
           <a href="/logout" style="background: #6c757d; color: white; padding: 8px 16px; border-radius: 5px; text-decoration: none; font-size: 0.9em;">🚪 Logout</a>
         </div>

@@ -1,84 +1,143 @@
-# Rashtriya Manav Adhikar Sangathan (RMAS) Initiative
+# RMAS (Rashtriya Manav Adhikar Sangathan) - Admin Platform
 
-A comprehensive digital platform for Rashtriya Manav Adhikar Sangathan (RMAS) in Bihar, India, designed to streamline membership management, administrative operations, and human rights advocacy through a hierarchical organizational structure.
+A hierarchical administrative platform for Rashtriya Manav Adhikar Sangathan (RMAS) in Bihar, India, designed to manage user permissions, membership applications, and human rights advocacy through a strict cascade authorization system.
 
 ## 📋 Description
 
-The RMAS Initiative is a full-stack web application that digitizes and modernizes the operations of a human rights association. The platform enables:
+RMAS is a full-stack web application that digitizes human rights advocacy organization operations with emphasis on hierarchical access control and data integrity. The platform enables:
 
-- **Membership Management**: Streamlined application process with document verification
-- **Hierarchical Administration**: Multi-level admin system (State → Division → District → Block)
-- **Team Organization**: 5 specialized teams (Core, Mahila/Women, Yuva/Youth, Alpsankhyak/Minority, SC/ST)
-- **Document Automation**: PDF certificate generation with QR code verification
-- **Secure Operations**: Production-ready with monitoring, logging, and containerization
+- **Hierarchical User Management**: Strict cascade permissions from Superadmin → State → Division → District → Block levels
+- **Role-Based Authorization**: Each administrative level has 3 roles (President, Secretary, Media Incharge) with clear delegation boundaries
+- **Membership Application Tracking**: Applications visible to higher administrative levels with cascade filtering
+- **Document Generation**: Automated PDF certificate and joining letter generation
+- **Secure Administration**: Production-ready with role enforcement, audit logging, and access control
 
-**Problem Solved**: Traditional paper-based NGO operations are inefficient, prone to errors, and lack scalability. This platform provides a digital solution for membership tracking, administrative oversight, and operational transparency.
+**Problem Solved**: Traditional paper-based NGO operations lack centralized control and organizational transparency. This platform provides hierarchical administrative oversight with strict permission boundaries, ensuring that each level can only manage entities within their scope.
 
-**Main Goals**:
-- ✅ Digitize membership application and verification process
-- ✅ Implement hierarchical administrative control
-- ✅ Enable automated document generation and distribution
-- ✅ Provide real-time monitoring and reporting capabilities
-- ✅ Ensure data security and operational transparency
+**Core Objectives**:
+- ✅ Implement strict hierarchical permission system with cascade validation
+- ✅ Enable role-based user management at multiple administrative levels
+- ✅ Provide membership application visibility based on organizational hierarchy
+- ✅ Automate document generation with secure distribution
+- ✅ Maintain audit trail and operational transparency
 
-## 📊 Current Status (~85% Complete)
+## 📊 Current Status (~75% Complete)
 
 ### ✅ **Completed Features**
-- **Core Application Framework**: Node.js + Express + EJS architecture
-- **Database Integration**: MongoDB with Mongoose ODM
-- **User Authentication**: Session-based admin authentication system
-- **Membership System**: Complete application form with file uploads
-- **Hierarchical Admin Panel**: Multi-level user management with cascade permissions
-- **Team Management**: 5-team structure with role assignments
-- **PDF Generation**: Automated certificates with QR codes using Puppeteer
-- **Responsive SVG Headers**: Diagonal background SVGs for website, joining letters, and ID cards
-- **Security Implementation**: Helmet, CORS, rate limiting, input validation
-- **Logging System**: Winston with daily rotation and structured JSON logs
-- **Metrics & Monitoring**: Prometheus integration with request tracking
-- **Serverless Deployment**: Vercel-compatible with Puppeteer support
-- **CI/CD Pipeline**: GitHub Actions with automated testing and deployment
-- **Testing Framework**: Jest + Supertest with basic test coverage
-- **Local Development**: Docker Compose setup with MongoDB
+- **Core Framework**: Node.js + Express + MongoDB + EJS architecture
+- **User Authentication**: Session-based admin authentication with role enforcement
+- **Hierarchical User Management**: Complete user creation form with cascade validation
+  - Superadmin can create users at all levels (State, Division, District, Block)
+  - State level can create Division, District, Block users
+  - Division level can create District, Block users
+  - District level can create Block users
+  - Block level and Media Incharge users cannot create other users
+- **Role Structure Implementation**: 
+  - 13 role enum (superadmin, state_president, state_secretary, state_media_incharge, division_president, etc.)
+  - Strict validation preventing invalid role assignments
+  - Role-specific permission boundaries enforced at server level
+- **Cascading Location Assignment**: 
+  - Dynamic dropdowns for State, Division, District, Block selection
+  - Automatic filtering based on user's authorization level
+  - Server-side validation of location scope
+- **Admin Dashboard**: Responsive dashboard with role-based card visibility
+  - User Management section visible to Superadmin, State, Division, District levels
+  - Application management with cascade filtering
+- **Permission Middleware**: Route protection with role-based access control
+- **Membership Applications**: Application tracking with cascade visibility
+- **PDF Generation**: Puppeteer integration for certificate creation
+- **Responsive Design**: Custom CSS with mobile-friendly layouts
+- **Logging System**: Winston with structured JSON logs
 
-### ⏳ **Pending Features (15%)**
-- **Content Development**: Human rights educational content and resources
-- **Legal Compliance**: GDPR/data protection compliance implementation
-- **Advanced Security**: Multi-factor authentication, audit trails
-- **Performance Optimization**: Database indexing, caching strategies
-- **Production Monitoring**: External logging aggregation (Datadog/Papertrail)
-- **Backup Systems**: Automated database backups and restore procedures
-- **API Documentation**: Swagger/OpenAPI specifications
-- **Mobile Responsiveness**: Enhanced mobile UI/UX
-- **Multi-language Support**: Complete Hindi/English localization
-- **Analytics Dashboard**: Advanced reporting and insights
+### ⏳ **Pending Features (25%)**
+- **Media Dashboard**: Media Incharge user interface for content management
+- **Password Reset Flow**: Self-service password recovery mechanism
+- **Audit Logging**: Complete activity trail for compliance and forensics
+- **Block Level Full Support**: Enhanced features for block-level users
+- **Content Development**: Human rights educational materials and resources
+- **Advanced Reporting**: Custom report generation with export functionality
+- **Performance Optimization**: Database indexing and caching strategies
+- **API Documentation**: Comprehensive API endpoint documentation
 
 ## ✨ Features
 
-### ✅ **Implemented Features**
-- **Hierarchical Administration**: State → Division → District → Block level access control
-- **Team Structure**: Core, Mahila, Yuva, Alpsankhyak, SC/ST teams at each level
-- **Membership Application**: Multi-step form with document upload and validation
-- **PDF Certificate Generation**: Automated joining letters with QR verification
-- **Admin Dashboard**: Comprehensive user and application management
-- **Role-based Permissions**: Cascade authority with granular access control
-- **File Upload System**: Secure document storage with size/type validation
-- **Email Notifications**: Automated communication for application status
-- **Health Monitoring**: Application health checks and uptime tracking
-- **Prometheus Metrics**: Request duration, error rates, and performance monitoring
-- **Structured Logging**: JSON-formatted logs with daily rotation
-- **Serverless Deployment**: Vercel-compatible with Puppeteer for PDF generation
-- **Automated Testing**: Unit and integration tests with coverage reporting
-- **CI/CD Pipeline**: GitHub Actions with automated deployment
+### **Hierarchical Permission System**
 
-### ⏳ **Planned Features**
-- **Content Management System**: Dynamic human rights content and resources
-- **Advanced Analytics**: Membership trends and organizational insights
-- **Mobile Application**: React Native companion app
-- **Offline Capabilities**: Progressive Web App features
-- **Integration APIs**: Third-party service integrations
-- **Advanced Reporting**: Custom report generation and export
-- **Notification System**: Push notifications and alerts
-- **Audit System**: Complete activity logging and compliance tracking
+The platform implements a strict cascade authorization model:
+
+```
+Superadmin (Super Level)
+├── Can create: State, Division, District, Block users
+├── Can assign: All 3 roles at all levels
+└── Dashboard access: Full application visibility
+
+State Level (President/Secretary/Media Incharge)
+├── Can create: Division, District, Block users
+├── Can assign: All 3 roles at Division/District/Block
+└── Dashboard access: Subordinate applications only
+
+Division Level (President/Secretary/Media Incharge)
+├── Can create: District, Block users
+├── Can assign: All 3 roles at District/Block
+└── Dashboard access: Subordinate applications only
+
+District Level (President/Secretary/Media Incharge)
+├── Can create: Block users
+├── Can assign: All 3 roles at Block
+└── Dashboard access: Block-level applications only
+
+Block Level & Media Incharge
+├── Cannot create: No user creation allowed
+├── Cannot assign: No role assignment allowed
+└── Dashboard access: View-only mode
+```
+
+### **Role Structure**
+
+Each administrative level has exactly 3 roles with no hierarchy between them:
+- **President**: Senior administrative authority
+- **Secretary**: Administrative support and coordination
+- **Media Incharge**: Communication and media management
+
+All roles at the same level have equal authority to create/manage users at lower levels.
+
+### ✅ **Implemented Features**
+
+- **Strict User Creation Workflow**
+  - Role-restricted user creation form
+  - Dynamic level assignment dropdown (shows only permitted lower levels)
+  - Automatic role enum validation (prevents invalid role assignments)
+  - Server-side hierarchical permission enforcement
+  
+- **Cascading Location Dropdowns**
+  - Bihar state structure with 9 divisions
+  - Dynamic district/block loading based on selections
+  - Location assignment scope limited to user's authorization level
+  
+- **Application Management**
+  - Membership applications visible based on user's hierarchy position
+  - Higher levels see all subordinate applications
+  - Lower levels see only their own submissions
+  
+- **Dashboard Visibility**
+  - User Management section: Superadmin, State, Division, District users
+  - Application Management section: All authorized users
+  - Add User button: Only for authorized creation levels
+  
+- **Admin Panel Routes**
+  - User list and creation: Role-protected with cascade validation
+  - User editing: Authority scope enforced
+  - Application tracking: Visibility based on hierarchy
+  
+- **Security Implementation**
+  - Session-based authentication
+  - Role enum validation in database models
+  - Server-side permission checks on all protected routes
+  - Input validation and sanitization
+  
+- **PDF Generation**: Automated certificate creation using Puppeteer
+- **Responsive Design**: Mobile-friendly UI with role-based layouts
+- **Logging & Monitoring**: Structured logs with request tracking
 
 ## 🛠️ Tech Stack
 
@@ -87,300 +146,430 @@ The RMAS Initiative is a full-stack web application that digitizes and modernize
 - **Database**: MongoDB with Mongoose ODM
 - **Authentication**: Express-session with secure cookie management
 - **PDF Generation**: Puppeteer with Chromium for headless browsing
-- **Email Service**: Nodemailer with Gmail SMTP
-- **Process Management**: PM2 for production clustering
+- **Validation**: Express-validator with strict input sanitization
+- **Process Management**: Nodemon for development hot reload
 
 ### **Frontend**
-- **Templates**: EJS with Express Layouts
-- **Styling**: Custom CSS with responsive design
-- **Forms**: Client-side validation with server-side processing
-- **File Uploads**: Multer middleware for secure file handling
+- **Templates**: EJS with hierarchical role-based rendering
+- **Styling**: Custom CSS with responsive mobile-first design
+- **Forms**: Client-side and server-side validation
+- **JavaScript**: Client-side logic for cascading dropdowns
 
-### **DevOps & Infrastructure**
-- **Serverless**: Vercel for deployment
-- **CI/CD**: GitHub Actions with automated workflows
-- **Monitoring**: Prometheus metrics and Winston logging
-- **Deployment**: Vercel with auto-scaling
-
-### **Security & Quality**
-- **Security Headers**: Helmet.js for HTTP security
-- **Rate Limiting**: Express rate limit middleware
-- **Input Validation**: Express-validator for data sanitization
-- **CORS**: Configurable cross-origin resource sharing
-- **Testing**: Jest with Supertest for API testing
-- **Code Quality**: ESLint configuration
-
-### **Development Tools**
-- **Version Control**: Git with GitHub
-- **Package Management**: npm with package-lock.json
-- **Environment Management**: dotenv for configuration
-- **Development Server**: Nodemon for hot reloading
-- **API Testing**: Postman/Insomnia for endpoint testing
+### **Database**
+- **Schema**: Mongoose models with strict validation
+  - User model: 13-role enum with authorization level tracking
+  - Membership model: Application tracking with status management
+- **Indexes**: Performance optimization for frequently queried fields
+- **Storage**: MongoDB Atlas cloud or local MongoDB instance
 
 ## 📁 Project Structure
 
 ```
-rmas-website/
-├── 📁 middleware/           # Express middleware (auth, role validation)
-│   ├── auth.js             # Authentication middleware
-│   └── role.js             # Role-based access control
-├── 📁 models/              # Mongoose database models
-│   ├── User.js             # Admin user model
-│   ├── Membership.js       # Membership application model
-│   └── Member.js           # Legacy member model
-├── 📁 public/              # Static assets
-│   ├── css/                # Stylesheets
-│   ├── images/             # Static images and logos
-│   ├── locations/          # Bihar administrative data (JSON)
-│   │   ├── bihar_blocks.json
-│   │   └── bihar_divisions.json
-│   └── uploads/            # User-uploaded files (ignored in git)
-├── 📁 routes/              # Express route handlers
-│   ├── admin.js            # Admin panel routes
-│   ├── auth.js             # Authentication routes
-│   ├── pages.js            # Public page routes
-│   └── public.js           # Public API routes
-├── 📁 scripts/             # Utility scripts
-│   ├── create_superadmin.js
-│   ├── clean_except_superadmin.js
-│   └── migrate_users_to_cascade.js
-├── 📁 tests/               # Test files
-│   ├── setup.js            # Test configuration
-│   └── app.test.js         # Application tests
-├── 📁 utils/               # Utility functions
-│   ├── logger.js           # Winston logging configuration
-│   └── mailer.js           # Email service (placeholder)
-├── 📁 views/               # EJS templates
-│   ├── admin/              # Admin panel templates
-│   ├── partials/           # Reusable template components
-│   ├── pdf/                # PDF templates
+d:\human-right/
+├── 📁 middleware/                    # Express middleware for auth and roles
+│   ├── auth.js                      # Authentication middleware
+│   └── role.js                      # Role-based access control
+├── 📁 models/                       # Mongoose database schemas
+│   ├── User.js                      # Admin user with 13-role enum
+│   ├── Membership.js                # Membership application schema
+│   ├── Member.js                    # Member records
+│   └── DownloadOtp.js              # OTP management for document access
+├── 📁 public/                       # Static assets
+│   ├── css/                         # Stylesheets
+│   │   └── style.css
+│   ├── js/                          # Client-side JavaScript
+│   │   ├── admin-form.js
+│   │   ├── admin-user-form.js      # Cascading dropdown logic
+│   │   ├── bihar-locations.js       # Location data handling
+│   │   ├── form.js
+│   │   ├── join.js
+│   │   └── manage-role.js
+│   ├── locations/                   # Bihar administrative divisions
+│   │   ├── bihar_blocks.json        # All blocks across divisions
+│   │   ├── bihar_complete.json      # Complete geographic hierarchy
+│   │   ├── bihar_divisions.json     # State divisions (9 total)
+│   │   └── roles_hierarchy.json     # Role authority mapping
+│   ├── images/                      # Static images and logos
+│   ├── uploads/                     # User-uploaded files (not in git)
+│   ├── pdfs/                        # Generated certificates
+│   ├── donate.json                  # Donation configuration
+│   └── translations.json            # String localization
+├── 📁 routes/                       # Express route handlers
+│   ├── admin.js                     # Admin panel routes (user creation, management)
+│   ├── auth.js                      # Authentication routes (login, logout)
+│   ├── documents.js                 # Document download routes
+│   ├── pages.js                     # Public page routes
+│   └── public.js                    # Public API routes
+├── 📁 scripts/                      # Utility and maintenance scripts
+│   ├── create_superadmin.js         # Initialize superadmin user
+│   ├── clean_except_superadmin.js   # Database cleanup
+│   ├── clear_test_data.js           # Test data removal
+│   ├── test_render_joining_letter.js
+│   ├── send_updated_pdf_email.js
+│   ├── find_latest_role_assigned.js
+│   ├── migrate_users_to_cascade.js  # Permission system migration
+│   └── archive/                     # Deprecated scripts
+├── 📁 utils/                        # Utility modules
+│   ├── logger.js                    # Winston logging configuration
+│   └── mailer.js                    # Email service handler
+├── 📁 views/                        # EJS templates
+│   ├── admin/                       # Admin panel templates
+│   │   ├── dashboard.ejs            # Role-based dashboard
+│   │   ├── user_form.ejs            # User creation with cascade permissions
+│   │   ├── users.ejs                # User list view
+│   │   ├── forms.ejs                # Application list view
+│   │   ├── form_view.ejs            # Application detail view
+│   │   ├── manage-role.ejs          # Role management
+│   │   └── profile_view.ejs
+│   ├── documents/                   # Document request templates
+│   │   ├── request_download.ejs
+│   │   ├── otp_sent.ejs
+│   │   └── profile_view.ejs
+│   ├── pdf/                         # PDF generation templates
+│   │   ├── id-card.ejs
+│   │   ├── joining-letter.ejs
+│   │   └── letter-template.ejs
+│   ├── partials/                    # Reusable components
+│   │   ├── header.ejs
+│   │   └── footer.ejs
+│   ├── layout.ejs                   # Main page layout
+│   ├── index.ejs                    # Homepage
+│   ├── join.ejs                     # Membership application form
+│   ├── login.ejs                    # Admin login page
 │   ├── about.ejs
 │   ├── contact.ejs
 │   ├── donate.ejs
 │   ├── gallery.ejs
-│   ├── index.ejs           # Homepage
-│   ├── join.ejs            # Membership application
-│   ├── layout.ejs          # Main layout
-│   ├── login.ejs           # Admin login
 │   ├── news.ejs
-│   ├── team.ejs            # Team display page
-│   └── verify.ejs          # Membership verification
-├── 📄 .env.example         # Environment variables template
-├── 📄 .gitignore           # Git exclusions
-├── ⚙️ vercel.json          # Vercel deployment configuration
-├── 🧪 jest.config.js       # Testing configuration
-├── 📦 package.json         # Dependencies and scripts
-├── 🔧 prepare_puppeteer_env.sh  # Puppeteer setup script
-├── ✅ PRODUCTION_CHECKLIST.md   # Development checklist
-└── 🚀 index.js             # Application entry point
+│   ├── team.ejs
+│   ├── terms.ejs
+│   └── verify.ejs
+├── 📁 logs/                         # Application logs (not in git)
+├── 📁 dev-archive/                  # Development artifacts
+│   ├── jest.config.js
+│   ├── test files and old prototypes
+│   └── css-mistakes/ (reference)
+├── 📄 .env.example                  # Environment variables template
+├── 📄 .gitignore                    # Git exclusions
+├── 📄 package.json                  # Dependencies and npm scripts
+├── 🔧 vercel.json                   # Vercel deployment configuration
+├── ✅ PRODUCTION_CHECKLIST.md       # Development checklist
+└── 🚀 index.js                      # Application entry point
 ```
 
 ## ⚙️ Setup & Installation
 
 ### **Prerequisites**
 - Node.js 20+ and npm 7+
-- MongoDB (cloud instance like MongoDB Atlas)
+- MongoDB (MongoDB Atlas cloud or local instance)
 - Git
-- Vercel account for deployment
+- Modern web browser (Chrome, Firefox, Safari, Edge)
 
-### **Quick Start with Vercel (Recommended)**
+### **Quick Start (Development)**
 
 1. **Clone the repository**
-    ```bash
-    git clone https://github.com/rmassangathan-cloud/Rmas.sangathan.git
-    cd Rmas.sangathan
-    ```
+   ```bash
+   git clone <repository-url>
+   cd human-right
+   ```
 
-2. **Configure environment**
-    ```bash
-    cp .env.example .env
-    # Edit .env with your MongoDB URI and other settings
-    ```
-
-3. **Install dependencies**
-    ```bash
-    npm install
-    ```
-
-4. **Deploy to Vercel**
-    ```bash
-    npx vercel --prod
-    ```
-    Follow the prompts to link your GitHub repo and set environment variables.
-
-5. **Access the application**
-    - Vercel will provide the deployment URL
-    - **Health Check**: /health
-    - **Metrics**: /metrics (if enabled)
-
-### **Manual Installation (Development)**
-
-1. **Install dependencies**
+2. **Install dependencies**
    ```bash
    npm install
    ```
 
-2. **Setup environment variables**
+3. **Configure environment**
    ```bash
    cp .env.example .env
-   # Configure your .env file
+   # Edit .env with your configuration:
+   # - MONGODB_URI: Your MongoDB connection string
+   # - SESSION_SECRET: Secure random string for sessions
+   # - PORT: Development port (default: 5000)
    ```
 
-3. **Install Puppeteer browsers**
+4. **Create superadmin user** (optional, for fresh setup)
    ```bash
-   npx puppeteer browsers install chrome
+   node scripts/create_superadmin.js
    ```
 
-4. **Start development server**
+5. **Start development server**
    ```bash
-   npm run dev  # With hot reload
+   npm run dev
    ```
+   The application will be available at `http://localhost:5000`
+
+### **Production Deployment (Vercel)**
+
+1. **Link to Vercel**
+   ```bash
+   npx vercel --prod
+   ```
+
+2. **Configure environment variables** in Vercel dashboard:
+   - `MONGODB_URI`: Production MongoDB URI
+   - `SESSION_SECRET`: Secure session secret
+   - `NODE_ENV`: Set to "production"
+
+3. **Deploy**
+   ```bash
+   git push origin main
+   ```
+   Vercel will automatically deploy on push to main branch
 
 ## 🏃‍♂️ How to Run/Test
 
 ### **Development Mode**
 ```bash
-npm run dev  # Nodemon with hot reload
+npm run dev
 ```
+- Runs with Nodemon for hot reload
+- Server listens on port 5000
+- Access at http://localhost:5000
 
 ### **Production Mode**
-The app is configured for Vercel serverless deployment. Push to main branch to deploy automatically.
+```bash
+npm start
+```
+- Standard Node.js execution
+- Set NODE_ENV=production in .env
 
 ### **Testing**
 ```bash
 # Run all tests
 npm test
 
-# Run with coverage
+# Run with coverage report
 npm run test:coverage
 
-# Run in watch mode
+# Run in watch mode (auto-rerun on file changes)
 npm run test:watch
 ```
 
-### **Local Development**
+### **Utility Scripts**
 ```bash
-# Start development server
-npm run dev
+# Create initial superadmin user
+node scripts/create_superadmin.js
 
-# Direct start
-npm start
+# Clean all users except superadmin
+node scripts/clean_except_superadmin.js
+
+# Clear test data
+node scripts/clear_test_data.js
+
+# Test PDF generation
+node scripts/test_render_joining_letter.js
 ```
 
 ## 🔑 Key Functionalities Explained
 
-### **1. Hierarchical Administration System**
-- **Structure**: State → Division → District → Block levels
-- **Permissions**: Cascade authority where higher levels control lower levels
-- **Teams**: 5 specialized teams at each administrative level
-- **Access Control**: Role-based permissions with granular control
+### **1. Hierarchical Permission System**
 
-### **2. Membership Application Process**
-- **Multi-step Form**: Comprehensive application with validation
-- **Document Upload**: Secure file handling with type/size validation
-- **Auto-assignment**: Automatic division assignment based on district
-- **Email Notifications**: Automated status updates to applicants
+The core feature enforces strict cascade authorization:
 
-### **3. PDF Certificate Generation**
-- **Puppeteer Integration**: Headless Chrome for PDF creation
-- **QR Code Generation**: Unique verification codes for each certificate
-- **Template System**: EJS-based PDF templates with dynamic content
-- **Secure Storage**: Generated PDFs stored in dedicated directories
+- **Permission Enforcement Points**:
+  - **Database Layer**: User model with 13-role enum validates role validity
+  - **Route Layer**: Protected routes check user level before allowing access
+  - **Form Layer**: Frontend dropdowns dynamically filter based on user's authority
+  - **Server Validation**: Server-side checks prevent unauthorized user creation
+  
+- **Authority Levels**:
+  - Each level can only create users at immediately lower level(s)
+  - Cannot skip levels (State cannot create Block directly)
+  - Cannot create users at same or higher level
+  
+- **Examples**:
+  - State President creates Division Secretary: ✅ Allowed
+  - Division Secretary creates District President: ✅ Allowed
+  - District President creates Block Media Incharge: ✅ Allowed
+  - Block President creates any user: ❌ Not allowed
+  - District President creates State Secretary: ❌ Not allowed
 
-### **4. Admin Dashboard**
-- **Application Management**: Review, approve, reject applications
-- **User Management**: Create/edit admin users with role assignments
-- **Team Organization**: Assign members to specific teams and roles
-- **Audit Trail**: Complete activity logging for compliance
+### **2. User Creation Workflow**
 
-### **5. Monitoring & Observability**
-- **Health Checks**: Application uptime and dependency monitoring
-- **Prometheus Metrics**: Request tracking, error rates, performance data
-- **Structured Logging**: JSON-formatted logs with daily rotation
-- **Error Handling**: Comprehensive error tracking and reporting
+The form implements a three-step validation process:
 
-## 🚧 Challenges Faced
+1. **Frontend Validation**:
+   - User role dropdown (President/Secretary/Media Incharge)
+   - Assigned level dropdown (dynamic based on current user's level)
+   - Location selection (State/Division/District/Block)
+   - Form submission prevented if unauthorized
 
-### **Current Issues**
-- **Serverless Puppeteer**: Ensuring PDF generation works in Vercel environment
-- **Environment Configuration**: Complex cascade permission system
-- **File Upload Security**: Balancing usability with security requirements
+2. **Server Validation**:
+   - Hierarchical permission check using `levelHierarchy` object
+   - Role enum validation against allowed 13 roles
+   - Location scope verification
+   - Database integrity check
 
-### **Resolved Challenges**
-- ✅ **Hierarchical Permissions**: Complex cascade authority implementation
-- ✅ **PDF Generation**: Puppeteer configuration for serverless environments
-- ✅ **Session Management**: Secure authentication with role-based access
-- ✅ **Vercel Deployment**: Converted from Docker/PM2 to serverless
+3. **Response**:
+   - Success: User created with encrypted password
+   - Failure: Detailed error message indicating permission violation
+
+### **3. Cascading Location Dropdowns**
+
+Dynamic selection based on authority scope:
+
+- **Superadmin**: Can select any State → Division → District → Block
+- **State Level**: Can select Divisions, Districts, Blocks within state only
+- **Division Level**: Can select Districts, Blocks within division only
+- **District Level**: Can select Blocks within district only
+- **Block Level**: No location selection (view-only)
+
+### **4. Application Visibility Cascade**
+
+Membership applications visible based on hierarchy:
+
+- **Superadmin**: All applications across all levels
+- **State User**: State-level applications + subordinate levels
+- **Division User**: Division-level applications + subordinate levels
+- **District User**: District-level applications + Block level
+- **Block User**: Block-level applications only
+
+### **5. Dashboard Role-Based Access**
+
+Admin dashboard adapts to user's authorization level:
+
+- **User Management Card**: 
+  - Shows for: Superadmin, State, Division, District
+  - Hidden for: Block, Media Incharge
+  
+- **Application Management Card**: 
+  - Shows for: All authorized users
+  - Filtered by: User's cascade scope
+  
+- **Add User Button**: 
+  - Enabled for: Users who can create subordinates
+  - Disabled for: Block level and Media Incharge
+
+## 🚧 Known Limitations & Challenges
+
+### **Current Challenges**
+
+1. **EJS Template Complexity**
+   - Complex JavaScript expressions with nested quotes in EJS require careful syntax
+   - Solution: Use simple string concatenation and conditional blocks instead of template literals in EJS tags
+
+2. **Cascade Permission Scope**
+   - Ensuring permission boundaries are enforced across all routes
+   - Solution: Implemented `levelHierarchy` object for centralized permission logic
+
+3. **Role Enum Strictness**
+   - 13 invalid role combinations must be prevented at database level
+   - Solution: Mongoose enum validation with clear error messages
+
+### **Resolved Issues**
+- ✅ **Form Field Naming**: Fixed duplicate `assignedLevel` submission (renamed visible dropdown to `_assignedLevel_display`)
+- ✅ **Active User Checkbox**: Added checkbox to ensure newly created users can immediately login
+- ✅ **Server-Side Permission Checks**: Implemented levelHierarchy validation on all user creation routes
+- ✅ **Dashboard Visibility**: Updated to show User Management for authorized levels
+- ✅ **EJS Syntax Errors**: Simplified template expressions to avoid parser conflicts
 
 ### **Known Limitations**
-- **Content Management**: Static content requires manual updates
-- **Mobile Experience**: Limited responsive design optimization
-- **Performance**: No caching layer implemented yet
-- **Backup Strategy**: Manual backup procedures only
+- **Block Level Dashboard**: Limited to view-only mode (no user creation)
+- **Media Incharge Limitations**: Cannot create users (by design)
+- **Report Generation**: Not yet implemented for organizational analytics
+- **Batch Operations**: User creation is single-user process (no bulk import)
+- **Location Hierarchy**: Fixed to Bihar structure (hardcoded divisions and districts)
 
-## 🎯 Next Steps / Help Needed
+## 🎯 Next Steps / Development Roadmap
 
-### **High Priority (Immediate)**
-1. **Content Development**: Create comprehensive human rights educational content
-2. **Legal Compliance**: Implement data protection and privacy compliance features
-3. **Performance Optimization**: Add Redis caching and database indexing
-4. **Mobile Optimization**: Enhance responsive design for mobile devices
+### **High Priority (Immediate - v1.1)**
+1. **Media Dashboard**: Dedicated interface for Media Incharge users
+   - Content creation and management
+   - News/updates publication
+   - Media kit distribution
+   
+2. **Password Reset Flow**: Self-service password recovery
+   - Email-based reset links
+   - Secure token generation and validation
+   - Password strength requirements
+   
+3. **Block Level Full Support**: Enhanced features for block-level users
+   - User information management
+   - Local activity tracking
+   - Member verification workflow
 
-### **Medium Priority**
-1. **Advanced Analytics**: Implement user behavior tracking and reporting
-2. **API Documentation**: Create comprehensive API documentation with Swagger
-3. **Integration APIs**: Develop third-party service integrations
-4. **Automated Backups**: Implement scheduled database backups
+### **Medium Priority (v1.2)**
+1. **Audit Logging System**: Complete activity trail
+   - User creation/modification timestamps
+   - Role assignment history
+   - Application status changes
+   - Login/logout events
+   
+2. **Advanced Reporting**: Custom report generation
+   - User statistics by level/role
+   - Application metrics and trends
+   - Organizational growth reports
+   - Export to CSV/PDF
+   
+3. **Performance Optimization**:
+   - Database indexing on frequently queried fields
+   - MongoDB aggregation pipelines for reports
+   - Frontend caching strategies
 
-### **Low Priority**
-1. **Multi-language Support**: Complete Hindi localization
-2. **Progressive Web App**: Add offline capabilities
-3. **Advanced Security**: Implement multi-factor authentication
-4. **Mobile Application**: Develop React Native companion app
+### **Lower Priority (v1.3+)**
+1. **Content Development**: Educational materials and resources
+   - Human rights advocacy guides
+   - Training materials for team members
+   - Case studies and success stories
+   
+2. **Mobile Optimization**: Enhanced responsive design
+   - Mobile-first redesign of forms
+   - Touch-optimized navigation
+   - Progressive web app capabilities
+   
+3. **API Documentation**: Comprehensive endpoint documentation
+   - Swagger/OpenAPI specifications
+   - Code examples and use cases
+   - Developer guide for integrations
+   
+4. **Multi-language Support**: Hindi localization
+   - Hindi UI text and labels
+   - Form validation messages
+   - Email templates
 
-### **Specific Help Needed**
-- **Content Creation**: Human rights subject matter experts for educational content
-- **Legal Consultation**: Data protection and NGO compliance expertise
-- **UI/UX Design**: Professional design for improved user experience
-- **DevOps Support**: Production deployment and monitoring setup
-- **Testing Assistance**: Comprehensive test coverage and QA processes
+## 📸 Screenshots & Visual Guide
 
-## 📸 Screenshots
+### **Admin Login Page**
+- Clean login interface for admin users
+- Session-based authentication
+- Secure password handling
 
-*Screenshots will be added once the application reaches production deployment*
+### **Admin Dashboard**
+- Role-based card visibility
+- User Management section (Superadmin, State, Division, District only)
+- Application Management section (all authorized users)
+- Quick access buttons for authorized actions
 
-## 👥 Contributors
+### **User Creation Form**
+- Dynamic role selection (President/Secretary/Media Incharge)
+- Hierarchical level assignment dropdown
+- Cascading location selectors (State → Division → District → Block)
+- Active user checkbox for immediate login access
+- Server-side permission validation
 
-- **Primary Developer**: Main developer focused on technical implementation
-- **Project Sponsor**: RMAS organization leadership
-- **Future Contributors**: Open for community contributions
+### **Application Management**
+- Application list with cascade filtering
+- Status tracking and updates
+- Membership data visibility based on user hierarchy
+- PDF certificate generation and distribution
+
+## 👥 Project Team
+
+- **Project Lead**: RMAS Organization Leadership
+- **Technical Development**: Full-stack developer team
+- **Current Status**: Active development with ~75% completion
 
 ## 📄 License
 
-ISC License - A permissive license suitable for open-source NGO projects.
+ISC License - Suitable for open-source NGO projects
 
-## 📞 Contact
+## 📞 Contact & Support
 
-**For technical support or questions:**
+### **Technical Issues**
 - Create an issue on the GitHub repository
-- Contact the development team through the admin panel
+- Include error messages and reproduction steps
 
-**For RMAS organization inquiries:**
-- Visit the official RMAS website
-- Contact local RMAS representatives
-
----
-
-## 🚀 Deployment Status
-
-**Current Status**: Development Complete (85%) - Ready for Content Development and Production Deployment
-
-**Recommended Next Actions:**
-1. Complete content development (educational materials, human rights resources)
-2. Implement legal compliance features (data protection, audit trails)
-3. Set up production monitoring and alerting
-4. Deploy to production environment with proper backup strategies
-
-**Made with ❤️ for Human Rights Awareness and Social Justice**
-
-*This project represents a commitment to digitizing and modernizing human rights advocacy organizations, making them more efficient, transparent, and impactful in their mission to protect and promote human rights.*
+### **RMAS Organization**
+- Official RMAS website: [https://rmas.org](https://rmas.org)
+- Contact local chapter representatives
+- Email support through admin panel

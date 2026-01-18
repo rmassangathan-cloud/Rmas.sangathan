@@ -2,8 +2,13 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const Membership = require('../models/Membership');
+const Content = require('../models/Content');
 const { ensureRole, ensureAuthenticated } = require('../middleware/auth');
 const { canAccessApplication, requireSuperAdmin, canPerformActions, canAssignRoleAtLevel } = require('../middleware/role');
+const { logAction } = require('../utils/auditLogger');
+const { getMembershipStats, getDocumentDownloadStats, getApplicationStatus, getTotalCounts } = require('../utils/reportGenerator');
+const mediaUpload = require('../middleware/mediaUpload');
+const { Parser } = require('json2csv');
 const fs = require('fs');
 const path = require('path');
 const puppeteer = require('puppeteer');
@@ -342,15 +347,62 @@ router.get('/login', (req, res) => {
   res.redirect('/login');
 });
 
+// Location endpoints for frontend to fetch Bihar locations
+// These are accessed at /admin/locations/* since the router is mounted at /admin
+router.get('/locations/divisions', (req, res) => {
+  try {
+    const p = path.join(__dirname, '..', 'public', 'locations', 'bihar_divisions.json');
+    const data = JSON.parse(fs.readFileSync(p, 'utf8'));
+    // Extract division names (keys) from the object and return as array
+    const divisionNames = Object.keys(data).sort();
+    return res.json(divisionNames);
+  } catch (err) {
+    console.error('Error reading bihar_divisions.json', err);
+    return res.status(500).json({ error: 'Failed to load divisions' });
+  }
+});
+
+router.get('/locations/complete', (req, res) => {
+  try {
+    const p = path.join(__dirname, '..', 'public', 'locations', 'bihar_complete.json');
+    const data = JSON.parse(fs.readFileSync(p, 'utf8'));
+    return res.json(data);
+  } catch (err) {
+    console.error('Error reading bihar_complete.json', err);
+    return res.status(500).json({ error: 'Failed to load complete locations' });
+  }
+});
+
+router.get('/locations/blocks', (req, res) => {
+  try {
+    const p = path.join(__dirname, '..', 'public', 'locations', 'bihar_blocks.json');
+    const data = JSON.parse(fs.readFileSync(p, 'utf8'));
+    return res.json(data);
+  } catch (err) {
+    console.error('Error reading bihar_blocks.json', err);
+    return res.status(500).json({ error: 'Failed to load blocks' });
+  }
+});
+
 // dashboard - show based on user role
 router.get('/', ensureAuthenticated, (req, res) => {
   res.render('admin/dashboard');
 });
 
 // list users
-router.get('/users', ensureRole('superadmin'), async (req, res) => {
+router.get('/users', ensureAuthenticated, async (req, res) => {
+  // Allow superadmin, state, division, and district level users
+  const allowedRoles = ['superadmin', 'state_president', 'state_secretary', 'state_media_incharge', 
+                        'division_president', 'division_secretary', 'division_media_incharge',
+                        'district_president', 'district_secretary', 'district_media_incharge'];
+  
+  if (!allowedRoles.includes(req.user.role)) {
+    console.log('❌ Access denied for role:', req.user.role);
+    return res.status(403).render('error', { message: 'You do not have permission to manage users' });
+  }
+
   const users = await User.find().sort({ createdAt: -1 }).lean();
-  res.render('admin/users', { users });
+  res.render('admin/users', { users, currentUser: req.user });
 });
 
 // ----- Forms management -----
@@ -1261,8 +1313,18 @@ function canAssignRole(user, membership, teamType) {
 }
 
 // new user form
-router.get('/users/new', ensureRole('superadmin'), (req, res) => {
-  res.render('admin/user_form', { user: null, error: null });
+router.get('/users/new', ensureAuthenticated, (req, res) => {
+  // Allow superadmin, state, division, and district level users
+  const allowedRoles = ['superadmin', 'state_president', 'state_secretary', 'state_media_incharge', 
+                        'division_president', 'division_secretary', 'division_media_incharge',
+                        'district_president', 'district_secretary', 'district_media_incharge'];
+  
+  if (!allowedRoles.includes(req.user.role)) {
+    console.log('❌ Access denied for role:', req.user.role);
+    return res.status(403).render('error', { message: 'You do not have permission to create users' });
+  }
+
+  res.render('admin/user_form', { user: null, error: null, currentUser: req.user });
 });
 
 // Debug: list recent memberships (superadmin only)
@@ -1277,14 +1339,66 @@ router.get('/debug/recent-memberships', ensureRole('superadmin'), async (req, re
 });
 
 // create user
-router.post('/users', ensureRole('superadmin'), async (req, res) => {
+router.post('/users', ensureAuthenticated, async (req, res) => {
   const { name, email, password, role, assignedLevel, assignedId, active } = req.body || {};
-  if (!name || !email || !role) return res.render('admin/user_form', { user: req.body, error: 'Name, email and role are required' });
-  if (role !== 'superadmin' && (!assignedLevel || !assignedId)) return res.render('admin/user_form', { user: req.body, error: 'Level and assigned entity are required for non-superadmin roles' });
+  
+  console.log('📝 POST /admin/users - Received:', { name, email, role, assignedLevel, assignedId });
+  
+  // ========== PERMISSION CHECK ==========
+  // Extract current user's level from their role
+  let currentUserRole = req.user ? req.user.role : 'superadmin';
+  let currentUserLevel = 'super';
+  
+  if (currentUserRole.startsWith('state_')) currentUserLevel = 'state';
+  else if (currentUserRole.startsWith('division_')) currentUserLevel = 'division';
+  else if (currentUserRole.startsWith('district_')) currentUserLevel = 'district';
+  else if (currentUserRole.startsWith('block_')) currentUserLevel = 'block';
+  else if (currentUserRole.includes('media_incharge')) currentUserLevel = 'media'; // Media incharge cannot create
+  else if (currentUserRole === 'superadmin') currentUserLevel = 'super';
+  
+  // Block level और media incharge से users create नहीं कर सकते
+  if (currentUserLevel === 'block' || currentUserLevel === 'media') {
+    console.log('❌ Permission denied: User with role', currentUserRole, 'cannot create users');
+    return res.status(403).render('admin/user_form', { 
+      user: req.body, 
+      error: 'You are not authorized to create users. Only Superadmin, State, Division, and District level users can create users.',
+      currentUser: req.user
+    });
+  }
+  
+  // Check if user is trying to create at same or higher level
+  const levelHierarchy = { 'super': -1, 'state': 0, 'division': 1, 'district': 2, 'block': 3 };
+  const currentLevel = levelHierarchy[currentUserLevel];
+  const newLevel = levelHierarchy[assignedLevel] || 999;
+  
+  // अगर same level या ऊपर का level try करे तो reject करो
+  // e.g., state user division बना सकता है (0 < 1), पर state नहीं बना सकता (0 = 0)
+  if (newLevel <= currentLevel) {
+    console.log('❌ Permission denied: Current level', currentUserLevel, 'cannot create at level', assignedLevel);
+    return res.status(403).render('admin/user_form', { 
+      user: req.body, 
+      error: `You can only create users at lower levels than your own. Your level: ${currentUserLevel}, Attempted: ${assignedLevel}`,
+      currentUser: req.user
+    });
+  }
+  // ========== END PERMISSION CHECK ==========
+  
+  if (!name || !email || !role) {
+    console.log('❌ Missing required fields:', { name: !!name, email: !!email, role: !!role });
+    return res.render('admin/user_form', { user: req.body, error: 'Name, email and role are required', currentUser: req.user });
+  }
+  
+  if (role !== 'superadmin' && (!assignedLevel || !assignedId)) {
+    console.log('❌ Missing level/assigned for non-superadmin:', { assignedLevel, assignedId });
+    return res.render('admin/user_form', { user: req.body, error: 'Level and assigned entity are required for non-superadmin roles', currentUser: req.user });
+  }
 
   try {
     const existing = await User.findOne({ email: email.toLowerCase().trim() });
-    if (existing) return res.render('admin/user_form', { user: req.body, error: 'User with this email already exists' });
+    if (existing) {
+      console.log('❌ User already exists:', email);
+      return res.render('admin/user_form', { user: req.body, error: 'User with this email already exists', currentUser: req.user });
+    }
 
     const u = new User({
       name,
@@ -1292,8 +1406,17 @@ router.post('/users', ensureRole('superadmin'), async (req, res) => {
       role,
       assignedLevel: role === 'superadmin' ? undefined : assignedLevel,
       assignedId: role === 'superadmin' ? undefined : assignedId,
-      state: 'Bihar', // Default for Bihar
-      active: active === 'on'
+      state: 'Bihar',
+      active: active === 'on',
+      passwordChanged: false // Force password change on first login
+    });
+
+    console.log('🔨 User object before password:', {
+      name: u.name,
+      email: u.email,
+      role: u.role,
+      assignedLevel: u.assignedLevel,
+      assignedId: u.assignedId
     });
 
     // Set backward compatibility fields based on assignedLevel
@@ -1319,26 +1442,49 @@ router.post('/users', ensureRole('superadmin'), async (req, res) => {
             }
           }
         } catch (err) {
-          console.error('Error loading division mapping:', err.message);
+          console.error('⚠️ Error loading division mapping:', err.message);
         }
       }
     }
 
-    if (password) await u.setPassword(password); else await u.setPassword('ChangeMe123!');
+    if (password) {
+      await u.setPassword(password);
+      console.log('🔐 Password set from form');
+    } else {
+      await u.setPassword('ChangeMe123!');
+      console.log('🔐 Default password set');
+    }
+    
+    console.log('💾 Saving user to database...');
     await u.save();
+    console.log('✅ User saved successfully:', u._id, u.email);
     res.redirect('/admin/users');
   } catch (err) {
-    console.error('Create user error:', err);
-    res.render('admin/user_form', { user: req.body, error: 'Server error while creating user' });
+    console.error('❌ Create user error:', err.message);
+    if (err.errors) {
+      console.error('❌ Validation errors:', err.errors);
+    }
+    console.error('Full error:', err);
+    const errorMsg = err.errors ? Object.keys(err.errors).map(k => `${k}: ${err.errors[k].message}`).join('; ') : err.message;
+    res.render('admin/user_form', { user: req.body, error: `Error: ${errorMsg}`, currentUser: req.user });
   }
 });
 
 // edit user form
-router.get('/users/:id/edit', ensureRole('superadmin'), async (req, res) => {
+router.get('/users/:id/edit', ensureAuthenticated, async (req, res) => {
+  // Allow superadmin, state, division, and district level users
+  const allowedRoles = ['superadmin', 'state_president', 'state_secretary', 'state_media_incharge', 
+                        'division_president', 'division_secretary', 'division_media_incharge',
+                        'district_president', 'district_secretary', 'district_media_incharge'];
+  
+  if (!allowedRoles.includes(req.user.role)) {
+    console.log('❌ Access denied for role:', req.user.role);
+    return res.status(403).render('error', { message: 'You do not have permission to edit users' });
+  }
   try {
     const user = await User.findById(req.params.id).lean();
     if (!user) return res.redirect('/admin/users');
-    res.render('admin/user_form', { user, error: null });
+    res.render('admin/user_form', { user, error: null, currentUser: req.user });
   } catch (err) {
     console.error('Edit user error:', err);
     res.redirect('/admin/users');
@@ -1346,7 +1492,16 @@ router.get('/users/:id/edit', ensureRole('superadmin'), async (req, res) => {
 });
 
 // update user
-router.post('/users/:id', ensureRole('superadmin'), async (req, res) => {
+router.post('/users/:id', ensureAuthenticated, async (req, res) => {
+  // Allow superadmin, state, division, and district level users
+  const allowedRoles = ['superadmin', 'state_president', 'state_secretary', 'state_media_incharge', 
+                        'division_president', 'division_secretary', 'division_media_incharge',
+                        'district_president', 'district_secretary', 'district_media_incharge'];
+  
+  if (!allowedRoles.includes(req.user.role)) {
+    console.log('❌ Access denied for role:', req.user.role);
+    return res.status(403).render('error', { message: 'You do not have permission to edit users' });
+  }
   try {
     const user = await User.findById(req.params.id);
     if (!user) return res.redirect('/admin/users');
@@ -1400,6 +1555,802 @@ router.post('/users/:id', ensureRole('superadmin'), async (req, res) => {
   } catch (err) {
     console.error('Update user error:', err);
     res.render('admin/user_form', { user: Object.assign(req.body, { _id: req.params.id }), error: 'Server error while updating user' });
+  }
+});
+
+// Change password routes
+router.get('/change-password', ensureAuthenticated, (req, res) => {
+  try {
+    // Ensure user is authenticated
+    if (!req.user || !req.user._id) {
+      console.log('❌ Unauthorized: req.user missing');
+      return res.status(401).render('login', { error: 'Session expired. Please login again.' });
+    }
+
+    console.log('🔑 GET /admin/change-password');
+    console.log('👤 User:', req.user.email);
+    console.log('🔐 passwordChanged:', req.user.passwordChanged);
+
+    // Render form with safe data
+    res.render('admin/change-password', {
+      error: null,
+      success: null,
+      currentUser: req.user,
+      user: req.user
+    });
+  } catch (err) {
+    console.error('❌ Error in GET /admin/change-password:', err.message);
+    res.status(500).render('admin/change-password', {
+      error: 'Failed to load password change form. Please try again.',
+      success: null,
+      currentUser: req.user || {},
+      user: req.user || {}
+    });
+  }
+});
+
+router.post('/change-password', ensureAuthenticated, async (req, res) => {
+  const { currentPassword, newPassword, confirmPassword } = req.body || {};
+
+  try {
+    // Ensure user is authenticated
+    if (!req.user || !req.user._id) {
+      console.log('❌ Unauthorized: req.user missing in POST');
+      return res.status(401).redirect('/login');
+    }
+
+    console.log('🔐 POST /admin/change-password - User:', req.user.email);
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      console.log('❌ User not found in database');
+      return res.redirect('/login');
+    }
+
+    // Validate required fields
+    if (!newPassword || !confirmPassword) {
+      return res.render('admin/change-password', {
+        error: 'New password and confirmation are required',
+        success: null,
+        currentUser: req.user,
+        user: req.user
+      });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.render('admin/change-password', {
+        error: 'New passwords do not match',
+        success: null,
+        currentUser: req.user,
+        user: req.user
+      });
+    }
+
+    // For existing users (passwordChanged === true), validate current password
+    if (user.passwordChanged && currentPassword) {
+      const currentValid = await user.validatePassword(currentPassword);
+      if (!currentValid) {
+        return res.render('admin/change-password', {
+          error: 'Current password is incorrect',
+          success: null,
+          currentUser: req.user,
+          user: req.user
+        });
+      }
+    }
+
+    // Validate password strength
+    const minLength = newPassword.length >= 8;
+    const hasUpper = /[A-Z]/.test(newPassword);
+    const hasLower = /[a-z]/.test(newPassword);
+    const hasNumber = /\d/.test(newPassword);
+    const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newPassword);
+
+    const errors = [];
+    if (!minLength) errors.push('At least 8 characters required');
+    if (!hasUpper) errors.push('At least 1 uppercase letter required');
+    if (!hasLower) errors.push('At least 1 lowercase letter required');
+    if (!hasNumber) errors.push('At least 1 number required');
+    if (!hasSpecial) errors.push('At least 1 special character required');
+
+    if (errors.length > 0) {
+      return res.render('admin/change-password', {
+        error: `Password requirements not met: ${errors.join(', ')}`,
+        success: null,
+        currentUser: req.user,
+        user: req.user
+      });
+    }
+
+    // Update password
+    console.log('💾 Updating password for user:', user.email);
+    await user.setPassword(newPassword);
+    user.passwordChanged = true;
+    await user.save();
+    console.log('✅ Password updated successfully');
+
+    res.render('admin/change-password', {
+      error: null,
+      success: 'Password changed successfully!',
+      currentUser: req.user,
+      user: req.user
+    });
+  } catch (err) {
+    console.error('❌ Change password error:', err.message);
+    res.status(500).render('admin/change-password', {
+      error: 'Server error. Please try again.',
+      success: null,
+      currentUser: req.user || {},
+      user: req.user || {}
+    });
+  }
+});
+
+// Delete user (only superadmin)
+router.post('/users/:id/delete', ensureAuthenticated, async (req, res) => {
+  // Only superadmin can delete users
+  if (req.user.role !== 'superadmin') {
+    console.log('❌ Unauthorized delete attempt by:', req.user.email, 'Role:', req.user.role);
+    return res.status(403).render('error', { message: 'Only superadmin can delete users' });
+  }
+
+  try {
+    const userId = req.params.id;
+    const user = await User.findById(userId);
+    
+    if (!user) {
+      console.log('⚠️ User not found for deletion:', userId);
+      return res.redirect('/admin/users');
+    }
+
+    // Prevent deleting the current logged-in user
+    if (user._id.toString() === req.user._id.toString()) {
+      console.log('❌ User attempted to delete themselves:', user.email);
+      return res.status(400).render('admin/users', { 
+        users: await User.find().sort({ createdAt: -1 }).lean(),
+        currentUser: req.user,
+        error: 'You cannot delete your own account'
+      });
+    }
+
+    const userName = user.name;
+    const userEmail = user.email;
+    
+    // Log the deletion
+    await logAction({
+      action: 'user_deleted',
+      req,
+      targetId: user._id,
+      targetType: 'User',
+      targetName: `${userName} (${userEmail})`,
+      details: {
+        deletedUser: userEmail,
+        deletedUserName: userName,
+        deletedUserRole: user.role,
+        deletionTime: new Date()
+      },
+      note: `User account deleted by ${req.user.email}`
+    });
+    
+    // Delete the user
+    await User.findByIdAndDelete(userId);
+    console.log('🗑️ User deleted successfully:', userEmail, 'by:', req.user.email);
+
+    // Redirect with success message
+    const users = await User.find().sort({ createdAt: -1 }).lean();
+    res.render('admin/users', { 
+      users,
+      currentUser: req.user,
+      success: `✅ User "${userName}" (${userEmail}) has been deleted successfully`
+    });
+  } catch (err) {
+    console.error('❌ Error deleting user:', err);
+    const users = await User.find().sort({ createdAt: -1 }).lean();
+    res.render('admin/users', { 
+      users,
+      currentUser: req.user,
+      error: 'Error deleting user. Please try again.'
+    });
+  }
+});
+
+// =====================================================
+// AUDIT LOGS ROUTES
+// =====================================================
+
+// GET /admin/audit-logs - View audit logs with cascade permissions
+router.get('/audit-logs', ensureAuthenticated, async (req, res) => {
+  try {
+    const { getAuditLogs } = require('../utils/auditLogger');
+
+    // Get filters from query
+    const filters = {
+      action: req.query.action || null,
+      performedBy: req.query.performedBy || null,
+      targetType: req.query.targetType || null,
+      level: req.query.level || null,
+      startDate: req.query.startDate || null,
+      endDate: req.query.endDate || null,
+      search: req.query.search || null
+    };
+
+    const page = parseInt(req.query.page) || 1;
+
+    // Get logs with cascade permissions
+    const { logs, pagination } = await getAuditLogs(req.user, filters, page, 50);
+
+    // Build query string for pagination
+    let queryString = '';
+    Object.keys(filters).forEach(key => {
+      if (filters[key]) {
+        queryString += `&${key}=${encodeURIComponent(filters[key])}`;
+      }
+    });
+
+    res.render('admin/audit-logs', {
+      logs,
+      pagination,
+      query: filters,
+      queryString,
+      currentUser: req.user
+    });
+  } catch (err) {
+    console.error('❌ Error loading audit logs:', err);
+    res.render('admin/audit-logs', {
+      logs: [],
+      pagination: { page: 1, limit: 50, total: 0, pages: 0, hasNext: false, hasPrev: false },
+      query: {},
+      queryString: '',
+      currentUser: req.user,
+      error: 'Error loading audit logs'
+    });
+  }
+});
+
+// GET /admin/audit-logs/export - Export audit logs as CSV
+router.get('/audit-logs/export', ensureAuthenticated, async (req, res) => {
+  try {
+    const { getAuditLogs } = require('../utils/auditLogger');
+    const Json2csvParser = require('json2csv').Parser;
+
+    // Get filters
+    const filters = {
+      action: req.query.action || null,
+      performedBy: req.query.performedBy || null,
+      level: req.query.level || null,
+      startDate: req.query.startDate || null,
+      endDate: req.query.endDate || null,
+      search: req.query.search || null
+    };
+
+    // Get all logs (no pagination for export)
+    const { logs } = await getAuditLogs(req.user, filters, 1, 10000);
+
+    // Prepare data for CSV
+    const csvData = logs.map(log => ({
+      'Timestamp': new Date(log.timestamp).toLocaleString('en-IN'),
+      'Action': log.action,
+      'Performed By': log.performedByName,
+      'Email': log.performedByEmail,
+      'Role': log.performedByRole,
+      'Level': log.level,
+      'IP Address': log.ipAddress,
+      'Target': log.targetName || '-',
+      'Target Type': log.targetType || '-',
+      'Details': JSON.stringify(log.details)
+    }));
+
+    const parser = new Parser();
+    const csv = parser.parse(csvData);
+
+    res.header('Content-Type', 'text/csv');
+    res.header('Content-Disposition', `attachment; filename="audit-logs-${Date.now()}.csv"`);
+    res.send(csv);
+  } catch (err) {
+    console.error('❌ Error exporting audit logs:', err);
+    res.status(500).send('Error exporting audit logs');
+  }
+});
+
+// =====================================================
+// REPORTS & ANALYTICS ROUTES
+// =====================================================
+
+// GET /admin/reports-analytics - Reports and analytics dashboard
+router.get('/reports-analytics', ensureAuthenticated, async (req, res) => {
+  try {
+    // Check if user has access to reports (admin level only)
+    const allowedRoles = ['superadmin', 'state_president', 'state_secretary', 'state_media_incharge', 
+                          'division_president', 'division_secretary', 'division_media_incharge',
+                          'district_president', 'district_secretary', 'district_media_incharge'];
+    
+    if (!allowedRoles.includes(req.user.role)) {
+      return res.status(403).render('error', { message: 'You do not have permission to view reports' });
+    }
+
+    console.log('📊 Reports & Analytics accessed by:', req.user.email, 'Role:', req.user.role);
+
+    // Fetch all required data
+    const [stats, appStatus, downloads, totals] = await Promise.all([
+      getMembershipStats(req.user),
+      getApplicationStatus(req.user),
+      getDocumentDownloadStats(req.user),
+      getTotalCounts(req.user)
+    ]);
+
+    // Calculate total downloads
+    const totalDownloads = downloads.downloadsByType.reduce((sum, item) => sum + item.count, 0);
+
+    res.render('admin/reports-analytics', {
+      stats,
+      appStatus,
+      downloads,
+      totals,
+      totalDownloads,
+      currentUser: req.user,
+      locationData: stats.locationSummary || []
+    });
+  } catch (err) {
+    console.error('❌ Error loading reports:', err);
+    res.render('admin/reports-analytics', {
+      stats: { statusCounts: [], teamDistribution: [], monthlyGrowth: [], locationSummary: [] },
+      appStatus: { pending: 0, claimed: 0, accepted: 0, rejected: 0 },
+      downloads: { downloadsByType: [], dailyDownloads: [] },
+      totals: { total: 0, accepted: 0, pending: 0, rejected: 0 },
+      totalDownloads: 0,
+      currentUser: req.user,
+      locationData: [],
+      error: 'Error loading reports'
+    });
+  }
+});
+
+// POST /admin/reports-analytics/export - Export reports as CSV
+router.post('/reports-analytics/export', ensureAuthenticated, async (req, res) => {
+  try {
+    const reportType = req.body.reportType || 'summary';
+
+    // Check permissions
+    const allowedRoles = ['superadmin', 'state_president', 'division_president', 'district_president'];
+    if (!allowedRoles.includes(req.user.role)) {
+      return res.status(403).send('You do not have permission to export reports');
+    }
+
+    console.log('📥 Exporting report type:', reportType, 'by:', req.user.email);
+
+    let csvData = [];
+    let filename = '';
+
+    if (reportType === 'members') {
+      // Export members data
+      let query = {};
+      
+      if (req.user.role !== 'superadmin') {
+        const orConditions = [];
+        if (req.user.role.startsWith('state_')) {
+          orConditions.push({ state: req.user.state });
+        } else if (req.user.role.startsWith('division_')) {
+          orConditions.push({ division: req.user.division });
+        } else if (req.user.role.startsWith('district_')) {
+          orConditions.push({ district: { $in: req.user.districts } });
+        }
+        if (orConditions.length > 0) {
+          query.$or = orConditions;
+        }
+      }
+
+      const members = await Membership.find(query).lean();
+      csvData = members.map(m => ({
+        'Name': m.fullName,
+        'Email': m.email,
+        'Mobile': m.mobile,
+        'State': m.state,
+        'District': m.district,
+        'Division': m.division,
+        'Team Type': m.teamType,
+        'Status': m.status,
+        'Joined Date': new Date(m.createdAt).toLocaleDateString('en-IN'),
+        'Membership ID': m.membershipId
+      }));
+      filename = `members-report-${Date.now()}.csv`;
+
+    } else if (reportType === 'downloads') {
+      // Export document downloads data
+      const Audit = require('../models/Audit');
+      let query = {
+        $or: [
+          { action: 'joining_letter_downloaded' },
+          { action: 'id_card_downloaded' }
+        ]
+      };
+
+      const downloads = await Audit.find(query).populate('performedBy', 'name email').lean();
+      csvData = downloads.map(d => ({
+        'Downloaded At': new Date(d.timestamp).toLocaleString('en-IN'),
+        'Document Type': d.action === 'joining_letter_downloaded' ? 'Joining Letter' : 'ID Card',
+        'Member Name': d.details?.memberName || '-',
+        'Membership ID': d.details?.membershipId || '-',
+        'Downloaded By': d.performedByName || d.performedByEmail,
+        'IP Address': d.ipAddress,
+        'Level': d.level
+      }));
+      filename = `downloads-report-${Date.now()}.csv`;
+
+    } else {
+      // Summary report
+      const stats = await getMembershipStats(req.user);
+      const appStatus = await getApplicationStatus(req.user);
+      const totals = await getTotalCounts(req.user);
+
+      csvData = [
+        {
+          'Metric': 'Total Members',
+          'Value': totals.total
+        },
+        {
+          'Metric': 'Accepted Members',
+          'Value': totals.accepted
+        },
+        {
+          'Metric': 'Pending Applications',
+          'Value': totals.pending
+        },
+        {
+          'Metric': 'Rejected Applications',
+          'Value': totals.rejected
+        }
+      ];
+      filename = `summary-report-${Date.now()}.csv`;
+    }
+
+    // Generate CSV
+    const parser = new Parser();
+    const csv = parser.parse(csvData);
+
+    res.header('Content-Type', 'text/csv');
+    res.header('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(csv);
+
+    // Log the export
+    await logAction({
+      action: 'data_exported',
+      req,
+      targetType: 'Report',
+      targetName: `${reportType} Report`,
+      details: { reportType, rowCount: csvData.length },
+      note: `Exported ${reportType} report with ${csvData.length} rows`
+    });
+
+  } catch (err) {
+    console.error('❌ Error exporting report:', err);
+    res.status(500).send('Error exporting report');
+  }
+});
+
+// =====================================================
+// MEDIA INCHARGE DASHBOARD ROUTES
+// =====================================================
+
+// GET /admin/media-dashboard - Media dashboard for all media incharges and higher
+router.get('/media-dashboard', ensureAuthenticated, async (req, res) => {
+  try {
+    // Allow media incharge and higher roles
+    const allowedRoles = [
+      'superadmin',
+      'state_media_incharge', 'state_president', 'state_secretary',
+      'division_media_incharge', 'division_president', 'division_secretary',
+      'district_media_incharge', 'district_president', 'district_secretary'
+    ];
+
+    if (!allowedRoles.includes(req.user.role)) {
+      return res.status(403).render('error', { message: 'You do not have permission to access media dashboard' });
+    }
+
+    console.log('📺 Media Dashboard accessed by:', req.user.email, 'Role:', req.user.role);
+
+    // Build query based on role - simplified version
+    let query = {};
+    
+    if (req.user.role === 'superadmin') {
+      // Superadmin sees all - empty query
+      query = {};
+    } else if (req.user.role.includes('state_')) {
+      // State sees state level content
+      query = { level: 'state', levelId: req.user.state };
+    } else if (req.user.role.includes('division_')) {
+      // Division sees division level content
+      query = { level: 'division', levelId: req.user.division };
+    } else if (req.user.role.includes('district_')) {
+      // District sees district level content
+      query = { level: 'district', levelId: { $in: req.user.districts || [] } };
+    } else if (req.user.role.includes('block_')) {
+      // Block sees their own content
+      query = { level: 'block', levelId: req.user._id.toString() };
+    }
+
+    // Media incharges see their own uploads plus their level
+    if (req.user.role.includes('media_incharge')) {
+      query = {
+        $or: [
+          query,
+          { uploadedBy: req.user._id }
+        ]
+      };
+    }
+
+    // Fetch content with proper query
+    const contents = await Content.find(query)
+      .populate('uploadedBy', 'name email role')
+      .populate('approvedBy', 'name email role')
+      .sort({ uploadedAt: -1 })
+      .lean();
+
+    // Count by status with the same query
+    let countQuery = query;
+    
+    const statusCounts = await Content.aggregate([
+      { $match: countQuery },
+      {
+        $group: {
+          _id: '$status',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const stats = {
+      total: contents.length,
+      pending: statusCounts.find(s => s._id === 'pending')?.count || 0,
+      approved: statusCounts.find(s => s._id === 'approved')?.count || 0,
+      rejected: statusCounts.find(s => s._id === 'rejected')?.count || 0
+    };
+
+    console.log('📊 Media stats:', stats);
+
+    res.render('admin/media-dashboard', {
+      contents,
+      stats,
+      currentUser: req.user,
+      isMediaIncharge: req.user.role.includes('media_incharge'),
+      isApprover: req.user.role.includes('president') || req.user.role.includes('secretary') || req.user.role === 'superadmin',
+      error: null
+    });
+  } catch (err) {
+    console.error('❌ Error loading media dashboard:', err.message);
+    console.error('Stack:', err.stack);
+    res.status(500).render('admin/media-dashboard', {
+      contents: [],
+      stats: { total: 0, pending: 0, approved: 0, rejected: 0 },
+      currentUser: req.user,
+      isMediaIncharge: false,
+      isApprover: false,
+      error: 'Error loading media dashboard: ' + err.message
+    });
+  }
+});
+
+// POST /admin/media/upload - Upload media content
+router.post('/admin/media/upload', ensureAuthenticated, mediaUpload.single('media'), async (req, res) => {
+  try {
+    // Only media incharge can upload
+    if (!req.user.role.includes('media_incharge')) {
+      return res.status(403).json({ error: 'Only media incharges can upload content' });
+    }
+
+    const { title, content, mediaType, category, tags } = req.body;
+
+    // Validate required fields
+    if (!title || !mediaType) {
+      if (req.file) {
+        // Delete uploaded file if validation fails
+        fs.unlinkSync(req.file.path);
+      }
+      return res.status(400).json({ error: 'Title and media type are required' });
+    }
+
+    // Determine level info
+    let level = 'block';
+    let levelId = '';
+
+    if (req.user.role.startsWith('state_')) {
+      level = 'state';
+      levelId = req.user.state;
+    } else if (req.user.role.startsWith('division_')) {
+      level = 'division';
+      levelId = req.user.division;
+    } else if (req.user.role.startsWith('district_')) {
+      level = 'district';
+      levelId = req.user.districts[0];
+    } else {
+      level = 'block';
+      levelId = req.user._id.toString();
+    }
+
+    // Create content object
+    const contentData = {
+      title,
+      content: content || '',
+      mediaType,
+      uploadedBy: req.user._id,
+      uploadedByName: req.user.name,
+      uploadedByEmail: req.user.email,
+      uploadedByRole: req.user.role,
+      level,
+      levelId,
+      status: 'pending',
+      category: category || 'other'
+    };
+
+    // Add file info if file uploaded
+    if (req.file && (mediaType === 'photo' || mediaType === 'video')) {
+      contentData.mediaUrl = `/uploads/media/${req.file.filename}`;
+      contentData.fileName = req.file.originalname;
+      contentData.fileSize = req.file.size;
+      contentData.mimeType = req.file.mimetype;
+    }
+
+    // Add tags if provided
+    if (tags) {
+      contentData.tags = typeof tags === 'string' ? [tags] : tags;
+    }
+
+    const newContent = new Content(contentData);
+    await newContent.save();
+
+    console.log('✅ Content uploaded:', title, 'by:', req.user.email);
+
+    // Log audit
+    await logAction({
+      action: 'content_uploaded',
+      req,
+      targetId: newContent._id,
+      targetType: 'Content',
+      targetName: title,
+      details: {
+        title,
+        mediaType,
+        fileSize: req.file?.size || 0,
+        level,
+        levelId
+      },
+      note: `New ${mediaType} content uploaded by ${req.user.name}`
+    });
+
+    res.json({
+      success: true,
+      message: 'Content uploaded successfully and pending approval',
+      contentId: newContent._id
+    });
+  } catch (err) {
+    console.error('❌ Error uploading content:', err);
+    if (req.file) {
+      try {
+        fs.unlinkSync(req.file.path);
+      } catch (e) { }
+    }
+    res.status(500).json({ error: 'Error uploading content: ' + err.message });
+  }
+});
+
+// POST /admin/media/approve/:id - Approve content
+router.post('/admin/media/approve/:id', ensureAuthenticated, async (req, res) => {
+  try {
+    // Only president/secretary/superadmin can approve
+    const approverRoles = ['superadmin', 'state_president', 'state_secretary', 
+                          'division_president', 'division_secretary',
+                          'district_president', 'district_secretary'];
+    
+    if (!approverRoles.includes(req.user.role)) {
+      return res.status(403).json({ error: 'You do not have permission to approve content' });
+    }
+
+    const contentId = req.params.id;
+    const { note } = req.body;
+
+    const content = await Content.findById(contentId);
+    if (!content) {
+      return res.status(404).json({ error: 'Content not found' });
+    }
+
+    // Update content
+    content.status = 'approved';
+    content.approvedBy = req.user._id;
+    content.approvedByName = req.user.name;
+    content.approvedByEmail = req.user.email;
+    content.approvedByRole = req.user.role;
+    content.approvedAt = new Date();
+    if (note) {
+      content.note = note;
+    }
+
+    await content.save();
+
+    console.log('✅ Content approved:', content.title, 'by:', req.user.email);
+
+    // Log audit
+    await logAction({
+      action: 'content_approved',
+      req,
+      targetId: content._id,
+      targetType: 'Content',
+      targetName: content.title,
+      details: {
+        title: content.title,
+        approvedBy: req.user.name,
+        note: note || 'Approved'
+      },
+      note: `Content "${content.title}" approved by ${req.user.name}`
+    });
+
+    res.json({
+      success: true,
+      message: 'Content approved successfully'
+    });
+  } catch (err) {
+    console.error('❌ Error approving content:', err);
+    res.status(500).json({ error: 'Error approving content' });
+  }
+});
+
+// POST /admin/media/reject/:id - Reject content
+router.post('/admin/media/reject/:id', ensureAuthenticated, async (req, res) => {
+  try {
+    // Only president/secretary/superadmin can reject
+    const approverRoles = ['superadmin', 'state_president', 'state_secretary', 
+                          'division_president', 'division_secretary',
+                          'district_president', 'district_secretary'];
+    
+    if (!approverRoles.includes(req.user.role)) {
+      return res.status(403).json({ error: 'You do not have permission to reject content' });
+    }
+
+    const contentId = req.params.id;
+    const { rejectionReason } = req.body;
+
+    if (!rejectionReason) {
+      return res.status(400).json({ error: 'Rejection reason is required' });
+    }
+
+    const content = await Content.findById(contentId);
+    if (!content) {
+      return res.status(404).json({ error: 'Content not found' });
+    }
+
+    // Update content
+    content.status = 'rejected';
+    content.approvedBy = req.user._id;
+    content.approvedByName = req.user.name;
+    content.approvedByEmail = req.user.email;
+    content.approvedByRole = req.user.role;
+    content.approvedAt = new Date();
+    content.rejectionReason = rejectionReason;
+
+    await content.save();
+
+    console.log('❌ Content rejected:', content.title, 'by:', req.user.email);
+
+    // Log audit
+    await logAction({
+      action: 'content_rejected',
+      req,
+      targetId: content._id,
+      targetType: 'Content',
+      targetName: content.title,
+      details: {
+        title: content.title,
+        rejectedBy: req.user.name,
+        reason: rejectionReason
+      },
+      note: `Content "${content.title}" rejected: ${rejectionReason}`
+    });
+
+    res.json({
+      success: true,
+      message: 'Content rejected successfully'
+    });
+  } catch (err) {
+    console.error('❌ Error rejecting content:', err);
+    res.status(500).json({ error: 'Error rejecting content' });
   }
 });
 

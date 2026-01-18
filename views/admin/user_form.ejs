@@ -1,175 +1,159 @@
+<%
+/*
+  views/admin/user_form.ejs
+  New User creation form with cascading location dropdowns.
+
+  Expects:
+    - currentUser (object) available in render context
+      e.g. currentUser.role (string like 'superadmin' or 'state_president')
+    - user (optional) - if provided, this is an edit form
+*/
+
+// Extract current user's level from role
+let canCreateUsers = true;
+let currentUserLevel = 'state';
+if (currentUser && currentUser.role) {
+  if (currentUser.role.startsWith('block_') || currentUser.role.includes('media_incharge')) {
+    canCreateUsers = false;
+  }
+  if (currentUser.role.startsWith('state_')) currentUserLevel = 'state';
+  else if (currentUser.role.startsWith('division_')) currentUserLevel = 'division';
+  else if (currentUser.role.startsWith('district_')) currentUserLevel = 'district';
+  else if (currentUser.role.startsWith('block_')) currentUserLevel = 'block';
+  else if (currentUser.role === 'superadmin') currentUserLevel = 'super';
+}
+%>
+
 <section class="admin-user-form">
-  <div class="container" style="max-width:600px;margin:30px auto;padding:20px;border:1px solid #eee;border-radius:8px;">
-    <h2><%= user && user._id ? 'Edit User' : 'Create New User' %></h2>
-    
-    <% if (error) { %>
-      <div style="color:red;margin-bottom:15px;padding:10px;background:#ffebee;border-radius:4px;"><%= error %></div>
+  <div class="container" style="max-width:800px;margin:20px auto;padding:20px;border:1px solid #eee;border-radius:8px;">
+    <h2><% if (user && user._id) { %>Edit User<% } else { %>Create New User<% } %></h2>
+
+    <% if (!canCreateUsers) { %>
+      <div style="padding:20px;background:#f8d7da;border:1px solid #f5c6cb;border-radius:4px;color:#721c24;">
+        <strong>❌ Authorization Error</strong><br>
+        You are not authorized to create users. Only Superadmin, State, Division, and District level users can create new users.
+      </div>
+    <% } else { %>
+      <% let formAction = '/admin/users'; if (user && user._id) { formAction = '/admin/users/' + user._id; } %>
+      <form id="userForm" method="POST" action="<%= formAction %>" novalidate>
+
+        <div style="margin-bottom:12px;">
+          <label for="name">Name <span style="color:red">*</span></label>
+          <input id="name" name="name" type="text" required value="<%= user && user.name ? user.name : '' %>" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;" />
+        </div>
+
+        <div style="margin-bottom:12px;">
+          <label for="email">Email <span style="color:red">*</span></label>
+          <input id="email" name="email" type="email" required value="<%= user && user.email ? user.email : '' %>" <% if (user && user._id) { %>readonly<% } %> style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;" />
+        </div>
+
+        <div style="margin-bottom:12px;">
+          <label for="password">
+            <% if (!user || !user._id) { %>
+              Password (optional)
+            <% } else { %>
+              Password (leave blank to keep current)
+            <% } %>
+          </label>
+          <input id="password" name="password" type="password" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;" />
+        </div>
+
+        <!-- Role options limited to 3 user-facing roles -->
+        <div style="margin-bottom:12px;">
+          <label for="roleSelect">Role <span style="color:red">*</span></label>
+          <select id="roleSelect" name="roleFace" required style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
+            <option value="">-- Select Role --</option>
+            <option value="president">President</option>
+            <option value="secretary">Secretary</option>
+            <option value="media_incharge">Media Incharge</option>
+          </select>
+        </div>
+
+        <!-- Assigned Level (state/division/district/block) -->
+        <div style="margin-bottom:12px;">
+          <label for="assignedLevel">Assigned Level <span style="color:red">*</span></label>
+          <select id="assignedLevel" name="_assignedLevel_display" required style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
+            <option value="">-- Select Level --</option>
+            <% if (currentUser && currentUser.role === 'superadmin') { %>
+              <option value="state">State Level</option>
+              <option value="division">Division Level</option>
+              <option value="district">District Level</option>
+              <option value="block">Block Level</option>
+            <% } else if (currentUser && currentUser.role.startsWith('state_')) { %>
+              <option value="division">Division Level</option>
+              <option value="district">District Level</option>
+              <option value="block">Block Level</option>
+            <% } else if (currentUser && currentUser.role.startsWith('division_')) { %>
+              <option value="district">District Level</option>
+              <option value="block">Block Level</option>
+            <% } else if (currentUser && currentUser.role.startsWith('district_')) { %>
+              <option value="block">Block Level</option>
+            <% } else { %>
+              <option value="" disabled>No lower levels available</option>
+            <% } %>
+          </select>
+          <p class="hint" style="margin:6px 0 0;font-size:0.9em;color:#666;">
+            <% if (currentUser && currentUser.role === 'superadmin') { %>
+              You are superadmin: you can assign at any level.
+            <% } else { %>
+              You have restricted assignment rights based on your role.
+            <% } %>
+          </p>
+        </div>
+
+        <!-- Cascading assignment controls -->
+        <div id="assignmentContainer" style="margin-bottom:12px;">
+          <!-- State -->
+          <div id="stateGroup" style="display:none;margin-top:8px;">
+            <label for="stateSelect">State <span style="color:red">*</span></label>
+            <select id="stateSelect" name="state" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;"></select>
+          </div>
+
+          <!-- Division -->
+          <div id="divisionGroup" style="display:none;margin-top:8px;">
+            <label for="divisionSelect">Division <span style="color:red">*</span></label>
+            <select id="divisionSelect" name="division" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
+              <option value="">-- Select Division --</option>
+            </select>
+          </div>
+
+          <!-- District -->
+          <div id="districtGroup" style="display:none;margin-top:8px;">
+            <label for="districtSelect">District <span style="color:red">*</span></label>
+            <select id="districtSelect" name="district" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
+              <option value="">-- Select District --</option>
+            </select>
+          </div>
+
+          <!-- Block -->
+          <div id="blockGroup" style="display:none;margin-top:8px;">
+            <label for="blockSelect">Block <span style="color:red">*</span></label>
+            <select id="blockSelect" name="block" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
+              <option value="">-- Select Block --</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Active Status -->
+        <div style="margin-bottom:12px;">
+          <label>
+            <input type="checkbox" name="active" value="on" <% if (!user || user.active !== false) { %>checked<% } %> style="margin-right:6px;" />
+            Active User
+          </label>
+        </div>
+
+        <!-- Hidden fields for server validation -->
+        <input type="hidden" id="finalRole" name="role" />
+        <input type="hidden" id="hiddenAssignedLevel" name="assignedLevel" />
+        <input type="hidden" id="hiddenAssignedId" name="assignedId" />
+
+        <div style="margin-top:12px;">
+          <button type="submit" id="submitBtn" class="btn btn-primary" style="padding:10px 18px;background:#007bff;color:#fff;border:none;border-radius:4px;">Create User</button>
+        </div>
+      </form>
     <% } %>
-
-    <form method="POST" action="<%= user && user._id ? '/admin/users/' + user._id : '/admin/users' %>">
-      <div style="margin-bottom:15px;">
-        <label style="display:block;font-weight:bold;margin-bottom:5px;">Name</label>
-        <input type="text" name="name" value="<%= user ? user.name : '' %>" required style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
-      </div>
-
-      <div style="margin-bottom:15px;">
-        <label style="display:block;font-weight:bold;margin-bottom:5px;">Email</label>
-        <input type="email" name="email" value="<%= user ? user.email : '' %>" required style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
-      </div>
-
-      <div style="margin-bottom:15px;">
-        <label style="display:block;font-weight:bold;margin-bottom:5px;">Password <%= user && user._id ? '(Leave blank to keep current)' : '' %></label>
-        <input type="password" name="password" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
-      </div>
-
-      <div style="margin-bottom:15px;">
-        <label style="display:block;font-weight:bold;margin-bottom:5px;">Role</label>
-        <select name="role" id="roleSelect" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
-          <% [
-            'superadmin',
-            'state_president', 'state_secretary', 'state_media_incharge',
-            'division_president', 'division_secretary', 'division_media_incharge',
-            'district_president', 'district_secretary', 'district_media_incharge'
-          ].forEach(r => { %>
-            <option value="<%= r %>" <%= (user && user.role === r) ? 'selected' : '' %>><%= r.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) %></option>
-          <% }) %>
-        </select>
-      </div>
-
-      <div id="levelSection" style="margin-bottom:15px;<%= (user && user.role === 'superadmin') ? 'display:none;' : '' %>">
-        <label style="display:block;font-weight:bold;margin-bottom:5px;">Assignment Level</label>
-        <select name="assignedLevel" id="levelSelect" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;" <%= (user && user.role === 'superadmin') ? 'disabled' : 'required' %>>
-          <option value="">-- Select Level --</option>
-          <option value="state" <%= (user && user.assignedLevel === 'state') ? 'selected' : '' %>>State Level</option>
-          <option value="division" <%= (user && user.assignedLevel === 'division') ? 'selected' : '' %>>Division Level</option>
-          <option value="district" <%= (user && user.assignedLevel === 'district') ? 'selected' : '' %>>District Level</option>
-          <option value="block" <%= (user && user.assignedLevel === 'block') ? 'selected' : '' %>>Block Level</option>
-        </select>
-      </div>
-
-      <div id="assignmentSection" style="margin-bottom:15px;<%= (!user || user.role === 'superadmin' || !user.assignedLevel) ? 'display:none;' : '' %>">
-        <label id="assignmentLabel" style="display:block;font-weight:bold;margin-bottom:5px;">Select <%= (user && user.assignedLevel) ? user.assignedLevel.charAt(0).toUpperCase() + user.assignedLevel.slice(1) : 'Entity' %></label>
-        <select name="assignedId" id="assignedIdSelect" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;" <%= (!user || user.role === 'superadmin' || !user.assignedLevel) ? 'disabled' : 'required' %>>
-          <option value="">-- Select <%= (user && user.assignedLevel) ? user.assignedLevel.charAt(0).toUpperCase() + user.assignedLevel.slice(1) : 'Entity' %> --</option>
-          <!-- Options will be populated by JavaScript -->
-        </select>
-      </div>
-
-      <div style="margin-bottom:20px;">
-        <label style="cursor:pointer;">
-          <input type="checkbox" name="active" <%= (!user || user.active) ? 'checked' : '' %>> 
-          <strong>Active Account</strong>
-        </label>
-      </div>
-
-      <div style="display:flex;gap:10px;">
-        <button type="submit" class="btn btn-primary" style="padding:10px 20px;background:#007bff;color:white;border:none;border-radius:4px;cursor:pointer;">Save User</button>
-        <a href="/admin/users" class="btn" style="padding:10px 20px;background:#eee;color:#333;text-decoration:none;border-radius:4px;">Cancel</a>
-      </div>
-    </form>
   </div>
 </section>
 
-<script>
-// Data for dropdowns
-const divisions = ['Patna', 'Tirhut', 'Saran', 'Darbhanga', 'Kosi', 'Purnia', 'Bhagalpur', 'Munger', 'Magadh'];
-const states = ['Bihar']; // Can be expanded later
-
-// Load districts data
-let districtsData = {};
-fetch('/locations/bihar_divisions.json')
-  .then(response => response.json())
-  .then(data => {
-    districtsData = data;
-  })
-  .catch(err => console.error('Error loading districts:', err));
-
-// Load blocks data
-let blocksData = {};
-fetch('/locations/bihar_blocks.json')
-  .then(response => response.json())
-  .then(data => {
-    // normalize shape: file may be { "Bihar": { ... } } or directly { district: [blocks] }
-    blocksData = (data && data.Bihar) ? data.Bihar : data;
-    console.log('🔍 Blocks data loaded, districts count:', Object.keys(blocksData).length);
-  })
-  .catch(err => console.error('Error loading blocks:', err));
-
-function updateFormVisibility() {
-  const role = document.getElementById('roleSelect').value;
-  const levelSection = document.getElementById('levelSection');
-  const assignmentSection = document.getElementById('assignmentSection');
-  const levelSelect = document.getElementById('levelSelect');
-  const assignedIdSelect = document.getElementById('assignedIdSelect');
-
-  if (role === 'superadmin') {
-    levelSection.style.display = 'none';
-    assignmentSection.style.display = 'none';
-    levelSelect.disabled = true;
-    assignedIdSelect.disabled = true;
-    levelSelect.required = false;
-    assignedIdSelect.required = false;
-  } else {
-    levelSection.style.display = 'block';
-    levelSelect.disabled = false;
-    levelSelect.required = true;
-    updateAssignmentSection();
-  }
-}
-
-function updateAssignmentSection() {
-  const level = document.getElementById('levelSelect').value;
-  const assignmentSection = document.getElementById('assignmentSection');
-  const assignedIdSelect = document.getElementById('assignedIdSelect');
-  const assignmentLabel = document.getElementById('assignmentLabel');
-
-  if (!level) {
-    assignmentSection.style.display = 'none';
-    assignedIdSelect.disabled = true;
-    assignedIdSelect.required = false;
-    return;
-  }
-
-  assignmentSection.style.display = 'block';
-  assignedIdSelect.disabled = false;
-  assignedIdSelect.required = true;
-  assignmentLabel.textContent = `Select ${level.charAt(0).toUpperCase() + level.slice(1)}`;
-
-  // Clear existing options
-  assignedIdSelect.innerHTML = `<option value="">-- Select ${level.charAt(0).toUpperCase() + level.slice(1)} --</option>`;
-
-  // Populate options based on level
-  let options = [];
-  if (level === 'state') {
-    options = states;
-  } else if (level === 'division') {
-    options = divisions;
-  } else if (level === 'district') {
-    // Get all districts from divisions data
-    options = Object.values(districtsData).flat();
-  } else if (level === 'block') {
-    // Get all blocks from blocks data
-    options = Object.values(blocksData).flat();
-  }
-
-  options.forEach(option => {
-    const optionElement = document.createElement('option');
-    optionElement.value = option;
-    optionElement.textContent = option;
-    assignedIdSelect.appendChild(optionElement);
-  });
-}
-
-// Set initial state
-document.addEventListener('DOMContentLoaded', function() {
-  updateFormVisibility();
-  const currentLevel = document.getElementById('levelSelect').value;
-  if (currentLevel) {
-    updateAssignmentSection();
-  }
-});
-
-// Event listeners
-document.getElementById('roleSelect').addEventListener('change', updateFormVisibility);
-document.getElementById('levelSelect').addEventListener('change', updateAssignmentSection);
-</script>
+<!-- Link external JS file (CSP compliant) -->
+<script src="/js/admin-user-form.js"></script>
