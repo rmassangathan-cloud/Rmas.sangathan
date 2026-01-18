@@ -14,6 +14,7 @@ const path = require('path');
 const puppeteer = require('puppeteer');
 const QRCode = require('qrcode');
 const ejs = require('ejs');
+const { generateAcceptanceEmailHTML, generateRoleAssignmentEmailHTML } = require('../utils/mailer');
 
 // Helper function to generate membership ID
 async function generateMembershipId(district) {
@@ -789,6 +790,7 @@ router.post('/forms/:id/accept', ensureAuthenticated, async (req, res) => {
           from: process.env.EMAIL_USER,
           to: form.email,
           subject: '🎉 Congratulations! आपका RMAS सदस्यता स्वीकार किया गया',
+          html: generateAcceptanceEmailHTML(form.fullName, membershipId, `${req.protocol}://${req.get('host')}${form.pdfUrl}`, pdfGenerated),
           text: `नमस्ते ${form.fullName},\n\nबधाई हो! आपका RMAS सदस्यता आवेदन स्वीकार कर लिया गया है।\n\nआपका सदस्यता ID: ${membershipId}\n\n${pdfGenerated ? `आपका जॉइनिंग लेटर डाउनलोड करने के लिए यहाँ क्लिक करें: ${req.protocol}://${req.get('host')}${form.pdfUrl}\n\nQR कोड स्कैन करके अपनी सदस्यता को किसी भी समय वेरीफाई कर सकते हैं।` : 'जॉइनिंग लेटर जल्द ही उपलब्ध कराया जाएगा।'}\n\nधन्यवाद,\nRMAS Bihar Team`
         };
 
@@ -1053,6 +1055,7 @@ router.post('/forms/:id/manage-role', ensureAuthenticated, async (req, res) => {
           from: process.env.EMAIL_USER,
           to: form.email,
           subject: 'बधाई हो! आपका पद असाइन किया गया – RMAS',
+          html: generateRoleAssignmentEmailHTML(form.fullName, roleDisplay, link),
           text: `नमस्ते ${form.fullName},\n\nआपको '${roleDisplay}' पद पर असाइन किया गया है। आप अपना ID Card और Joining Letter डाउनलोड करने के लिए इस लिंक पर जा सकते हैं:\n\n${link}\n\nधन्यवाद,\nRMAS Bihar Team`
         });
 
@@ -1134,6 +1137,7 @@ router.post('/forms/:id/assign-role', ensureAuthenticated, async (req, res) => {
           from: process.env.EMAIL_USER,
           to: form.email,
           subject: 'बधाई हो! आपका पद असाइन किया गया – RMAS',
+          html: generateRoleAssignmentEmailHTML(form.fullName, roleDisplay, link),
           text: `नमस्ते ${form.fullName},\n\nआपको ${roleDisplay} पद पर असाइन किया गया है। आप अपना ID Card और Joining Letter डाउनलोड करने के लिए इस लिंक पर जा सकते हैं:\n\n${link}\n\nधन्यवाद,\nRMAS Bihar Team`
         });
 

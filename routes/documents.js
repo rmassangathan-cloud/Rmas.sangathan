@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Membership = require('../models/Membership');
 const DownloadOtp = require('../models/DownloadOtp');
-const { sendMail } = require('../utils/mailer');
+const { sendMail, generateDownloadOtpEmailHTML } = require('../utils/mailer');
 const { logAction } = require('../utils/auditLogger');
 const crypto = require('crypto');
 const QRCode = require('qrcode');
@@ -49,7 +49,8 @@ router.post('/request-download', async (req, res) => {
     await sendMail({
       from: process.env.EMAIL_USER,
       to: email,
-      subject: 'Your RMAS download OTP',
+      subject: '🔐 आपका RMAS डाउनलोड OTP - ID Card / Joining Letter',
+      html: generateDownloadOtpEmailHTML(otp, member.fullName, OTP_TTL_MIN),
       text: `नमस्ते ${member.fullName || ''},\n\nआपका OTP है: ${otp}\nयह ${OTP_TTL_MIN} मिनट के बाद expire हो जाएगा।\n\nयदि आपने अनुरोध नहीं किया है तो इस ईमेल को अनदेखा करें।`
     });
 
