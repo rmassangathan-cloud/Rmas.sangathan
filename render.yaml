@@ -12,3 +12,15 @@ services:
         value: 3000
       - key: MONGO_URI
         sync: false
+      - key: SESSION_SECRET
+        sync: false
+      - key: SUPERADMIN_PASS
+        sync: false
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASS
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: PUPPETEER_EXECUTABLE_PATH
+        value: /usr/bin/chromium-browser
