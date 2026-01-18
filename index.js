@@ -150,8 +150,9 @@ if (process.env.MONGO_URI) {
 // Start the server only when running directly (prevents tests from starting a second server)
 const PORT = process.env.PORT || 5000;
 if (require.main === module) {
-    app.listen(PORT, () => {
-        logger.info(`Server running on port ${PORT}`);
+    app.listen(PORT, '0.0.0.0', () => {
+        logger.info(`🚀 Server running on port ${PORT}`);
+        logger.info(`📡 Environment: ${process.env.NODE_ENV || 'development'}`);
     });
 }
 
