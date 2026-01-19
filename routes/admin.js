@@ -785,27 +785,24 @@ router.post('/forms/:id/accept', ensureAuthenticated, async (req, res) => {
     const { sendMail } = require('../utils/mailer');
     if (form.email) {
       console.log('📧 Sending acceptance email to:', form.email);
-      try {
-        const mailOptions = {
-          from: process.env.EMAIL_USER,
-          to: form.email,
-          subject: '🎉 Congratulations! आपका RMAS सदस्यता स्वीकार किया गया',
-          html: generateAcceptanceEmailHTML(form.fullName, membershipId, `${req.protocol}://${req.get('host')}${form.pdfUrl}`, pdfGenerated),
-          text: `नमस्ते ${form.fullName},\n\nबधाई हो! आपका RMAS सदस्यता आवेदन स्वीकार कर लिया गया है।\n\nआपका सदस्यता ID: ${membershipId}\n\n${pdfGenerated ? `आपका जॉइनिंग लेटर डाउनलोड करने के लिए यहाँ क्लिक करें: ${req.protocol}://${req.get('host')}${form.pdfUrl}\n\nQR कोड स्कैन करके अपनी सदस्यता को किसी भी समय वेरीफाई कर सकते हैं।` : 'जॉइनिंग लेटर जल्द ही उपलब्ध कराया जाएगा।'}\n\nधन्यवाद,\nRMAS Bihar Team`
-        };
-
-        if (pdfGenerated && pdfPath) {
-          mailOptions.attachments = [{
+      // Send email asynchronously to avoid timeout
+      sendMail({
+        from: process.env.EMAIL_USER,
+        to: form.email,
+        subject: '🎉 Congratulations! आपका RMAS सदस्यता स्वीकार किया गया',
+        html: generateAcceptanceEmailHTML(form.fullName, membershipId, `${req.protocol}://${req.get('host')}${form.pdfUrl}`, pdfGenerated),
+        text: `नमस्ते ${form.fullName},\n\nबधाई हो! आपका RMAS सदस्यता आवेदन स्वीकार कर लिया गया है।\n\nआपका सदस्यता ID: ${membershipId}\n\n${pdfGenerated ? `आपका जॉइनिंग लेटर डाउनलोड करने के लिए यहाँ क्लिक करें: ${req.protocol}://${req.get('host')}${form.pdfUrl}\n\nQR कोड स्कैन करके अपनी सदस्यता को किसी भी समय वेरीफाई कर सकते हैं।` : 'जॉइनिंग लेटर जल्द ही उपलब्ध कराया जाएगा।'}\n\nधन्यवाद,\nRMAS Bihar Team`,
+        ...(pdfGenerated && pdfPath ? {
+          attachments: [{
             filename: `RMAS_Membership_${membershipId}.pdf`,
             path: pdfPath
-          }];
-        }
-
-        await sendMail(mailOptions);
+          }]
+        } : {})
+      }).then(() => {
         console.log('✅ Acceptance email sent' + (pdfGenerated ? ' with PDF attachment' : ' (no PDF)'));
-      } catch (mailErr) {
+      }).catch((mailErr) => {
         console.error('❌ Email send error:', mailErr.message);
-      }
+      });
     } else {
       console.log('⚠️ No email address - skipping email notification');
     }
@@ -1051,17 +1048,19 @@ router.post('/forms/:id/manage-role', ensureAuthenticated, async (req, res) => {
         const assigned = (form.assignedRoles && form.assignedRoles[0]) ? form.assignedRoles[0] : null;
         const roleDisplay = assigned ? (assigned.roleName || assigned.role) : (form.jobRole || 'Assigned role');
 
-        await sendMail({
+        sendMail({
           from: process.env.EMAIL_USER,
           to: form.email,
           subject: 'बधाई हो! आपका पद असाइन किया गया – RMAS',
           html: generateRoleAssignmentEmailHTML(form.fullName, roleDisplay, link),
           text: `नमस्ते ${form.fullName},\n\nआपको '${roleDisplay}' पद पर असाइन किया गया है। आप अपना ID Card और Joining Letter डाउनलोड करने के लिए इस लिंक पर जा सकते हैं:\n\n${link}\n\nधन्यवाद,\nRMAS Bihar Team`
+        }).then(async () => {
+          await Membership.findByIdAndUpdate(form._id, { $push: { history: { by: req.user._id, role: req.user.role, action: 'download_notification_sent', note: `Notified ${form.email} to download documents`, date: new Date() } } });
+          console.log('✅ Download notification sent to member');
+        }).catch(async (err) => {
+          console.error('❌ Error sending download notification:', err && err.message);
+          try { await Membership.findByIdAndUpdate(form._id, { $push: { history: { by: req.user._id, role: req.user.role, action: 'download_notification_error', note: err && err.message, date: new Date() } } }); } catch (e) { console.error('❌ Error saving history for notification failure:', e && e.message); }
         });
-
-        await Membership.findByIdAndUpdate(form._id, { $push: { history: { by: req.user._id, role: req.user.role, action: 'download_notification_sent', note: `Notified ${form.email} to download documents`, date: new Date() } } });
-
-        console.log('✅ Download notification sent to member');
       } catch (err) {
         console.error('❌ Error sending download notification:', err && err.message);
         try { await Membership.findByIdAndUpdate(form._id, { $push: { history: { by: req.user._id, role: req.user.role, action: 'download_notification_error', note: err && err.message, date: new Date() } } }); } catch (e) { console.error('❌ Error saving history for notification failure:', e && e.message); }
@@ -1133,19 +1132,21 @@ router.post('/forms/:id/assign-role', ensureAuthenticated, async (req, res) => {
 
         const roleDisplay = jobRole || form.jobRole || 'Assigned role';
 
-        await sendMail({
+        sendMail({
           from: process.env.EMAIL_USER,
           to: form.email,
           subject: 'बधाई हो! आपका पद असाइन किया गया – RMAS',
           html: generateRoleAssignmentEmailHTML(form.fullName, roleDisplay, link),
           text: `नमस्ते ${form.fullName},\n\nआपको ${roleDisplay} पद पर असाइन किया गया है। आप अपना ID Card और Joining Letter डाउनलोड करने के लिए इस लिंक पर जा सकते हैं:\n\n${link}\n\nधन्यवाद,\nRMAS Bihar Team`
+        }).then(async () => {
+          form.history = form.history || [];
+          form.history.push({ by: req.user._id, role: req.user.role, action: 'download_notification_sent', note: `Notified ${form.email} to download documents (legacy assign)`, date: new Date() });
+          await form.save();
+          console.log('✅ Download notification sent to member (legacy assign)');
+        }).catch(async (err) => {
+          console.error('❌ Error sending download notification (legacy assign):', err && err.message);
+          try { form.history = form.history || []; form.history.push({ by: req.user._id, role: req.user.role, action: 'download_notification_error', note: err && err.message, date: new Date() }); await form.save(); } catch (e) { console.error('❌ Error saving history for notification failure:', e && e.message); }
         });
-
-        form.history = form.history || [];
-        form.history.push({ by: req.user._id, role: req.user.role, action: 'download_notification_sent', note: `Notified ${form.email} to download documents (legacy assign)`, date: new Date() });
-        await form.save();
-
-        console.log('✅ Download notification sent to member (legacy assign)');
       } catch (err) {
         console.error('❌ Error sending download notification (legacy assign):', err && err.message);
         try { form.history = form.history || []; form.history.push({ by: req.user._id, role: req.user.role, action: 'download_notification_error', note: err && err.message, date: new Date() }); await form.save(); } catch (e) { console.error('❌ Error saving history for notification failure:', e && e.message); }

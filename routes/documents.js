@@ -45,13 +45,17 @@ router.post('/request-download', async (req, res) => {
     });
     await doc.save();
 
-    // Send OTP email
-    await sendMail({
+    // Send OTP email asynchronously (don't wait for it to avoid timeout)
+    sendMail({
       from: process.env.EMAIL_USER,
       to: email,
       subject: '🔐 आपका RMAS डाउनलोड OTP - ID Card / Joining Letter',
       html: generateDownloadOtpEmailHTML(otp, member.fullName, OTP_TTL_MIN),
       text: `नमस्ते ${member.fullName || ''},\n\nआपका OTP है: ${otp}\nयह ${OTP_TTL_MIN} मिनट के बाद expire हो जाएगा।\n\nयदि आपने अनुरोध नहीं किया है तो इस ईमेल को अनदेखा करें।`
+    }).then(() => {
+      console.log('✅ Download OTP email sent to:', email);
+    }).catch((err) => {
+      console.error('❌ Failed to send download OTP email to:', email, err.message);
     });
 
     res.render('documents/otp_sent', { email });

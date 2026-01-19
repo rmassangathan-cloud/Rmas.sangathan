@@ -8,7 +8,9 @@ const transporter = nodemailer.createTransport({
   },
   tls: {
     rejectUnauthorized: false
-  }
+  },
+  connectionTimeout: 10000,  // 10 seconds
+  socketTimeout: 10000       // 10 seconds
 });
 
 async function sendMail(opts) {

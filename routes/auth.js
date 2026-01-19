@@ -186,16 +186,20 @@ router.post('/forgot-password', async (req, res) => {
     user.otpLastRequestTime = new Date();
     await user.save();
 
-    // Send OTP email
-    await sendMail({
+    // Send OTP email asynchronously (don't wait for it to avoid timeout)
+    sendMail({
       from: process.env.EMAIL_USER,
       to: user.email,
       subject: '🔐 Password Reset OTP - RMAS',
       html: generateOtpEmailHTML(otp, user.name),
       text: generateOtpEmailText(otp, user.name)
+    }).then(() => {
+      console.log('✅ OTP sent to:', user.email);
+    }).catch((err) => {
+      console.error('❌ Failed to send OTP email to:', user.email, err.message);
     });
 
-    console.log('✅ OTP sent to:', user.email);
+    console.log('✅ OTP generated and saved. Email sending in background...');
     
     res.render('forgot-password', { 
       error: null,
@@ -205,9 +209,9 @@ router.post('/forgot-password', async (req, res) => {
     });
   } catch (err) {
     console.error('Forgot password error:', err);
-    console.error('Error details:', err.message, err.response);
+    console.error('Error details:', err.message);
     res.render('forgot-password', { 
-      error: `Server error: ${err.message || 'Please try again.'}`,
+      error: 'Server error. Please try again.',
       success: null,
       email: email,
       layout: false
