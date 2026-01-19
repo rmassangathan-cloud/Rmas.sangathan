@@ -188,6 +188,7 @@ router.post('/forgot-password', async (req, res) => {
 
     // Send OTP email
     await sendMail({
+      from: process.env.EMAIL_USER,
       to: user.email,
       subject: '🔐 Password Reset OTP - RMAS',
       html: generateOtpEmailHTML(otp, user.name),
@@ -204,8 +205,9 @@ router.post('/forgot-password', async (req, res) => {
     });
   } catch (err) {
     console.error('Forgot password error:', err);
+    console.error('Error details:', err.message, err.response);
     res.render('forgot-password', { 
-      error: 'Server error. Please try again.',
+      error: `Server error: ${err.message || 'Please try again.'}`,
       success: null,
       email: email,
       layout: false
