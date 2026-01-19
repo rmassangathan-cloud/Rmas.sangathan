@@ -105,8 +105,21 @@ temp/
 .tmp/
 
 # User uploaded content and generated files
-public/uploads/
-public/pdfs/
+# Ignore files but keep directory structure for Render deployment
+public/uploads/*.jpeg
+public/uploads/*.jpg
+public/uploads/*.png
+public/uploads/*.gif
+public/uploads/*.webp
+public/uploads/*.mp4
+public/uploads/*.webm
+public/uploads/*.mov
+public/uploads/media/*
+!public/uploads/.gitkeep
+!public/uploads/media/.gitkeep
+
+public/pdfs/*.pdf
+!public/pdfs/.gitkeep
 
 # Build artifacts
 dist/

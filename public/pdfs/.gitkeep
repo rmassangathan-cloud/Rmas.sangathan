@@ -1,0 +1,2 @@
+# This file ensures the pdfs directory is preserved in git
+# Individual PDF files are ignored, but this keeps the directory

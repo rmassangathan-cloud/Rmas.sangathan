@@ -36,6 +36,26 @@ app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 // PDFs folder ko bhi static serve karo (joining letters ke liye)
 app.use('/pdfs', express.static(path.join(__dirname, 'public/pdfs')));
 
+// Fallback for missing uploads - serve a placeholder image
+app.use('/uploads', (req, res) => {
+  // If file not found, return a placeholder or error message
+  res.status(404).json({
+    error: 'File not found',
+    message: 'The requested file is not available. This may be because the application is deployed on a serverless platform that does not persist uploaded files. Please use cloud storage (AWS S3, Cloudinary, etc.) for production.',
+    note: 'For now, uploaded files are stored in memory and will be lost when the application restarts.',
+    path: req.path
+  });
+});
+
+// Fallback for missing PDFs
+app.use('/pdfs', (req, res) => {
+  res.status(404).json({
+    error: 'PDF not found',
+    message: 'The requested PDF is not available.',
+    path: req.path
+  });
+});
+
 // Middleware for parsing request bodies
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
