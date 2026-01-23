@@ -188,13 +188,15 @@ router.post('/forgot-password', async (req, res) => {
 
     // Send OTP email asynchronously (don't wait for it to avoid timeout)
     sendMail({
-      from: process.env.EMAIL_USER,
+      from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
       to: user.email,
-      subject: '🔐 Password Reset OTP - RMAS',
+      subject: '🔐 पासवर्ड रीसेट OTP - NHRA',
       html: generateOtpEmailHTML(otp, user.name),
       text: generateOtpEmailText(otp, user.name)
-    }).then(() => {
-      console.log('✅ OTP sent to:', user.email);
+    }).then((result) => {
+      if (result && result.id) {
+        console.log('✅ OTP sent to:', user.email, '(Resend ID:', result.id + ')');
+      }
     }).catch((err) => {
       console.error('❌ Failed to send OTP email to:', user.email, err.message);
     });

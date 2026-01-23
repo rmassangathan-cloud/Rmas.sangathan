@@ -21,34 +21,76 @@ try {
     Membership = null;
 }
 
-// Multer setup for file uploads (photo)
+// Multer setup for file uploads (photo) - using Cloudinary for persistence
 let upload = null;
 try {
     const multer = require('multer');
-    const path = require('path');
-    const storage = multer.diskStorage({
-        destination: function (req, file, cb) {
-            cb(null, path.join(__dirname, '..', 'public', 'uploads'));
-        },
-        filename: function (req, file, cb) {
-            const unique = Date.now() + '-' + Math.round(Math.random() * 1E9);
-            const ext = path.extname(file.originalname);
-            cb(null, file.fieldname + '-' + unique + ext);
-        }
-    });
+    const cloudinary = require('cloudinary').v2;
+    const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
-    const fileFilter = function (req, file, cb) {
-        // accept images and PDFs
-        if (!file.mimetype.startsWith('image/') && file.mimetype !== 'application/pdf') {
-            return cb(new Error('Only image or PDF files are allowed!'), false);
-        }
-        cb(null, true);
-    };
+    // Configure Cloudinary if credentials are available
+    if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+        cloudinary.config({
+            cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+            api_key: process.env.CLOUDINARY_API_KEY,
+            api_secret: process.env.CLOUDINARY_API_SECRET
+        });
 
-    // Limit per-file to 1MB (photo and combined documents must be under 1MB)
-    upload = multer({ storage, fileFilter, limits: { fileSize: 1 * 1024 * 1024 } });
+        const storage = new CloudinaryStorage({
+            cloudinary: cloudinary,
+            params: {
+                folder: 'RMAS/uploads',
+                resource_type: 'auto',
+                allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf']
+            }
+        });
+
+        upload = multer({
+            storage,
+            limits: { fileSize: 10 * 1024 * 1024 } // 10MB
+        });
+        console.log('✅ Multer configured with Cloudinary for persistent storage');
+    } else {
+        // Fallback to local storage
+        const path = require('path');
+        const fs = require('fs');
+
+        // Ensure uploads directory exists
+        const uploadsDir = path.join(__dirname, '..', 'public', 'uploads');
+        if (!fs.existsSync(uploadsDir)) {
+            fs.mkdirSync(uploadsDir, { recursive: true });
+            console.log('✅ Created uploads directory:', uploadsDir);
+        }
+
+        const storage = multer.diskStorage({
+            destination: function (req, file, cb) {
+                console.log('📂 Multer destination being called for file:', file.fieldname, 'Saving to:', uploadsDir);
+                cb(null, uploadsDir);
+            },
+            filename: function (req, file, cb) {
+                const unique = Date.now() + '-' + Math.round(Math.random() * 1E9);
+                const ext = path.extname(file.originalname);
+                const filename = file.fieldname + '-' + unique + ext;
+                console.log('📝 Multer filename being set:', filename, 'Original:', file.originalname);
+                cb(null, filename);
+            }
+        });
+
+        const fileFilter = function (req, file, cb) {
+            // accept images and PDFs
+            if (!file.mimetype.startsWith('image/') && file.mimetype !== 'application/pdf') {
+                return cb(new Error('Only image or PDF files are allowed!'), false);
+            }
+            cb(null, true);
+        };
+
+        // Limit per-file to 1MB (photo and combined documents must be under 1MB)
+        upload = multer({ storage, fileFilter, limits: { fileSize: 1 * 1024 * 1024 } });
+        console.log('✅ Multer configured with local storage (fallback), uploads dir:', uploadsDir);
+    }
 } catch (err) {
     upload = null; // multer not installed or failed; route will still work without file upload
+    console.error('❌ Multer setup failed:', err.message);
 }
 
 // --------------------- sabhi get routes (jo pehle the) ---------------------
@@ -297,10 +339,12 @@ if (upload) {
 
 // centralized handler to support both upload and non-upload flows
 async function handleJoin(req, res) {
+    console.log('🎯 JOIN HANDLER CALLED');
     console.log('Join form received:', req.body);
     console.log('🔄 Form submission received');
     console.log('📄 Raw body:', JSON.stringify(req.body, null, 2));
     console.log('📎 Files received:', req.files ? Object.keys(req.files) : 'No files');
+    console.log('📎 Complete files object:', req.files);
 
     const data = req.body || {};
 
@@ -316,12 +360,16 @@ async function handleJoin(req, res) {
 
     // if files were uploaded, attach their paths and sizes
     if (req.files) {
+        console.log('✅ req.files exists, processing files...');
         console.log('📁 Processing uploaded files...');
 
         if (req.files.photo && req.files.photo[0]) {
             const f = req.files.photo[0];
-            console.log('📸 Photo file:', f.filename, 'Size:', f.size);
-            data.photoUrl = '/uploads/' + f.filename;
+            console.log('📸 Photo file object:', f);
+            console.log('📸 Photo filename:', f.filename, 'Path:', f.path, 'Size:', f.size);
+            data.photoUrl = f.path.startsWith('http') || f.path.startsWith('https') ? f.path : '/uploads/' + f.filename;
+            console.log('📸 Photo URL set to:', data.photoUrl);
+            console.log('✅ Photo file saved to:', f.path);
             if (f.size > 1 * 1024 * 1024) {
                 // enforce 1MB for photo specifically
                 (data.__fileErrors = data.__fileErrors || []).push('Passport-size photo must be less than 1MB');
@@ -338,7 +386,7 @@ async function handleJoin(req, res) {
                 (data.__fileErrors = data.__fileErrors || []).push('Combined documents must be a PDF file containing Aadhaar and Character Certificate');
                 console.log('❌ Documents file type invalid - not PDF');
             } else {
-                data.documentsUrl = '/uploads/' + f.filename;
+                data.documentsUrl = f.path.startsWith('http') || f.path.startsWith('https') ? f.path : '/uploads/' + f.filename;
                 console.log('✅ Documents URL set to:', data.documentsUrl);
                 // for backward compatibility (email template), set aadhaarUrl and characterCertUrl to same file
                 data.aadhaarUrl = data.documentsUrl;
@@ -436,7 +484,7 @@ async function handleJoin(req, res) {
         if (req.xhr || (req.headers && req.headers.accept && req.headers.accept.indexOf('application/json') !== -1)) {
             return res.status(400).json({ ok: false, errors, fields: data });
         }
-        return res.render('join', { error: errors.join('. '), success: null, oldData: data });
+        return res.render('join', { error: errors.join('. '), success: null, ...data, oldData: data });
     }
 
     console.log('✅ Validation passed, proceeding to save');
@@ -451,7 +499,7 @@ async function handleJoin(req, res) {
     ];
     if (data.occupation && !allowedOccupations.includes(data.occupation)) {
         // invalid occupation selection
-        return res.render('join', { error: 'Invalid occupation selection.', success: null, oldData: data });
+        return res.render('join', { error: 'Invalid occupation selection.', success: null, ...data, oldData: data });
     }
 
     // Prepare email

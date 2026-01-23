@@ -1,43 +1,127 @@
-const nodemailer = require('nodemailer');
+// utils/mailer.js - Resend API integration (replaces Nodemailer)
+const { Resend } = require('resend');
+const https = require('https');
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  },
-  tls: {
-    rejectUnauthorized: false
-  },
-  connectionTimeout: 10000,  // 10 seconds
-  socketTimeout: 10000       // 10 seconds
-});
+// Initialize Resend client
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-async function sendMail(opts) {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    console.log('Mailer: credentials not configured, skipping send', opts);
-    return null;
-  }
+const EMAIL_FROM = process.env.EMAIL_FROM || 'NHRA Bihar <no-reply@nhra-bihar.org>';
 
-  // Ensure HTML content is properly handled
-  const mailOptions = {
-    from: opts.from || process.env.EMAIL_USER,
-    to: opts.to,
-    subject: opts.subject,
-    ...opts
-  };
-
-  // If HTML is provided, use it; otherwise fall back to text
-  if (opts.html) {
-    mailOptions.html = opts.html;
-  } else if (opts.text) {
-    mailOptions.text = opts.text;
-  }
-
-  return transporter.sendMail(mailOptions);
+/**
+ * Helper function to fetch file from URL as buffer
+ * Used for Cloudinary URLs and remote attachments
+ */
+async function fetchFileFromUrl(url) {
+  return new Promise((resolve, reject) => {
+    https.get(url, (response) => {
+      if (response.statusCode !== 200) {
+        reject(new Error(`Failed to fetch file: ${response.statusCode}`));
+        return;
+      }
+      const chunks = [];
+      response.on('data', chunk => chunks.push(chunk));
+      response.on('end', () => resolve(Buffer.concat(chunks)));
+      response.on('error', reject);
+    }).on('error', reject);
+  });
 }
 
-// OTP Email Template
+/**
+ * Main send mail function - compatible with previous Nodemailer usage
+ * @param {Object} opts - Email options
+ *   - to: recipient email
+ *   - subject: email subject
+ *   - text: plain text content
+ *   - html: HTML content
+ *   - attachments: [{filename, path, content (buffer)}, ...] or [{filename, url}]
+ *   - from: (optional) sender email - defaults to EMAIL_FROM
+ * @returns {Promise<Object>} - Resend response with id property
+ */
+async function sendMail(opts) {
+  try {
+    // Check if Resend API key is configured
+    if (!process.env.RESEND_API_KEY) {
+      console.log('⚠️  Mailer: RESEND_API_KEY not configured, skipping send to:', opts.to);
+      return { id: 'mock-id', success: false };
+    }
+
+    // Validate required fields
+    if (!opts.to || !opts.subject) {
+      console.warn('⚠️  Mailer: Missing to or subject');
+      return null;
+    }
+
+    // Prepare email data
+    const emailData = {
+      from: opts.from || EMAIL_FROM,
+      to: opts.to,
+      subject: opts.subject,
+    };
+
+    // Add content - prefer HTML if available, fallback to text
+    if (opts.html) {
+      emailData.html = opts.html;
+    } else if (opts.text) {
+      emailData.text = opts.text;
+    } else {
+      console.warn('⚠️  Mailer: No HTML or text content provided');
+      return null;
+    }
+
+    // Handle attachments
+    if (opts.attachments && Array.isArray(opts.attachments) && opts.attachments.length > 0) {
+      emailData.attachments = [];
+
+      for (const attachment of opts.attachments) {
+        try {
+          let attachmentData = {
+            filename: attachment.filename,
+          };
+
+          // Handle different attachment sources
+          if (attachment.content) {
+            // Direct buffer content
+            attachmentData.content = attachment.content.toString('base64');
+          } else if (attachment.path) {
+            // Local file path
+            const fs = require('fs');
+            const fileContent = fs.readFileSync(attachment.path);
+            attachmentData.content = fileContent.toString('base64');
+          } else if (attachment.url) {
+            // Remote URL (e.g., Cloudinary)
+            const buffer = await fetchFileFromUrl(attachment.url);
+            attachmentData.content = buffer.toString('base64');
+          }
+
+          emailData.attachments.push(attachmentData);
+          console.log(`  📎 Attachment added: ${attachment.filename}`);
+        } catch (attachErr) {
+          console.error(`  ❌ Failed to process attachment "${attachment.filename}":`, attachErr.message);
+          // Continue with other attachments
+        }
+      }
+    }
+
+    // Send email via Resend
+    console.log(`📧 Sending email via Resend to: ${opts.to} (Subject: ${opts.subject})`);
+    const response = await resend.emails.send(emailData);
+
+    if (response.error) {
+      console.error('❌ Resend API error:', response.error);
+      return null;
+    }
+
+    console.log(`✅ Email sent to: ${opts.to} (ID: ${response.data.id})`);
+    return response.data;
+  } catch (error) {
+    console.error('❌ Mailer error:', error.message);
+    return null;
+  }
+}
+
+// ============= EMAIL TEMPLATES =============
+
+// OTP Email Template (HTML)
 function generateOtpEmailHTML(otp, userName) {
   return `
     <!DOCTYPE html>
@@ -57,21 +141,21 @@ function generateOtpEmailHTML(otp, userName) {
       <body>
         <div class="container">
           <div class="header">
-            <h2>🔐 Password Reset Request</h2>
+            <h2>🔐 पासवर्ड रीसेट अनुरोध</h2>
           </div>
           <div class="content">
-            <p>Hi ${userName || 'User'},</p>
-            <p>You have requested to reset your password. Please use the OTP below to proceed with the password reset process.</p>
+            <p>नमस्ते ${userName || 'User'},</p>
+            <p>आपने अपना पासवर्ड रीसेट करने के लिए अनुरोध किया है। कृपया पासवर्ड रीसेट प्रक्रिया जारी रखने के लिए नीचे दिया गया OTP का उपयोग करें।</p>
             <div class="otp-box">
-              <p style="margin: 0 0 10px 0; color: #666;">Your One-Time Password (OTP) is:</p>
+              <p style="margin: 0 0 10px 0; color: #666;">आपका One-Time Password (OTP) है:</p>
               <div class="otp-code">${otp}</div>
             </div>
-            <p><strong>⏰ Valid for 10 minutes only.</strong></p>
-            <p style="color: #d9534f;"><strong>⚠️ Do not share this OTP with anyone.</strong></p>
-            <p>If you did not request a password reset, please ignore this email.</p>
+            <p><strong>⏰ 10 मिनट के लिए वैध है।</strong></p>
+            <p style="color: #d9534f;"><strong>⚠️ इस OTP को किसी के साथ शेयर न करें।</strong></p>
+            <p>यदि आपने यह अनुरोध नहीं किया है, तो कृपया इस ईमेल को अनदेखा करें।</p>
           </div>
           <div class="footer">
-            <p>&copy; 2026 RMAS (Rashtriya Manav Adhikar Sangathan). All rights reserved.</p>
+            <p>&copy; 2026 NHRA (राष्ट्रीय मानव अधिकार संगठन). सर्वाधिकार सुरक्षित।</p>
           </div>
         </div>
       </body>
@@ -79,26 +163,26 @@ function generateOtpEmailHTML(otp, userName) {
   `;
 }
 
-// Plain text OTP email
+// OTP Email Template (Plain Text)
 function generateOtpEmailText(otp, userName) {
   return `
-Password Reset Request
+पासवर्ड रीसेट अनुरोध
 
-Hi ${userName || 'User'},
+नमस्ते ${userName || 'User'},
 
-You have requested to reset your password. Please use the OTP below to proceed with the password reset process.
+आपने अपना पासवर्ड रीसेट करने के लिए अनुरोध किया है। कृपया पासवर्ड रीसेट प्रक्रिया जारी रखने के लिए नीचे दिया गया OTP का उपयोग करें।
 
-Your One-Time Password (OTP) is: ${otp}
+आपका One-Time Password (OTP) है: ${otp}
 
-Valid for 10 minutes only.
+10 मिनट के लिए वैध है।
 
-Do not share this OTP with anyone.
+इस OTP को किसी के साथ शेयर न करें।
 
-If you did not request a password reset, please ignore this email.
+यदि आपने यह अनुरोध नहीं किया है, तो कृपया इस ईमेल को अनदेखा करें।
 
 ---
-RMAS (Rashtriya Manav Adhikar Sangathan)
-  `.trim();
+NHRA (राष्ट्रीय मानव अधिकार संगठन)
+`.trim();
 }
 
 // Download OTP Email Template (ID Card / Joining Letter)
@@ -122,7 +206,7 @@ function generateDownloadOtpEmailHTML(otp, memberName, ttlMinutes = 10) {
       <body>
         <div class="container">
           <div class="header">
-            <h2>📄 डाउनलोड आपका डॉक्यूमेंट्स</h2>
+            <h2>📄 अपने डॉक्यूमेंट्स डाउनलोड करें</h2>
             <p>ID Card / Joining Letter</p>
           </div>
           <div class="content">
@@ -139,7 +223,7 @@ function generateDownloadOtpEmailHTML(otp, memberName, ttlMinutes = 10) {
             <p>यदि आपने यह अनुरोध नहीं किया है, तो कृपया इस ईमेल को अनदेखा करें।</p>
           </div>
           <div class="footer">
-            <p>&copy; 2026 RMAS (Rashtriya Manav Adhikar Sangathan). All rights reserved.</p>
+            <p>&copy; 2026 NHRA (राष्ट्रीय मानव अधिकार संगठन). सर्वाधिकार सुरक्षित।</p>
           </div>
         </div>
       </body>
@@ -168,13 +252,13 @@ function generateAcceptanceEmailHTML(memberName, membershipId, pdfUrl, pdfGenera
       <body>
         <div class="container">
           <div class="header">
-            <h2>🎉 स्वागत है RMAS में!</h2>
+            <h2>🎉 NHRA में आपका स्वागत है!</h2>
             <p>आपकी सदस्यता स्वीकार की गई</p>
           </div>
           <div class="content">
             <p>नमस्ते ${memberName || 'सदस्य'},</p>
             <div class="success-box">
-              <p class="success-text">✅ बधाई हो! आपका RMAS सदस्यता आवेदन स्वीकार कर लिया गया है।</p>
+              <p class="success-text">✅ बधाई हो! आपका NHRA सदस्यता आवेदन स्वीकार कर लिया गया है।</p>
             </div>
             <div class="info-box">
               <strong>आपका सदस्यता ID:</strong> ${membershipId}
@@ -189,7 +273,7 @@ function generateAcceptanceEmailHTML(memberName, membershipId, pdfUrl, pdfGenera
             <p>यदि आपको कोई प्रश्न है, तो कृपया हमसे संपर्क करें।</p>
           </div>
           <div class="footer">
-            <p>&copy; 2026 RMAS (Rashtriya Manav Adhikar Sangathan). All rights reserved.</p>
+            <p>&copy; 2026 NHRA (राष्ट्रीय मानव अधिकार संगठन). सर्वाधिकार सुरक्षित।</p>
           </div>
         </div>
       </body>
@@ -219,7 +303,7 @@ function generateRoleAssignmentEmailHTML(memberName, roleDisplay, downloadLink) 
         <div class="container">
           <div class="header">
             <h2>🎯 आपको एक पद असाइन किया गया है!</h2>
-            <p>RMAS - राष्ट्रीय मानव अधिकार संगठन</p>
+            <p>NHRA - राष्ट्रीय मानव अधिकार संगठन</p>
           </div>
           <div class="content">
             <p>नमस्ते ${memberName || 'सदस्य'},</p>
@@ -234,10 +318,10 @@ function generateRoleAssignmentEmailHTML(memberName, roleDisplay, downloadLink) 
             <div class="info-box">
               <strong>अगला चरण:</strong> डाउनलोड पेज पर अपना नाम और ईमेल दर्ज करें। आपको एक OTP प्राप्त होगा जिससे आप अपने दस्तावेज़ डाउनलोड कर सकते हैं।
             </div>
-            <p>धन्यवाद,<br>RMAS Bihar Team</p>
+            <p>धन्यवाद,<br>NHRA Bihar Team</p>
           </div>
           <div class="footer">
-            <p>&copy; 2026 RMAS (Rashtriya Manav Adhikar Sangathan). All rights reserved.</p>
+            <p>&copy; 2026 NHRA (राष्ट्रीय मानव अधिकार संगठन). सर्वाधिकार सुरक्षित।</p>
           </div>
         </div>
       </body>
@@ -245,4 +329,12 @@ function generateRoleAssignmentEmailHTML(memberName, roleDisplay, downloadLink) 
   `;
 }
 
-module.exports = { transporter, sendMail, generateOtpEmailHTML, generateOtpEmailText, generateDownloadOtpEmailHTML, generateAcceptanceEmailHTML, generateRoleAssignmentEmailHTML };
+// Export functions
+module.exports = {
+  sendMail,
+  generateOtpEmailHTML,
+  generateOtpEmailText,
+  generateDownloadOtpEmailHTML,
+  generateAcceptanceEmailHTML,
+  generateRoleAssignmentEmailHTML
+};

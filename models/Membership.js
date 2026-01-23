@@ -47,7 +47,7 @@ const membershipSchema = new mongoose.Schema({
   history: [{
     by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     role: String,
-    action: { type: String, enum: ['submitted', 'accepted', 'rejected', 'role_assigned', 'id_card_generated', 'pdf_regenerated', 'pdf_error', 'email_sent', 'email_error', 'email_skipped'] },
+    action: { type: String, enum: ['submitted', 'accepted', 'rejected', 'role_assigned', 'id_card_generated', 'pdf_regenerated', 'pdf_error', 'email_sent', 'email_error', 'email_skipped', 'download_notification_error'] },
     note: String,
     date: { type: Date, default: Date.now },
     timestamp: { type: Date, default: Date.now }

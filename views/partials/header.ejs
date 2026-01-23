@@ -44,10 +44,77 @@
         </div>
         <div class="lang-toggle">
             <select id="language-selector">
-                <option value="en">EN</option>
                 <option value="hi">HI</option>
+                <option value="en">EN</option>
                 <option value="ur">UR</option>
             </select>
         </div>
     </div>
 </header>
+
+<script>
+// Language switching functionality
+let translations = {};
+
+async function loadTranslations() {
+    try {
+        const response = await fetch('/translations.json');
+        translations = await response.json();
+        console.log('Translations loaded:', translations);
+    } catch (error) {
+        console.error('Error loading translations:', error);
+    }
+}
+
+function setLanguage(lang) {
+    // Store language preference
+    localStorage.setItem('preferredLanguage', lang);
+
+    // Set body class for RTL support
+    document.body.className = lang === 'ur' ? 'rtl' : '';
+
+    // Update all elements with data-key
+    document.querySelectorAll('[data-key]').forEach(element => {
+        const key = element.getAttribute('data-key');
+        if (translations[lang] && translations[lang][key]) {
+            const translation = translations[lang][key];
+
+            // Handle different element types
+            if (element.tagName === 'INPUT' && element.getAttribute('data-attr') === 'placeholder') {
+                element.placeholder = translation;
+            } else if (element.tagName === 'IMG' && element.getAttribute('data-attr') === 'alt') {
+                element.alt = translation;
+            } else {
+                element.textContent = translation;
+                // Set lang attribute and dir for mission and vision statements
+                if (key === 'mission_statement' || key === 'vision_statement') {
+                    element.setAttribute('lang', lang);
+                    if (lang === 'ur') {
+                        element.setAttribute('dir', 'rtl');
+                    } else {
+                        element.removeAttribute('dir');
+                    }
+                }
+            }
+        }
+    });
+
+    // Update select value
+    document.getElementById('language-selector').value = lang;
+}
+
+document.addEventListener('DOMContentLoaded', async function() {
+    await loadTranslations();
+
+    const languageSelector = document.getElementById('language-selector');
+
+    // Set initial language from localStorage or default to Hindi
+    const savedLang = localStorage.getItem('preferredLanguage') || 'hi';
+    setLanguage(savedLang);
+
+    // Handle language change
+    languageSelector.addEventListener('change', function() {
+        setLanguage(this.value);
+    });
+});
+</script>

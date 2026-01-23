@@ -499,7 +499,14 @@ router.post('/forms/:id/accept-quick', ensureAuthenticated, async (req, res) => 
     await form.save();
     const { sendMail } = require('../utils/mailer');
     if (form.email) {
-      try { await sendMail({ from: process.env.EMAIL_USER, to: form.email, subject: 'आपका सदस्यता आवेदन स्वीकार किया गया', text: `नमस्ते ${form.fullName},\n\nआपका सदस्यता आवेदन स्वीकार कर लिया गया है।\n\nधन्यवाद,\nRMAS` }); } catch (e) { console.error('Quick accept email error:', e); }
+      try { 
+        await sendMail({ 
+          from: process.env.EMAIL_FROM || process.env.EMAIL_USER, 
+          to: form.email, 
+          subject: '🎉 आपका सदस्यता आवेदन स्वीकार किया गया', 
+          text: `नमस्ते ${form.fullName},\n\nआपका सदस्यता आवेदन स्वीकार कर लिया गया है।\n\nधन्यवाद,\nNHRA` 
+        }); 
+      } catch (e) { console.error('Quick accept email error:', e.message); }
     }
     res.redirect('/admin/forms');
   } catch (err) {
@@ -521,7 +528,14 @@ router.post('/forms/:id/reject-quick', ensureAuthenticated, async (req, res) => 
     await form.save();
     const { sendMail } = require('../utils/mailer');
     if (form.email) {
-      try { await sendMail({ from: process.env.EMAIL_USER, to: form.email, subject: 'आपका सदस्यता आवेदन अस्वीकृत हुआ', text: `नमस्ते ${form.fullName},\n\nकृपया सूचित किया जाता है कि आपका सदस्यता आवेदन अस्वीकृत कर दिया गया है।\n\nधन्यवाद,\nRMAS` }); } catch (e) { console.error('Quick reject email error:', e); }
+      try { 
+        await sendMail({ 
+          from: process.env.EMAIL_FROM || process.env.EMAIL_USER, 
+          to: form.email, 
+          subject: '😔 आपका सदस्यता आवेदन अस्वीकृत हुआ', 
+          text: `नमस्ते ${form.fullName},\n\nकृपया सूचित किया जाता है कि आपका सदस्यता आवेदन अस्वीकृत कर दिया गया है।\n\nधन्यवाद,\nNHRA` 
+        }); 
+      } catch (e) { console.error('Quick reject email error:', e.message); }
     }
     res.redirect('/admin/forms');
   } catch (err) {
@@ -785,21 +799,34 @@ router.post('/forms/:id/accept', ensureAuthenticated, async (req, res) => {
     const { sendMail } = require('../utils/mailer');
     if (form.email) {
       console.log('📧 Sending acceptance email to:', form.email);
-      // Send email asynchronously to avoid timeout
+      // Prepare attachment: use pdfUrl (Cloudinary) if available, otherwise local pdfPath
+      const attachments = [];
+      if (form.pdfUrl) {
+        // PDF is in Cloudinary - attach by URL
+        attachments.push({
+          filename: `RMAS_Membership_${membershipId}.pdf`,
+          url: form.pdfUrl
+        });
+      } else if (pdfGenerated && pdfPath) {
+        // PDF is local - attach by path
+        attachments.push({
+          filename: `RMAS_Membership_${membershipId}.pdf`,
+          path: pdfPath
+        });
+      }
+
+      // Send email asynchronously
       sendMail({
-        from: process.env.EMAIL_USER,
+        from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
         to: form.email,
-        subject: '🎉 Congratulations! आपका RMAS सदस्यता स्वीकार किया गया',
-        html: generateAcceptanceEmailHTML(form.fullName, membershipId, `${req.protocol}://${req.get('host')}${form.pdfUrl}`, pdfGenerated),
-        text: `नमस्ते ${form.fullName},\n\nबधाई हो! आपका RMAS सदस्यता आवेदन स्वीकार कर लिया गया है।\n\nआपका सदस्यता ID: ${membershipId}\n\n${pdfGenerated ? `आपका जॉइनिंग लेटर डाउनलोड करने के लिए यहाँ क्लिक करें: ${req.protocol}://${req.get('host')}${form.pdfUrl}\n\nQR कोड स्कैन करके अपनी सदस्यता को किसी भी समय वेरीफाई कर सकते हैं।` : 'जॉइनिंग लेटर जल्द ही उपलब्ध कराया जाएगा।'}\n\nधन्यवाद,\nRMAS Bihar Team`,
-        ...(pdfGenerated && pdfPath ? {
-          attachments: [{
-            filename: `RMAS_Membership_${membershipId}.pdf`,
-            path: pdfPath
-          }]
-        } : {})
-      }).then(() => {
-        console.log('✅ Acceptance email sent' + (pdfGenerated ? ' with PDF attachment' : ' (no PDF)'));
+        subject: '🎉 Congratulations! आपका NHRA सदस्यता स्वीकार किया गया',
+        html: generateAcceptanceEmailHTML(form.fullName, membershipId, form.pdfUrl || `${req.protocol}://${req.get('host')}/documents/download`, pdfGenerated),
+        text: `नमस्ते ${form.fullName},\n\nबधाई हो! आपका NHRA सदस्यता आवेदन स्वीकार कर लिया गया है।\n\nआपका सदस्यता ID: ${membershipId}\n\n${pdfGenerated ? `आपका जॉइनिंग लेटर डाउनलोड करने के लिए देखें: ${form.pdfUrl || `${req.protocol}://${req.get('host')}/documents/download`}` : 'जॉइनिंग लेटर जल्द ही उपलब्ध कराया जाएगा।'}\n\nधन्यवाद,\nNHRA Bihar Team`,
+        ...(attachments.length > 0 && { attachments })
+      }).then((result) => {
+        if (result && result.id) {
+          console.log('✅ Acceptance email sent (Resend ID:', result.id + ')');
+        }
       }).catch((mailErr) => {
         console.error('❌ Email send error:', mailErr.message);
       });
@@ -877,21 +904,44 @@ router.post('/forms/:id/resend-joining-letter', ensureAuthenticated, async (req,
 
     const membershipId = form.membershipId;
 
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: form.email,
-      subject: '📨 RMAS Joining Letter - Resent',
-      text: `नमस्ते ${form.fullName},\n\nयह आपका RMAS Joining Letter पुनः भेजा जा रहा है।\n\nMembership ID: ${membershipId}\n\nडाउनलोड करें: ${req.protocol}://${req.get('host')}${form.pdfUrl}\n\nधन्यवाद,\nRMAS Bihar Team`
-    };
-
-    if (pdfPath) {
-      mailOptions.attachments = [{ filename: `RMAS_Membership_${membershipId}.pdf`, path: pdfPath }];
+    // Prepare attachment: prefer Cloudinary URL if available
+    const attachments = [];
+    if (form.pdfUrl) {
+      attachments.push({
+        filename: `RMAS_Membership_${membershipId}.pdf`,
+        url: form.pdfUrl
+      });
+    } else if (pdfPath) {
+      attachments.push({
+        filename: `RMAS_Membership_${membershipId}.pdf`,
+        path: pdfPath
+      });
     }
 
+    const mailOptions = {
+      from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+      to: form.email,
+      subject: '📨 आपका NHRA Joining Letter - Resent',
+      html: `
+        <html>
+          <body style="font-family: Arial, sans-serif;">
+            <h2>नमस्ते ${form.fullName},</h2>
+            <p>यह आपका NHRA Joining Letter पुनः भेजा जा रहा है।</p>
+            <p><strong>Membership ID:</strong> ${membershipId}</p>
+            <p>PDF यह ईमेल के साथ संलग्न है।</p>
+            <br>
+            <p>धन्यवाद,<br>NHRA Bihar Team</p>
+          </body>
+        </html>
+      `,
+      text: `नमस्ते ${form.fullName},\n\nयह आपका NHRA Joining Letter पुनः भेजा जा रहा है।\n\nMembership ID: ${membershipId}\n\nPDF इस ईमेल के साथ संलग्न है।\n\nधन्यवाद,\nNHRA Bihar Team`,
+      ...(attachments.length > 0 && { attachments })
+    };
+
     try {
-      await sendMail(mailOptions);
+      const result = await sendMail(mailOptions);
       form.history = form.history || [];
-      form.history.push({ by: req.user._id, role: req.user.role, action: 'resend_joining_letter', note: `Resent to ${form.email}`, date: new Date() });
+      form.history.push({ by: req.user._id, role: req.user.role, action: 'email_sent', note: `Resent joining letter to ${form.email}`, date: new Date() });
       await form.save();
       console.log('✅ Resend email sent to:', form.email);
       return res.json({ ok: true, msg: 'Joining letter resent successfully' });
@@ -926,12 +976,24 @@ router.post('/forms/:id/reject', ensureAuthenticated, async (req, res) => {
     if (form.email) {
       try {
         await sendMail({
-          from: process.env.EMAIL_USER,
+          from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
           to: form.email,
-          subject: 'आपका सदस्यता आवेदन अस्वीकृत हुआ',
-          text: `नमस्ते ${form.fullName},\n\nकृपया सूचित किया जाता है कि आपका सदस्यता आवेदन अस्वीकृत कर दिया गया है।\n\nधन्यवाद,\nRMAS`
+          subject: '😔 आपका सदस्यता आवेदन अस्वीकृत हुआ',
+          html: `
+            <html>
+              <body style="font-family: Arial, sans-serif;">
+                <h2>नमस्ते ${form.fullName},</h2>
+                <p style="color: #d9534f;"><strong>कृपया सूचित किया जाता है कि आपका सदस्यता आवेदन अस्वीकृत कर दिया गया है।</strong></p>
+                ${req.body.note ? `<p><strong>कारण:</strong> ${req.body.note}</p>` : ''}
+                <p>यदि आपको कोई प्रश्न है, तो कृपया हमसे संपर्क करें।</p>
+                <br>
+                <p>धन्यवाद,<br>NHRA Bihar Team</p>
+              </body>
+            </html>
+          `,
+          text: `नमस्ते ${form.fullName},\n\nकृपया सूचित किया जाता है कि आपका सदस्यता आवेदन अस्वीकृत कर दिया गया है।\n\n${req.body.note ? `कारण: ${req.body.note}\n\n` : ''}यदि आपको कोई प्रश्न है, तो कृपया हमसे संपर्क करें।\n\nधन्यवाद,\nNHRA`
         });
-      } catch (mailErr) { console.error('Reject email error:', mailErr); }
+      } catch (mailErr) { console.error('Reject email error:', mailErr.message); }
     }
 
     res.redirect('/admin/forms/' + req.params.id);
@@ -1049,13 +1111,13 @@ router.post('/forms/:id/manage-role', ensureAuthenticated, async (req, res) => {
         const roleDisplay = assigned ? (assigned.roleName || assigned.role) : (form.jobRole || 'Assigned role');
 
         sendMail({
-          from: process.env.EMAIL_USER,
+          from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
           to: form.email,
-          subject: 'बधाई हो! आपका पद असाइन किया गया – RMAS',
+          subject: '🎯 बधाई हो! आपका पद असाइन किया गया – NHRA',
           html: generateRoleAssignmentEmailHTML(form.fullName, roleDisplay, link),
-          text: `नमस्ते ${form.fullName},\n\nआपको '${roleDisplay}' पद पर असाइन किया गया है। आप अपना ID Card और Joining Letter डाउनलोड करने के लिए इस लिंक पर जा सकते हैं:\n\n${link}\n\nधन्यवाद,\nRMAS Bihar Team`
+          text: `नमस्ते ${form.fullName},\n\nआपको '${roleDisplay}' पद पर असाइन किया गया है। आप अपना ID Card और Joining Letter डाउनलोड करने के लिए इस लिंक पर जा सकते हैं:\n\n${link}\n\nधन्यवाद,\nNHRA Bihar Team`
         }).then(async () => {
-          await Membership.findByIdAndUpdate(form._id, { $push: { history: { by: req.user._id, role: req.user.role, action: 'download_notification_sent', note: `Notified ${form.email} to download documents`, date: new Date() } } });
+          await Membership.findByIdAndUpdate(form._id, { $push: { history: { by: req.user._id, role: req.user.role, action: 'email_sent', note: `Notified ${form.email} to download documents`, date: new Date() } } });
           console.log('✅ Download notification sent to member');
         }).catch(async (err) => {
           console.error('❌ Error sending download notification:', err && err.message);
@@ -2356,6 +2418,79 @@ router.post('/admin/media/reject/:id', ensureAuthenticated, async (req, res) => 
   } catch (err) {
     console.error('❌ Error rejecting content:', err);
     res.status(500).json({ error: 'Error rejecting content' });
+  }
+});
+
+// ============= TEST EMAIL ROUTE =============
+// GET /api/test-email - Simple email testing endpoint (admin only)
+router.get('/api/test-email', ensureAuthenticated, async (req, res) => {
+  try {
+    // Only super admin can test emails
+    if (req.user.role !== 'superadmin') {
+      return res.status(403).json({ ok: false, msg: 'Only superadmin can test emails' });
+    }
+
+    const { sendMail } = require('../utils/mailer');
+    const testEmail = req.query.email || req.user.email;
+
+    if (!testEmail) {
+      return res.status(400).json({ ok: false, msg: 'Please provide a valid email address' });
+    }
+
+    console.log('🧪 Testing Resend email to:', testEmail);
+
+    const result = await sendMail({
+      from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+      to: testEmail,
+      subject: '🧪 Test Email from NHRA - Resend API',
+      html: `
+        <html>
+          <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px;">
+              <h2 style="color: #2b235f;">🎉 यह एक परीक्षण ईमेल है</h2>
+              <p>नमस्ते ${req.user.name || 'Admin'},</p>
+              <p>यह ईमेल Resend API के माध्यम से भेजी गई है और आपकी email configuration सही काम कर रही है।</p>
+              <div style="background-color: #d4edda; border: 1px solid #28a745; padding: 12px; border-radius: 5px; margin: 20px 0;">
+                <p><strong>✅ Resend API Configuration: सफल</strong></p>
+              </div>
+              <p><strong>Details:</strong></p>
+              <ul>
+                <li>Email Provider: Resend API</li>
+                <li>Timestamp: ${new Date().toLocaleString('hi-IN')}</li>
+                <li>Sent By: ${req.user.name}</li>
+              </ul>
+              <p>सभी emails अब Resend API के माध्यम से भेजे जाएंगे।</p>
+              <br>
+              <p>धन्यवाद,<br>NHRA Bihar Team</p>
+            </div>
+          </body>
+        </html>
+      `,
+      text: `यह एक परीक्षण ईमेल है\n\nनमस्ते ${req.user.name || 'Admin'},\n\nयह ईमेल Resend API के माध्यम से भेजी गई है और आपकी email configuration सही काम कर रही है।\n\n✅ Resend API Configuration: सफल\n\nDetails:\n- Email Provider: Resend API\n- Timestamp: ${new Date().toLocaleString('hi-IN')}\n- Sent By: ${req.user.name}\n\nधन्यवाद,\nNHRA Bihar Team`
+    });
+
+    if (!result || !result.id) {
+      return res.status(500).json({ 
+        ok: false, 
+        msg: 'Failed to send test email. Check server logs.',
+        error: 'sendMail returned null or no ID'
+      });
+    }
+
+    res.json({
+      ok: true,
+      msg: 'Test email sent successfully!',
+      email: testEmail,
+      resendId: result.id,
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    console.error('❌ Test email error:', err);
+    res.status(500).json({ 
+      ok: false, 
+      msg: 'Error testing email',
+      error: err.message
+    });
   }
 });
 
